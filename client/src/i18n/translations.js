@@ -9,7 +9,7 @@ export const translations = {
     hero: {
       description:
         'Register your details for current and upcoming security jobs. Apply for opportunities in security agencies, corporate offices, hospitals, hotels, schools, factories, events and residential sites.',
-      warning: 'Registration does not guarantee immediate employment. Our recruitment team may contact you when a suitable opportunity is available.',
+      warning: 'Take the first step toward a great security job — fill in your details and our recruitment team will reach out as soon as a matching opportunity is available.',
     },
     sections: {
       personalDetails: 'Personal Details',
@@ -138,7 +138,7 @@ export const translations = {
     hero: {
       description:
         'वर्तमान और आगामी सुरक्षा नौकरियों के लिए अपनी जानकारी दर्ज करें। सुरक्षा एजेंसियों, कॉर्पोरेट कार्यालयों, अस्पतालों, होटलों, स्कूलों, फैक्ट्रियों, कार्यक्रमों और आवासीय स्थलों में अवसरों के लिए आवेदन करें।',
-      warning: 'पंजीकरण तत्काल रोजगार की गारंटी नहीं देता। उपयुक्त अवसर उपलब्ध होने पर हमारी भर्ती टीम आपसे संपर्क करेगी।',
+      warning: 'एक अच्छी सुरक्षा नौकरी की दिशा में पहला कदम बढ़ाएं — अपनी जानकारी भरें, और उपयुक्त अवसर उपलब्ध होते ही हमारी भर्ती टीम आपसे संपर्क करेगी।',
     },
     sections: {
       personalDetails: 'व्यक्तिगत जानकारी',
