@@ -3,6 +3,20 @@ import normalizeIndianMobile from '../utils/phone.js';
 
 const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 const NAME_PATTERN = /^[a-zA-Zऀ-ॿ][a-zA-Zऀ-ॿ .'-]{1,149}$/;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+// react-hook-form gives file inputs a FileList; validated as optional since
+// both Aadhaar sides are optional uploads.
+const imageFileField = () =>
+  z
+    .any()
+    .optional()
+    .refine((files) => !files || files.length === 0 || files[0].size <= MAX_IMAGE_SIZE, 'Image must be 5 MB or smaller')
+    .refine(
+      (files) => !files || files.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files[0].type),
+      'Please upload a JPG, PNG or WEBP image'
+    );
 
 // Normalizes before validating so a number typed/pasted with a country code,
 // leading zero or spaces (all common on a phone) still passes — matching the
@@ -41,7 +55,8 @@ export const candidateFormSchema = z
     dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any'], {
       errorMap: () => ({ message: 'Please select your duty-hour preference' }),
     }),
-    aadhaarAvailable: z.boolean().optional().default(false),
+    aadhaarFront: imageFileField(),
+    aadhaarBack: imageFileField(),
 
     consentGiven: z.boolean().refine((val) => val === true, 'You must accept the consent statement to continue'),
   })

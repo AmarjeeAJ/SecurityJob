@@ -53,6 +53,15 @@ app.use(
   })
 );
 
+// Owner dashboard may be on a different origin than the API (split hosting,
+// e.g. Vercel/Render), so uploaded document thumbnails need to be loadable
+// cross-origin — Helmet's default same-origin CORP would otherwise silently
+// block the <img> requests. Filenames are unguessable random hex, so this
+// doesn't weaken access control (see upload.middleware.js).
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+});
 app.use('/uploads', express.static(path.resolve(uploadRoot)));
 
 app.use('/api', apiRateLimiter);

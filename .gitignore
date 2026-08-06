@@ -2,8 +2,10 @@ node_modules/
 dist/
 .env
 !.env.example
+server/uploads/aadhaar/*
 server/uploads/photos/*
 server/uploads/resumes/*
+!server/uploads/aadhaar/.gitkeep
 !server/uploads/photos/.gitkeep
 !server/uploads/resumes/.gitkeep
 *.log

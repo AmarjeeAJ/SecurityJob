@@ -110,25 +110,25 @@ export async function registerCandidate({ body, files, jobSlug, ipHash }) {
     await replaceCandidateRoles(client, candidate.id, preferredRoles, body.otherRoleText || null);
     await replaceCandidatePreferredLocations(client, candidate.id, body.preferredLocations);
 
-    if (files?.photo?.[0]) {
-      const file = files.photo[0];
+    if (files?.aadhaarFront?.[0]) {
+      const file = files.aadhaarFront[0];
       await insertCandidateDocument(client, candidate.id, {
-        documentType: 'photo',
+        documentType: 'aadhaar_front',
         originalFileName: file.originalname,
         storedFileName: file.filename,
-        fileUrl: `/uploads/photos/${file.filename}`,
+        fileUrl: `/uploads/aadhaar/${file.filename}`,
         mimeType: file.mimetype,
         fileSize: file.size,
       });
     }
 
-    if (files?.resume?.[0]) {
-      const file = files.resume[0];
+    if (files?.aadhaarBack?.[0]) {
+      const file = files.aadhaarBack[0];
       await insertCandidateDocument(client, candidate.id, {
-        documentType: 'resume',
+        documentType: 'aadhaar_back',
         originalFileName: file.originalname,
         storedFileName: file.filename,
-        fileUrl: `/uploads/resumes/${file.filename}`,
+        fileUrl: `/uploads/aadhaar/${file.filename}`,
         mimeType: file.mimetype,
         fileSize: file.size,
       });

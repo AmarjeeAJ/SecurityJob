@@ -5,50 +5,30 @@ import multer from 'multer';
 import env from '../config/env.js';
 import { AppError } from './error.middleware.js';
 
-const PHOTO_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const RESUME_MIME_TYPES = new Set([
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-]);
-
-const PHOTO_EXTENSIONS = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
-const RESUME_EXTENSIONS = {
-  'application/pdf': '.pdf',
-  'application/msword': '.doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-};
+const AADHAAR_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const AADHAAR_EXTENSIONS = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
 const uploadRoot = path.resolve(env.uploadDirectory);
-ensureDir(path.join(uploadRoot, 'photos'));
-ensureDir(path.join(uploadRoot, 'resumes'));
+ensureDir(path.join(uploadRoot, 'aadhaar'));
 
 const storage = multer.diskStorage({
   destination(req, file, callback) {
-    const subDir = file.fieldname === 'photo' ? 'photos' : 'resumes';
-    callback(null, path.join(uploadRoot, subDir));
+    callback(null, path.join(uploadRoot, 'aadhaar'));
   },
   filename(req, file, callback) {
-    const extensions = file.fieldname === 'photo' ? PHOTO_EXTENSIONS : RESUME_EXTENSIONS;
-    const extension = extensions[file.mimetype] || '';
+    const extension = AADHAAR_EXTENSIONS[file.mimetype] || '';
     const randomName = crypto.randomBytes(24).toString('hex');
     callback(null, `${randomName}${extension}`);
   },
 });
 
 function fileFilter(req, file, callback) {
-  const allowed = file.fieldname === 'photo' ? PHOTO_MIME_TYPES : RESUME_MIME_TYPES;
-  if (!allowed.has(file.mimetype)) {
-    return callback(new AppError(
-      file.fieldname === 'photo'
-        ? 'The uploaded photo must be a JPG, PNG or WEBP file.'
-        : 'The uploaded resume must be a PDF, DOC or DOCX file.',
-      422
-    ));
+  if (!AADHAAR_MIME_TYPES.has(file.mimetype)) {
+    return callback(new AppError('Aadhaar card images must be a JPG, PNG or WEBP file.', 422));
   }
   callback(null, true);
 }
@@ -58,8 +38,8 @@ export const uploadCandidateDocuments = multer({
   fileFilter,
   limits: { fileSize: env.maxFileSize, files: 2 },
 }).fields([
-  { name: 'photo', maxCount: 1 },
-  { name: 'resume', maxCount: 1 },
+  { name: 'aadhaarFront', maxCount: 1 },
+  { name: 'aadhaarBack', maxCount: 1 },
 ]);
 
 export function handleUploadErrors(err, req, res, next) {

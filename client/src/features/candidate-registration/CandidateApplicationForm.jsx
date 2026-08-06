@@ -36,7 +36,7 @@ function buildFormData(data, trackingData) {
     currentEmploymentStatus: data.currentEmploymentStatus,
     joiningAvailability: data.joiningAvailability,
     dutyHourPreference: data.dutyHourPreference,
-    aadhaarAvailable: data.aadhaarAvailable,
+    aadhaarAvailable: Boolean(data.aadhaarFront?.[0] || data.aadhaarBack?.[0]),
     consentGiven: data.consentGiven,
     ...trackingData,
   };
@@ -49,6 +49,9 @@ function buildFormData(data, trackingData) {
 
   formData.append('preferredRoles', JSON.stringify(data.preferredRoles));
   formData.append('preferredLocations', JSON.stringify(data.preferredLocations));
+
+  if (data.aadhaarFront?.[0]) formData.append('aadhaarFront', data.aadhaarFront[0]);
+  if (data.aadhaarBack?.[0]) formData.append('aadhaarBack', data.aadhaarBack[0]);
 
   return formData;
 }
@@ -74,7 +77,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       whatsappSameAsMobile: true,
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
-      aadhaarAvailable: false,
       consentGiven: false,
     },
   });
@@ -118,7 +120,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       whatsappSameAsMobile: true,
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
-      aadhaarAvailable: false,
       consentGiven: false,
     });
   }

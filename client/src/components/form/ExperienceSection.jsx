@@ -1,6 +1,6 @@
 import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
-import CheckboxInput from '../common/CheckboxInput.jsx';
+import FileField from '../common/FileField.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 const EMPLOYMENT_STATUS_OPTIONS = [
@@ -69,11 +69,29 @@ export default function ExperienceSection({ register, errors }) {
         {...register('dutyHourPreference')}
       />
 
-      <CheckboxInput
-        id="aadhaarAvailable"
-        label="I have my Aadhaar Card available"
-        {...register('aadhaarAvailable')}
-      />
+      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-navy-900">Aadhaar Card</p>
+          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500">Optional</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <FileField
+            id="aadhaarFront"
+            label="Front Side"
+            accept="image/jpeg,image/png,image/webp"
+            error={errors.aadhaarFront?.message}
+            {...register('aadhaarFront')}
+          />
+          <FileField
+            id="aadhaarBack"
+            label="Back Side"
+            accept="image/jpeg,image/png,image/webp"
+            error={errors.aadhaarBack?.message}
+            {...register('aadhaarBack')}
+          />
+        </div>
+        <p className="mt-2.5 text-xs text-slate-400">Clear photos of both sides, JPG/PNG/WEBP, up to 5 MB each.</p>
+      </div>
     </section>
   );
 }

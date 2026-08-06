@@ -7,6 +7,11 @@ import Card from '../components/common/Card.jsx';
 import LoadingSkeleton from '../components/common/LoadingSkeleton.jsx';
 import ErrorBanner from '../components/form/ErrorBanner.jsx';
 
+const DOCUMENT_TYPE_LABELS = {
+  aadhaar_front: 'Aadhaar Front',
+  aadhaar_back: 'Aadhaar Back',
+};
+
 function Field({ label, value }) {
   return (
     <div>
@@ -136,21 +141,36 @@ export default function CandidateDetailsPage() {
             {(candidate.documents.length > 0 || candidate.additional_message) && (
               <SectionCard icon={ICONS.shield} title="Documents & Notes">
                 {candidate.documents.length > 0 && (
-                  <div className="flex flex-wrap gap-3">
-                    {candidate.documents.map((doc) => (
-                      <a
-                        key={doc.id}
-                        href={`${uploadsOrigin}${doc.file_url}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 rounded-lg border border-navy-800 px-3 py-2 text-xs font-semibold text-navy-800 transition-colors hover:bg-navy-800 hover:text-white"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                        </svg>
-                        View {doc.document_type}
-                      </a>
-                    ))}
+                  <div className="flex flex-wrap gap-4">
+                    {candidate.documents.map((doc) => {
+                      const isImage = doc.mime_type?.startsWith('image/');
+                      return (
+                        <a
+                          key={doc.id}
+                          href={`${uploadsOrigin}${doc.file_url}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group w-36 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                        >
+                          {isImage ? (
+                            <img
+                              src={`${uploadsOrigin}${doc.file_url}`}
+                              alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+                              className="h-24 w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-24 w-full items-center justify-center bg-slate-50">
+                              <svg viewBox="0 0 24 24" className="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                              </svg>
+                            </div>
+                          )}
+                          <p className="truncate px-2.5 py-2 text-center text-xs font-semibold text-navy-800 group-hover:text-gold-600">
+                            {DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+                          </p>
+                        </a>
+                      );
+                    })}
                   </div>
                 )}
 
