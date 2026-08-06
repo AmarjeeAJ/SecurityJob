@@ -6,10 +6,6 @@
 export const translations = {
   en: {
     header: { secureForm: 'Secure Form', secure: 'Secure' },
-    helpStrip: {
-      text: 'Need help filling this form?',
-      action: 'Call / WhatsApp',
-    },
     hero: {
       description:
         'Register your details for current and upcoming security jobs. Apply for opportunities in security agencies, corporate offices, hospitals, hotels, schools, factories, events and residential sites.',
@@ -139,10 +135,6 @@ export const translations = {
 
   hi: {
     header: { secureForm: 'सुरक्षित फॉर्म', secure: 'सुरक्षित' },
-    helpStrip: {
-      text: 'फॉर्म भरने में मदद चाहिए?',
-      action: 'कॉल / व्हाट्सएप करें',
-    },
     hero: {
       description:
         'वर्तमान और आगामी सुरक्षा नौकरियों के लिए अपनी जानकारी दर्ज करें। सुरक्षा एजेंसियों, कॉर्पोरेट कार्यालयों, अस्पतालों, होटलों, स्कूलों, फैक्ट्रियों, कार्यक्रमों और आवासीय स्थलों में अवसरों के लिए आवेदन करें।',
