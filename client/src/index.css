@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #050b18;
+  --color-navy-900: #0a1530;
+  --color-navy-800: #101f45;
+  --color-navy-700: #172a5c;
+  --color-navy-600: #1f3778;
+  --color-sky-600: #1a4f8f;
+  --color-sky-500: #2f6fc4;
+  --color-sky-400: #5c93dd;
+  --color-gold-500: #c9a447;
+  --color-gold-400: #d9bc6c;
+  --color-gold-300: #e8d493;
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* So a field auto-scrolled into view (tap-to-focus, anchor links) lands
+     clear of the sticky header / the apply form's fixed mobile submit bar
+     instead of underneath them. */
+  scroll-padding-top: 90px;
+  scroll-padding-bottom: 100px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f6f7fb;
+  color: #101f45;
+  overflow-x: hidden;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* Larger, thumb-friendly touch targets on mobile inputs. */
+input[type="text"],
+input[type="tel"],
+input[type="number"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+  min-height: 3rem;
+}
+
+/* Landing-page motion: slow ambient blobs + a staggered reveal-on-scroll utility. */
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, -4%) scale(1.08); }
+  66% { transform: translate(-3%, 3%) scale(0.96); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.blob {
+  animation: blob-float 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+.blob-delay {
+  animation-delay: -8s;
+}
+
+.text-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 6s linear infinite;
+}
+
+/*
+ * Sky-navy backdrop: the base stays deep navy for the FULL page height (so it
+ * never washes out to flat pale blue on a long page), with glow spots and a
+ * fine grain texture tiled every ~70vh so there's always depth in view no
+ * matter how far you scroll — a single giant non-repeating gradient looks
+ * rich near the top and flat everywhere else once the page is 3-4 screens tall.
+ */
+@keyframes aurora-drift {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 0% 30vh, 0 0; }
+  50% { background-position: 6% 3%, 94% -3%, 4% calc(30vh + 2%), 0 0; }
+}
+
+.bg-aurora {
+  background-color: var(--color-navy-950);
+  background-image:
+    radial-gradient(50% 55% at 20% 8%, color-mix(in srgb, var(--color-sky-500) 30%, transparent), transparent 70%),
+    radial-gradient(45% 50% at 85% 30%, color-mix(in srgb, var(--color-gold-500) 12%, transparent), transparent 70%),
+    radial-gradient(50% 55% at 15% 62%, color-mix(in srgb, var(--color-sky-600) 26%, transparent), transparent 70%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-repeat: no-repeat, no-repeat, repeat-y, repeat;
+  background-size: 90% 55vh, 80% 55vh, 90% 70vh, 26px 26px;
+  animation: aurora-drift 40s ease-in-out infinite;
+}
+
+/*
+ * Light-theme counterpart to .bg-aurora: a soft gradient-mesh wash in the
+ * brand's gold/sky/navy tones for pages that should stay light and fast
+ * (e.g. the owner login) but not read as flat/empty. Colors are pastel
+ * enough to keep white cards and body text fully legible on top.
+ */
+@keyframes mesh-drift {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
+  50% { background-position: 6% 4%, 94% 4%, 46% 96%, 0 0; }
+}
+
+.bg-mesh-light {
+  background-color: #f6f7fb;
+  background-image:
+    radial-gradient(50% 50% at 12% 15%, color-mix(in srgb, var(--color-gold-400) 30%, transparent), transparent 70%),
+    radial-gradient(55% 55% at 88% 12%, color-mix(in srgb, var(--color-sky-400) 26%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 50% 105%, color-mix(in srgb, var(--color-navy-700) 14%, transparent), transparent 70%),
+    radial-gradient(circle, rgba(10, 21, 48, 0.05) 1px, transparent 1px);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 70% 60%, 65% 55%, 90% 60%, 24px 24px;
+  animation: mesh-drift 40s ease-in-out infinite;
+}
+
+/* A slow radar sweep behind the hero badge — subtle nod to "security control room". */
+@keyframes radar-spin {
+  to { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+  position: absolute;
+  inset: -40%;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--color-sky-400) 22%, transparent) 25deg, transparent 70deg);
+  animation: radar-spin 12s linear infinite;
+}
+
+/* Soft colored glow ring on hover, used by feature/role cards for a premium feel. */
+.card-glow {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.card-glow:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-gold-400) 45%, transparent);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+}
+
+/*
+ * Runs once as each element mounts (a CSS `animation`, not a scroll-triggered
+ * `transition`), so content is guaranteed visible shortly after paint no
+ * matter how the page is scrolled into view — jump-scroll, anchor link,
+ * screen reader, or a screenshot tool that resizes the viewport in one step.
+ * A scroll-triggered (IntersectionObserver) version of this was tried first
+ * and dropped: instant/programmatic scrolls don't reliably give the browser
+ * a paint frame to re-run the intersection check, which could leave whole
+ * sections stuck at opacity:0.
+ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+  .text-shimmer { animation: none; }
+  .reveal { animation: none; }
+  .bg-aurora { animation: none; }
+  .bg-mesh-light { animation: none; }
+  .radar-sweep { animation: none; display: none; }
+}
