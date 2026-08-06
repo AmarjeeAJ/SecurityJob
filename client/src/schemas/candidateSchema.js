@@ -25,6 +25,7 @@ export const candidateFormSchema = z
     currentCity: z.string().trim().min(1, 'Current city is required'),
     currentArea: z.string().trim().min(1, 'Current area / locality is required'),
     state: z.string().trim().min(1, 'State is required'),
+    highestQualification: z.string().trim().optional().or(z.literal('')),
 
     preferredRoles: z.array(z.string()).min(1, 'Please select at least one preferred job role'),
     otherRoleText: z.string().trim().optional().or(z.literal('')),
@@ -40,6 +41,7 @@ export const candidateFormSchema = z
     dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any'], {
       errorMap: () => ({ message: 'Please select your duty-hour preference' }),
     }),
+    aadhaarAvailable: z.boolean().optional().default(false),
 
     consentGiven: z.boolean().refine((val) => val === true, 'You must accept the consent statement to continue'),
   })

@@ -115,6 +115,7 @@ export default function CandidateDetailsPage() {
                 <Field label="Current City" value={candidate.current_city} />
                 <Field label="Current Area" value={candidate.current_area} />
                 <Field label="State" value={candidate.state} />
+                <Field label="Qualification" value={candidate.highest_qualification} />
               </div>
             </Card>
 
@@ -126,6 +127,7 @@ export default function CandidateDetailsPage() {
                 <Field label="Employment Status" value={candidate.current_employment_status} />
                 <Field label="Joining Availability" value={candidate.joining_availability} />
                 <Field label="Duty-Hour Preference" value={candidate.duty_hour_preference} />
+                <Field label="Aadhaar Available" value={candidate.aadhaar_available ? 'Yes' : 'No'} />
               </div>
             </SectionCard>
 

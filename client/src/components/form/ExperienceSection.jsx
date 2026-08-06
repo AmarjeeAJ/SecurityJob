@@ -1,5 +1,6 @@
 import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
+import CheckboxInput from '../common/CheckboxInput.jsx';
 import SectionHeading from './SectionHeading.jsx';
 
 const EMPLOYMENT_STATUS_OPTIONS = [
@@ -66,6 +67,12 @@ export default function ExperienceSection({ register, errors }) {
         options={DUTY_HOUR_OPTIONS}
         error={errors.dutyHourPreference?.message}
         {...register('dutyHourPreference')}
+      />
+
+      <CheckboxInput
+        id="aadhaarAvailable"
+        label="I have my Aadhaar Card available"
+        {...register('aadhaarAvailable')}
       />
     </section>
   );

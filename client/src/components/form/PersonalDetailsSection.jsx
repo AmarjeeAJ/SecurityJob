@@ -9,6 +9,15 @@ const GENDER_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
+const QUALIFICATION_OPTIONS = [
+  { value: 'Below 10th', label: 'Below 10th' },
+  { value: '10th Pass', label: '10th Pass' },
+  { value: '12th Pass', label: '12th Pass' },
+  { value: 'ITI / Diploma', label: 'ITI / Diploma' },
+  { value: 'Graduate', label: 'Graduate' },
+  { value: 'Post Graduate', label: 'Post Graduate' },
+];
+
 export default function PersonalDetailsSection({ register, errors }) {
   return (
     <section className="flex flex-col gap-5">
@@ -72,6 +81,15 @@ export default function PersonalDetailsSection({ register, errors }) {
         datalistOptions={INDIAN_STATES}
         error={errors.state?.message}
         {...register('state')}
+      />
+
+      <SelectInput
+        id="highestQualification"
+        label="Highest Qualification"
+        placeholder="Select (optional)"
+        options={QUALIFICATION_OPTIONS}
+        error={errors.highestQualification?.message}
+        {...register('highestQualification')}
       />
     </section>
   );
