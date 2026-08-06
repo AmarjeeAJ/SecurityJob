@@ -13,6 +13,8 @@ const env = {
   isProduction: process.env.NODE_ENV === 'production',
   port: Number(process.env.PORT || 4000),
   databaseUrl: required('DATABASE_URL'),
+  databaseSsl: process.env.DATABASE_SSL === 'true',
+  crossSiteCookies: process.env.CROSS_SITE_COOKIES === 'true',
   clientUrl: required('CLIENT_URL', 'http://localhost:5173'),
   sessionSecret: required('SESSION_SECRET'),
   cookieSecret: required('COOKIE_SECRET'),

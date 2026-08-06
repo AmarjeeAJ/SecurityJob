@@ -100,6 +100,7 @@ Key variables:
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | `postgres://user:password@host:port/database` |
+| `DATABASE_SSL` | Set to `true` for managed Postgres hosts that require SSL (Render, Railway, Heroku, RDS, Supabase). Leave `false` for local Postgres. |
 | `CLIENT_URL` | Frontend origin(s) for CORS, comma-separated for multiple |
 | `SESSION_SECRET` / `COOKIE_SECRET` | Long random strings — generate with `openssl rand -hex 32` |
 | `OWNER_DEFAULT_EMAIL` / `OWNER_DEFAULT_PASSWORD` | Used only by `npm run seed` to create the first owner account |

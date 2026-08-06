@@ -7,7 +7,10 @@ const { Pool } = pg;
 
 async function main() {
   const isProduction = process.env.NODE_ENV === 'production';
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  });
   const client = await pool.connect();
 
   try {

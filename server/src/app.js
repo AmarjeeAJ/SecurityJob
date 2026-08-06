@@ -43,8 +43,11 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: env.isProduction,
-      sameSite: 'lax',
+      // SameSite=None requires Secure, so force HTTPS-only whenever cross-site
+      // cookies are enabled (e.g. frontend and backend on different domains,
+      // like Vercel + Render), even if isProduction wasn't otherwise set.
+      secure: env.isProduction || env.crossSiteCookies,
+      sameSite: env.crossSiteCookies ? 'none' : 'lax',
       maxAge: 8 * 60 * 60 * 1000, // 8 hours
     },
   })
