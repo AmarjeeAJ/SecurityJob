@@ -7,7 +7,17 @@ import FieldShell from '../common/FieldShell.jsx';
  * unlike a wall of always-visible toggle chips, this stays out of the way on
  * a long mobile form until the candidate actually wants to pick something.
  */
-export default function SearchableMultiSelect({ label, required, error, options, value = [], onChange, placeholder = 'Search...' }) {
+export default function SearchableMultiSelect({
+  label,
+  required,
+  error,
+  options,
+  value = [],
+  onChange,
+  placeholder = 'Search...',
+  getOptionLabel = (option) => option,
+  noMatchesText = 'No matches found.',
+}) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
@@ -27,8 +37,10 @@ export default function SearchableMultiSelect({ label, required, error, options,
     const available = options.filter((option) => !value.includes(option));
     if (!query.trim()) return available;
     const q = query.trim().toLowerCase();
-    return available.filter((option) => option.toLowerCase().includes(q));
-  }, [options, value, query]);
+    return available.filter(
+      (option) => option.toLowerCase().includes(q) || getOptionLabel(option).toLowerCase().includes(q)
+    );
+  }, [options, value, query, getOptionLabel]);
 
   function addOption(option) {
     onChange([...value, option]);
@@ -49,11 +61,11 @@ export default function SearchableMultiSelect({ label, required, error, options,
               key={option}
               className="inline-flex items-center gap-1.5 rounded-full bg-navy-800 py-1.5 pl-3.5 pr-2 text-sm font-medium text-white"
             >
-              {option}
+              {getOptionLabel(option)}
               <button
                 type="button"
                 onClick={() => removeOption(option)}
-                aria-label={`Remove ${option}`}
+                aria-label={`Remove ${getOptionLabel(option)}`}
                 className="flex h-5 w-5 items-center justify-center rounded-full text-white/70 hover:bg-white/15 hover:text-white"
               >
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -91,7 +103,7 @@ export default function SearchableMultiSelect({ label, required, error, options,
         {isOpen && (
           <div className="mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg">
             {filteredOptions.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-slate-400">No matches found.</p>
+              <p className="px-4 py-3 text-sm text-slate-400">{noMatchesText}</p>
             ) : (
               filteredOptions.map((option) => (
                 <button
@@ -100,7 +112,7 @@ export default function SearchableMultiSelect({ label, required, error, options,
                   onClick={() => addOption(option)}
                   className="flex w-full items-center px-4 py-2.5 text-left text-sm text-navy-900 hover:bg-gold-500/10"
                 >
-                  {option}
+                  {getOptionLabel(option)}
                 </button>
               ))
             )}

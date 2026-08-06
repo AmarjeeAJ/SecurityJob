@@ -2,93 +2,96 @@ import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
 import SectionHeading from './SectionHeading.jsx';
 import { INDIAN_CITIES, INDIAN_STATES } from '../../utils/locations.js';
-
-const GENDER_OPTIONS = [
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'other', label: 'Other' },
-];
-
-const QUALIFICATION_OPTIONS = [
-  { value: 'Below 10th', label: 'Below 10th' },
-  { value: '10th Pass', label: '10th Pass' },
-  { value: '12th Pass', label: '12th Pass' },
-  { value: 'ITI / Diploma', label: 'ITI / Diploma' },
-  { value: 'Graduate', label: 'Graduate' },
-  { value: 'Post Graduate', label: 'Post Graduate' },
-];
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 export default function PersonalDetailsSection({ register, errors }) {
+  const { t, tError } = useLanguage();
+
+  const GENDER_OPTIONS = [
+    { value: 'male', label: t('personal.male') },
+    { value: 'female', label: t('personal.female') },
+    { value: 'other', label: t('personal.other') },
+  ];
+
+  const QUALIFICATION_OPTIONS = [
+    { value: 'Below 10th', label: t('personal.qualificationBelow10th') },
+    { value: '10th Pass', label: t('personal.qualification10th') },
+    { value: '12th Pass', label: t('personal.qualification12th') },
+    { value: 'ITI / Diploma', label: t('personal.qualificationIti') },
+    { value: 'Graduate', label: t('personal.qualificationGraduate') },
+    { value: 'Post Graduate', label: t('personal.qualificationPostGraduate') },
+  ];
+
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={1} title="Personal Details" totalSections={5} />
+      <SectionHeading number={1} title={t('sections.personalDetails')} totalSections={5} />
 
       <TextInput
         id="fullName"
-        label="Full Name"
+        label={t('personal.fullName')}
         required
-        placeholder="e.g. Ramesh Kumar"
-        error={errors.fullName?.message}
+        placeholder={t('personal.fullNamePlaceholder')}
+        error={tError(errors.fullName?.message)}
         {...register('fullName')}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <TextInput
           id="age"
-          label="Age"
+          label={t('personal.age')}
           required
           type="number"
           inputMode="numeric"
-          placeholder="Years"
-          error={errors.age?.message}
+          placeholder={t('personal.agePlaceholder')}
+          error={tError(errors.age?.message)}
           {...register('age')}
         />
         <SelectInput
           id="gender"
-          label="Gender"
+          label={t('personal.gender')}
           required
-          placeholder="Select"
+          placeholder={t('personal.select')}
           options={GENDER_OPTIONS}
-          error={errors.gender?.message}
+          error={tError(errors.gender?.message)}
           {...register('gender')}
         />
       </div>
 
       <TextInput
         id="currentCity"
-        label="Current City"
+        label={t('personal.currentCity')}
         required
-        placeholder="e.g. Jaipur"
+        placeholder={t('personal.currentCityPlaceholder')}
         datalistOptions={INDIAN_CITIES}
-        error={errors.currentCity?.message}
+        error={tError(errors.currentCity?.message)}
         {...register('currentCity')}
       />
 
       <TextInput
         id="currentArea"
-        label="Current Area / Locality"
+        label={t('personal.currentArea')}
         required
-        placeholder="e.g. Malviya Nagar"
-        error={errors.currentArea?.message}
+        placeholder={t('personal.currentAreaPlaceholder')}
+        error={tError(errors.currentArea?.message)}
         {...register('currentArea')}
       />
 
       <TextInput
         id="state"
-        label="State"
+        label={t('personal.state')}
         required
-        placeholder="e.g. Rajasthan"
+        placeholder={t('personal.statePlaceholder')}
         datalistOptions={INDIAN_STATES}
-        error={errors.state?.message}
+        error={tError(errors.state?.message)}
         {...register('state')}
       />
 
       <SelectInput
         id="highestQualification"
-        label="Highest Qualification"
-        placeholder="Select (optional)"
+        label={t('personal.qualification')}
+        placeholder={t('personal.qualificationSelect')}
         options={QUALIFICATION_OPTIONS}
-        error={errors.highestQualification?.message}
+        error={tError(errors.highestQualification?.message)}
         {...register('highestQualification')}
       />
     </section>

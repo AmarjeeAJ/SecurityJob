@@ -2,95 +2,104 @@ import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
 import FileField from '../common/FileField.jsx';
 import SectionHeading from './SectionHeading.jsx';
-
-const EMPLOYMENT_STATUS_OPTIONS = [
-  { value: 'employed', label: 'Currently Employed' },
-  { value: 'unemployed', label: 'Unemployed' },
-  { value: 'student', label: 'Student' },
-  { value: 'other', label: 'Other' },
-];
-
-const JOINING_AVAILABILITY_OPTIONS = [
-  { value: 'immediate', label: 'Immediate' },
-  { value: 'within_15_days', label: 'Within 15 Days' },
-  { value: 'within_30_days', label: 'Within 30 Days' },
-  { value: 'more_than_30_days', label: 'More than 30 Days' },
-];
-
-const DUTY_HOUR_OPTIONS = [
-  { value: '8_hours', label: '8 Hours' },
-  { value: '12_hours', label: '12 Hours' },
-  { value: 'rotational', label: 'Rotational' },
-  { value: 'any', label: 'Any' },
-];
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 export default function ExperienceSection({ register, errors }) {
+  const { t, tError } = useLanguage();
+
+  const EMPLOYMENT_STATUS_OPTIONS = [
+    { value: 'employed', label: t('experience.employed') },
+    { value: 'unemployed', label: t('experience.unemployed') },
+    { value: 'student', label: t('experience.student') },
+    { value: 'other', label: t('experience.other') },
+  ];
+
+  const JOINING_AVAILABILITY_OPTIONS = [
+    { value: 'immediate', label: t('experience.immediate') },
+    { value: 'within_15_days', label: t('experience.within15') },
+    { value: 'within_30_days', label: t('experience.within30') },
+    { value: 'more_than_30_days', label: t('experience.moreThan30') },
+  ];
+
+  const DUTY_HOUR_OPTIONS = [
+    { value: '8_hours', label: t('experience.hours8') },
+    { value: '12_hours', label: t('experience.hours12') },
+    { value: 'rotational', label: t('experience.rotational') },
+    { value: 'any', label: t('experience.any') },
+  ];
+
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={4} title="Experience" totalSections={5} />
+      <SectionHeading number={4} title={t('sections.experience')} totalSections={5} />
 
       <TextInput
         id="securityExperienceMonths"
-        label="Security Experience (months)"
+        label={t('experience.securityExperience')}
         type="number"
         inputMode="numeric"
         placeholder="0"
-        error={errors.securityExperienceMonths?.message}
+        error={tError(errors.securityExperienceMonths?.message)}
         {...register('securityExperienceMonths')}
       />
 
       <SelectInput
         id="currentEmploymentStatus"
-        label="Current Employment Status"
+        label={t('experience.employmentStatus')}
         required
-        placeholder="Select"
+        placeholder={t('experience.select')}
         options={EMPLOYMENT_STATUS_OPTIONS}
-        error={errors.currentEmploymentStatus?.message}
+        error={tError(errors.currentEmploymentStatus?.message)}
         {...register('currentEmploymentStatus')}
       />
 
       <SelectInput
         id="joiningAvailability"
-        label="Joining Availability"
+        label={t('experience.joiningAvailability')}
         required
-        placeholder="Select"
+        placeholder={t('experience.select')}
         options={JOINING_AVAILABILITY_OPTIONS}
-        error={errors.joiningAvailability?.message}
+        error={tError(errors.joiningAvailability?.message)}
         {...register('joiningAvailability')}
       />
 
       <SelectInput
         id="dutyHourPreference"
-        label="Duty-Hour Preference"
+        label={t('experience.dutyHour')}
         required
-        placeholder="Select"
+        placeholder={t('experience.select')}
         options={DUTY_HOUR_OPTIONS}
-        error={errors.dutyHourPreference?.message}
+        error={tError(errors.dutyHourPreference?.message)}
         {...register('dutyHourPreference')}
       />
 
       <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-navy-900">Aadhaar Card</p>
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500">Optional</span>
+          <p className="text-sm font-semibold text-navy-900">{t('experience.aadhaarCard')}</p>
+          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+            {t('experience.optional')}
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <FileField
             id="aadhaarFront"
-            label="Front Side"
+            label={t('experience.frontSide')}
             accept="image/jpeg,image/png,image/webp"
-            error={errors.aadhaarFront?.message}
+            uploadText={t('experience.uploadTap')}
+            changeText={t('experience.changeImage')}
+            error={tError(errors.aadhaarFront?.message)}
             {...register('aadhaarFront')}
           />
           <FileField
             id="aadhaarBack"
-            label="Back Side"
+            label={t('experience.backSide')}
             accept="image/jpeg,image/png,image/webp"
-            error={errors.aadhaarBack?.message}
+            uploadText={t('experience.uploadTap')}
+            changeText={t('experience.changeImage')}
+            error={tError(errors.aadhaarBack?.message)}
             {...register('aadhaarBack')}
           />
         </div>
-        <p className="mt-2.5 text-xs text-slate-400">Clear photos of both sides, JPG/PNG/WEBP, up to 5 MB each.</p>
+        <p className="mt-2.5 text-xs text-slate-400">{t('experience.uploadHint')}</p>
       </div>
     </section>
   );

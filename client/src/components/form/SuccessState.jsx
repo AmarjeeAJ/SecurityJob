@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Button from '../common/Button.jsx';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-export default function SuccessState({ candidateCode, message, isExistingCandidate, whatsappNumber, onSubmitAnother }) {
+export default function SuccessState({ candidateCode, isExistingCandidate, whatsappNumber, onSubmitAnother }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -23,28 +25,26 @@ export default function SuccessState({ candidateCode, message, isExistingCandida
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold text-navy-900">Registration Successful</h2>
+        <h2 className="text-2xl font-bold text-navy-900">{t('success.title')}</h2>
         <p className="mt-2 text-slate-600 max-w-sm">
-          Thank you for registering with SecurityJob.
-          {isExistingCandidate && ' Your previous registration was found and your latest information has been updated.'}
+          {t('success.thankYou')}
+          {isExistingCandidate && ' ' + t('success.existingUpdated')}
         </p>
       </div>
 
       <div className="w-full max-w-xs rounded-xl border border-gold-500/50 bg-gold-500/10 px-5 py-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-navy-700">Candidate ID</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-navy-700">{t('success.candidateId')}</p>
         <p className="mt-1 text-xl font-bold tracking-wide text-navy-900">{candidateCode}</p>
         <button
           type="button"
           onClick={handleCopy}
           className="mt-2 text-sm font-semibold text-navy-700 underline underline-offset-2"
         >
-          {copied ? 'Copied!' : 'Copy Candidate ID'}
+          {copied ? t('success.copied') : t('success.copy')}
         </button>
       </div>
 
-      <p className="text-sm text-slate-600 max-w-sm">
-        Our recruitment team may contact you when a suitable job opportunity is available.
-      </p>
+      <p className="text-sm text-slate-600 max-w-sm">{t('success.contactNote')}</p>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
         {whatsappNumber && (
@@ -58,11 +58,11 @@ export default function SuccessState({ candidateCode, message, isExistingCandida
               )
             }
           >
-            Message Us on WhatsApp
+            {t('success.whatsappUs')}
           </Button>
         )}
         <Button variant="outline" className="w-full" onClick={onSubmitAnother}>
-          Submit Another Candidate
+          {t('success.submitAnother')}
         </Button>
       </div>
     </div>

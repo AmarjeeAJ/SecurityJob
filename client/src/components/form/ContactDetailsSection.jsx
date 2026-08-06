@@ -1,6 +1,7 @@
 import TextInput from '../common/TextInput.jsx';
 import CheckboxInput from '../common/CheckboxInput.jsx';
 import SectionHeading from './SectionHeading.jsx';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 // Max raw digits a typed value can contain: 10-digit number, optionally prefixed
 // with country code "91" or a leading "0" (matches normalizeIndianMobile).
@@ -21,23 +22,24 @@ function stopTypingAfterMaxDigits(event) {
 }
 
 export default function ContactDetailsSection({ register, errors, watch }) {
+  const { t, tError } = useLanguage();
   const whatsappSameAsMobile = watch('whatsappSameAsMobile');
   const mobileField = register('mobileNumber');
   const whatsappField = register('whatsappNumber');
 
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={2} title="Contact Details" totalSections={5} />
+      <SectionHeading number={2} title={t('sections.contactDetails')} totalSections={5} />
 
       <TextInput
         id="mobileNumber"
-        label="Mobile Number"
+        label={t('contact.mobileNumber')}
         required
         type="tel"
         inputMode="numeric"
         maxLength={15}
-        placeholder="10-digit mobile number"
-        error={errors.mobileNumber?.message}
+        placeholder={t('contact.mobileNumberPlaceholder')}
+        error={tError(errors.mobileNumber?.message)}
         {...mobileField}
         onChange={(event) => {
           stopTypingAfterMaxDigits(event);
@@ -47,20 +49,20 @@ export default function ContactDetailsSection({ register, errors, watch }) {
 
       <CheckboxInput
         id="whatsappSameAsMobile"
-        label="WhatsApp number is same as mobile number"
+        label={t('contact.whatsappSame')}
         {...register('whatsappSameAsMobile')}
       />
 
       {!whatsappSameAsMobile && (
         <TextInput
           id="whatsappNumber"
-          label="WhatsApp Number"
+          label={t('contact.whatsappNumber')}
           required
           type="tel"
           inputMode="numeric"
           maxLength={15}
-          placeholder="10-digit WhatsApp number"
-          error={errors.whatsappNumber?.message}
+          placeholder={t('contact.whatsappNumberPlaceholder')}
+          error={tError(errors.whatsappNumber?.message)}
           {...whatsappField}
           onChange={(event) => {
             stopTypingAfterMaxDigits(event);

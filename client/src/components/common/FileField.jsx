@@ -2,7 +2,19 @@ import { forwardRef, useState } from 'react';
 import FieldShell from './FieldShell.jsx';
 
 const FileField = forwardRef(function FileField(
-  { label, required, error, hint, id, accept, onChange, className = '', ...rest },
+  {
+    label,
+    required,
+    error,
+    hint,
+    id,
+    accept,
+    onChange,
+    className = '',
+    uploadText = 'Tap to upload image',
+    changeText = 'Change image',
+    ...rest
+  },
   ref
 ) {
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -30,7 +42,7 @@ const FileField = forwardRef(function FileField(
           <>
             <img src={previewUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center bg-navy-900/50 opacity-0 transition-opacity group-hover:opacity-100">
-              <span className="text-xs font-semibold text-white">Change image</span>
+              <span className="text-xs font-semibold text-white">{changeText}</span>
             </div>
           </>
         ) : (
@@ -38,7 +50,7 @@ const FileField = forwardRef(function FileField(
             <svg viewBox="0 0 24 24" className="h-6 w-6 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0 4 4m-4-4-4 4M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
             </svg>
-            <span className="px-2 text-xs font-medium text-slate-500">Tap to upload image</span>
+            <span className="px-2 text-xs font-medium text-slate-500">{uploadText}</span>
           </>
         )}
         <input

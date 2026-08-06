@@ -8,10 +8,12 @@ import Hero from '../components/common/Hero.jsx';
 import Card from '../components/common/Card.jsx';
 import LoadingSkeleton from '../components/common/LoadingSkeleton.jsx';
 import CandidateApplicationForm from '../features/candidate-registration/CandidateApplicationForm.jsx';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
 
 const DEFAULT_JOB_SLUG = 'security-guard';
 
 export default function CandidateApplicationPage() {
+  const { language } = useLanguage();
   const { jobSlug = DEFAULT_JOB_SLUG } = useParams();
   const [pageConfig, setPageConfig] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -60,7 +62,7 @@ export default function CandidateApplicationPage() {
       </main>
 
       <footer className="pb-8 text-center text-xs text-slate-400">
-        &copy; {new Date().getFullYear()} SecurityJob. All rights reserved.
+        &copy; {new Date().getFullYear()} SecurityJob. {language === 'hi' ? 'सर्वाधिकार सुरक्षित।' : 'All rights reserved.'}
       </footer>
     </div>
   );

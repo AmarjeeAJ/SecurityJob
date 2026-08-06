@@ -5,6 +5,7 @@ import { candidateFormSchema } from '../../schemas/candidateSchema.js';
 import { submitCandidateApplication } from '../../api/candidates.js';
 import { trackEvent } from '../../services/tracking.service.js';
 import { useScrollProgress } from '../../hooks/useScrollProgress.js';
+import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import Card from '../../components/common/Card.jsx';
 import Button from '../../components/common/Button.jsx';
 import ErrorBanner from '../../components/form/ErrorBanner.jsx';
@@ -57,6 +58,7 @@ function buildFormData(data, trackingData) {
 }
 
 export default function CandidateApplicationForm({ preselectedRole, trackingData }) {
+  const { t } = useLanguage();
   const [submissionResult, setSubmissionResult] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const hasTrackedStart = useRef(false);
@@ -106,7 +108,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     } catch (error) {
       trackEvent('ApplicationSubmitError');
       const apiMessage = error?.response?.data?.message;
-      setSubmitError(apiMessage || 'Your details could not be submitted. Please try again.');
+      setSubmitError(apiMessage || t('errors.genericSubmit'));
     } finally {
       isSubmittingRef.current = false;
     }
@@ -159,14 +161,14 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
           {/* Desktop: inline submit at the end of the form. */}
           <Button type="submit" variant="gold" loading={isSubmitting} className="hidden w-full text-lg sm:flex">
-            {isSubmitting ? 'Submitting...' : 'Submit Application'}
+            {isSubmitting ? t('submit.submitting') : t('submit.button')}
           </Button>
 
           {/* Mobile: always-reachable sticky bar, since most candidates apply from a phone
               and shouldn't have to scroll back down through five sections to submit. */}
           <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.08)] sm:hidden">
             <Button type="submit" variant="gold" loading={isSubmitting} className="w-full">
-              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+              {isSubmitting ? t('submit.submitting') : t('submit.button')}
             </Button>
           </div>
         </form>
