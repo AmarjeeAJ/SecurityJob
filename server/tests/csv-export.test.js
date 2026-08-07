@@ -41,11 +41,11 @@ test('CSV export neutralizes formula-injection prefixes in candidate fields', as
   const mobile = randomMobile();
   createdMobiles.push(mobile);
 
-  // previousCompany accepts free text and is included in the CSV export, unlike fullName
+  // currentArea accepts free text and is included in the CSV export, unlike fullName
   // (whose own validation already rejects a leading "=" as an invalid name).
   await request(app)
     .post('/api/public/candidates/register')
-    .field({ ...baseRegistrationFields(mobile), previousCompany: '=SUM(1+1)' });
+    .field({ ...baseRegistrationFields(mobile), currentArea: '=SUM(1+1)' });
 
   const agent = await loggedInAgent();
   const res = await agent.get(`/api/owner/candidates/export.csv?search=${mobile}`);
