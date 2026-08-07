@@ -64,7 +64,9 @@ function CandidateCard({ c }) {
         {c.source && (
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.source}</span>
         )}
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.joiningAvailability}</span>
+        {c.joiningAvailability && (
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.joiningAvailability}</span>
+        )}
         <span className="ml-auto text-slate-400">{formatDate(c.lastSubmittedAt)}</span>
       </div>
     </Link>
@@ -144,9 +146,11 @@ export default function CandidateTable({ candidates, loading }) {
                 <td className="px-4 py-3.5 text-slate-600">{c.preferredLocations.join(' | ') || '—'}</td>
                 <td className="px-4 py-3.5 text-slate-600">{c.securityExperienceMonths} mo</td>
                 <td className="px-4 py-3.5">
-                  <span className="whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                    {c.joiningAvailability}
-                  </span>
+                  {c.joiningAvailability ? (
+                    <span className="whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                      {c.joiningAvailability}
+                    </span>
+                  ) : '—'}
                 </td>
                 <td className="px-4 py-3.5">
                   {c.source ? (

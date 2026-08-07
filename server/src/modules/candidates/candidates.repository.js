@@ -13,7 +13,7 @@ const CANDIDATE_COLUMNS = [
   'alternate_mobile_number', 'email', 'date_of_birth', 'age', 'gender', 'current_city', 'current_area', 'state',
   'highest_qualification', 'total_experience_months', 'security_experience_months', 'previous_company',
   'current_employment_status', 'joining_availability', 'expected_salary', 'shift_preference', 'duty_hour_preference',
-  'height_cm', 'languages', 'ex_serviceman', 'aadhaar_available', 'police_verification_available',
+  'height_cm', 'languages', 'ex_serviceman', 'is_experienced', 'aadhaar_available', 'police_verification_available',
   'training_certificate_available', 'driving_licence_available', 'additional_message',
   'consent_given', 'consent_timestamp', 'consent_text_version',
 ];
@@ -216,7 +216,7 @@ export async function* streamCandidatesForExport(filters, batchSize = 500) {
       SELECT
         c.id, c.candidate_code, c.full_name, c.mobile_number, c.whatsapp_number, c.alternate_mobile_number,
         c.email, c.age, c.gender, c.current_city, c.current_area, c.state, c.highest_qualification,
-        c.total_experience_months, c.security_experience_months, c.previous_company,
+        c.total_experience_months, c.security_experience_months, c.previous_company, c.is_experienced,
         c.current_employment_status, c.joining_availability, c.expected_salary, c.shift_preference,
         c.duty_hour_preference, c.ex_serviceman, c.aadhaar_available, c.police_verification_available,
         c.training_certificate_available, c.driving_licence_available, c.consent_given,

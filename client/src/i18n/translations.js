@@ -59,6 +59,7 @@ export const translations = {
       noMatches: 'No matches found.',
     },
     experience: {
+      isExperienced: 'I have prior security work experience',
       securityExperience: 'Security Experience (months)',
       employmentStatus: 'Current Employment Status',
       select: 'Select',
@@ -188,6 +189,7 @@ export const translations = {
       noMatches: 'कोई मेल नहीं मिला।',
     },
     experience: {
+      isExperienced: 'मुझे सुरक्षा कार्य का पूर्व अनुभव है',
       securityExperience: 'सुरक्षा अनुभव (महीने)',
       employmentStatus: 'वर्तमान रोजगार स्थिति',
       select: 'चुनें',

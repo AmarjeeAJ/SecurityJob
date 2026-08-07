@@ -45,16 +45,14 @@ export const candidateFormSchema = z
     otherRoleText: z.string().trim().optional().or(z.literal('')),
     preferredLocations: z.array(z.string()).min(1, 'Please select at least one preferred working city'),
 
+    isExperienced: z.boolean().optional().default(false),
     securityExperienceMonths: z.coerce.number().int().min(0).optional().default(0),
-    currentEmploymentStatus: z.enum(['employed', 'unemployed', 'student', 'other'], {
-      errorMap: () => ({ message: 'Please select your current employment status' }),
-    }),
-    joiningAvailability: z.enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days'], {
-      errorMap: () => ({ message: 'Please select your joining availability' }),
-    }),
-    dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any'], {
-      errorMap: () => ({ message: 'Please select your duty-hour preference' }),
-    }),
+    currentEmploymentStatus: z.enum(['employed', 'unemployed', 'student', 'other']).optional().or(z.literal('')),
+    joiningAvailability: z
+      .enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days'])
+      .optional()
+      .or(z.literal('')),
+    dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any']).optional().or(z.literal('')),
     aadhaarFront: imageFileField(),
     aadhaarBack: imageFileField(),
 
@@ -69,6 +67,17 @@ export const candidateFormSchema = z
     }
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
+    }
+    if (data.isExperienced) {
+      if (!data.currentEmploymentStatus) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['currentEmploymentStatus'], message: 'Please select your current employment status' });
+      }
+      if (!data.joiningAvailability) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
+      }
+      if (!data.dutyHourPreference) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
+      }
     }
   });
 

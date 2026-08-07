@@ -33,10 +33,11 @@ function buildFormData(data, trackingData) {
     state: data.state,
     highestQualification: data.highestQualification,
     otherRoleText: data.otherRoleText,
-    securityExperienceMonths: data.securityExperienceMonths,
-    currentEmploymentStatus: data.currentEmploymentStatus,
-    joiningAvailability: data.joiningAvailability,
-    dutyHourPreference: data.dutyHourPreference,
+    isExperienced: data.isExperienced,
+    securityExperienceMonths: data.isExperienced ? data.securityExperienceMonths : 0,
+    currentEmploymentStatus: data.isExperienced ? data.currentEmploymentStatus : undefined,
+    joiningAvailability: data.isExperienced ? data.joiningAvailability : undefined,
+    dutyHourPreference: data.isExperienced ? data.dutyHourPreference : undefined,
     aadhaarAvailable: Boolean(data.aadhaarFront?.[0] || data.aadhaarBack?.[0]),
     consentGiven: data.consentGiven,
     ...trackingData,
@@ -79,6 +80,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       whatsappSameAsMobile: true,
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
+      isExperienced: false,
       consentGiven: false,
     },
   });
@@ -122,6 +124,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       whatsappSameAsMobile: true,
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
+      isExperienced: false,
       consentGiven: false,
     });
   }
@@ -156,7 +159,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           <PersonalDetailsSection register={register} errors={errors} />
           <ContactDetailsSection register={register} errors={errors} watch={watch} />
           <JobPreferencesSection register={register} errors={errors} control={control} watch={watch} />
-          <ExperienceSection register={register} errors={errors} />
+          <ExperienceSection register={register} errors={errors} watch={watch} />
           <ConsentSection register={register} errors={errors} />
 
           {/* Desktop: inline submit at the end of the form. */}

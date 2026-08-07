@@ -49,17 +49,12 @@ export const registerCandidateSchema = z
     totalExperienceMonths: optionalIntFromForm.default(0),
     securityExperienceMonths: optionalIntFromForm.default(0),
     previousCompany: z.string().trim().max(150).optional().or(z.literal('')),
-    currentEmploymentStatus: z.enum(['employed', 'unemployed', 'student', 'other'], {
-      errorMap: () => ({ message: 'Please select your current employment status' }),
-    }),
-    joiningAvailability: z.enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days'], {
-      errorMap: () => ({ message: 'Please select your joining availability' }),
-    }),
+    isExperienced: boolFromForm.optional().default(false),
+    currentEmploymentStatus: z.enum(['employed', 'unemployed', 'student', 'other']).optional(),
+    joiningAvailability: z.enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days']).optional(),
     expectedSalary: optionalIntFromForm,
     shiftPreference: z.string().trim().max(50).optional().or(z.literal('')),
-    dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any'], {
-      errorMap: () => ({ message: 'Please select your duty-hour preference' }),
-    }),
+    dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any']).optional(),
     heightCm: optionalIntFromForm,
     languages: z.string().trim().max(255).optional().or(z.literal('')),
     exServiceman: boolFromForm.optional().default(false),
@@ -93,6 +88,17 @@ export const registerCandidateSchema = z
     }
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
+    }
+    if (data.isExperienced) {
+      if (!data.currentEmploymentStatus) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['currentEmploymentStatus'], message: 'Please select your current employment status' });
+      }
+      if (!data.joiningAvailability) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
+      }
+      if (!data.dutyHourPreference) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
+      }
     }
     for (const role of data.preferredRoles) {
       if (!JOB_ROLES.includes(role)) {

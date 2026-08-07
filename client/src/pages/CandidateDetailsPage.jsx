@@ -128,10 +128,15 @@ export default function CandidateDetailsPage() {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <Field label="Preferred Roles" value={candidate.roles.map((r) => r.role_name).join(' | ')} />
                 <Field label="Preferred Locations" value={candidate.preferredLocations.join(' | ')} />
-                <Field label="Security Experience" value={`${candidate.security_experience_months} months`} />
-                <Field label="Employment Status" value={candidate.current_employment_status} />
-                <Field label="Joining Availability" value={candidate.joining_availability} />
-                <Field label="Duty-Hour Preference" value={candidate.duty_hour_preference} />
+                <Field label="Experienced" value={candidate.is_experienced ? 'Yes' : 'No (Fresher)'} />
+                {candidate.is_experienced && (
+                  <>
+                    <Field label="Security Experience" value={`${candidate.security_experience_months} months`} />
+                    <Field label="Employment Status" value={candidate.current_employment_status} />
+                    <Field label="Joining Availability" value={candidate.joining_availability} />
+                    <Field label="Duty-Hour Preference" value={candidate.duty_hour_preference} />
+                  </>
+                )}
                 <Field label="Aadhaar Available" value={candidate.aadhaar_available ? 'Yes' : 'No'} />
               </div>
             </SectionCard>

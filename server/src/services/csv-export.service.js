@@ -4,7 +4,7 @@ import { streamCandidatesForExport } from '../modules/candidates/candidates.repo
 const CSV_HEADERS = [
   'Candidate ID', 'Full Name', 'Mobile Number', 'WhatsApp Number', 'Alternate Mobile Number', 'Email',
   'Age', 'Gender', 'Current City', 'Current Area', 'State', 'Preferred Job Roles', 'Preferred Working Cities',
-  'Qualification', 'Total Experience (Months)', 'Security Experience (Months)', 'Previous Company',
+  'Qualification', 'Experienced', 'Total Experience (Months)', 'Security Experience (Months)', 'Previous Company',
   'Employment Status', 'Joining Availability', 'Expected Salary', 'Shift Preference', 'Duty-Hour Preference',
   'Ex-Serviceman', 'Aadhaar Available', 'Police Verification Available', 'Training Certificate Available',
   'Driving Licence Available', 'Source', 'Campaign', 'Landing Page', 'First Registration Date',
@@ -35,6 +35,7 @@ function rowToCsvValues(row) {
     row.role_names || '',
     row.preferred_city_names || '',
     row.highest_qualification || '',
+    yesNo(row.is_experienced),
     row.total_experience_months,
     row.security_experience_months,
     row.previous_company || '',

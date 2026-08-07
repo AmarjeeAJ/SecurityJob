@@ -3,22 +3,12 @@ import CheckboxInput from '../common/CheckboxInput.jsx';
 import SectionHeading from './SectionHeading.jsx';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-// Max raw digits a typed value can contain: 10-digit number, optionally prefixed
-// with country code "91" or a leading "0" (matches normalizeIndianMobile).
-const MAX_MOBILE_DIGITS = 12;
+// The +91 country code is shown as a fixed prefix outside the input, so the
+// field itself only ever needs to hold the 10-digit national number.
+const MOBILE_DIGITS = 10;
 
-function stopTypingAfterMaxDigits(event) {
-  const raw = event.target.value;
-  let digitCount = 0;
-  for (let i = 0; i < raw.length; i += 1) {
-    if (/\d/.test(raw[i])) {
-      digitCount += 1;
-      if (digitCount > MAX_MOBILE_DIGITS) {
-        event.target.value = raw.slice(0, i);
-        break;
-      }
-    }
-  }
+function digitsOnlyCapped(event) {
+  event.target.value = event.target.value.replace(/\D/g, '').slice(0, MOBILE_DIGITS);
 }
 
 export default function ContactDetailsSection({ register, errors, watch }) {
@@ -37,12 +27,13 @@ export default function ContactDetailsSection({ register, errors, watch }) {
         required
         type="tel"
         inputMode="numeric"
-        maxLength={15}
+        prefix="+91"
+        maxLength={MOBILE_DIGITS}
         placeholder={t('contact.mobileNumberPlaceholder')}
         error={tError(errors.mobileNumber?.message)}
         {...mobileField}
         onChange={(event) => {
-          stopTypingAfterMaxDigits(event);
+          digitsOnlyCapped(event);
           mobileField.onChange(event);
         }}
       />
@@ -60,12 +51,13 @@ export default function ContactDetailsSection({ register, errors, watch }) {
           required
           type="tel"
           inputMode="numeric"
-          maxLength={15}
+          prefix="+91"
+          maxLength={MOBILE_DIGITS}
           placeholder={t('contact.whatsappNumberPlaceholder')}
           error={tError(errors.whatsappNumber?.message)}
           {...whatsappField}
           onChange={(event) => {
-            stopTypingAfterMaxDigits(event);
+            digitsOnlyCapped(event);
             whatsappField.onChange(event);
           }}
         />
