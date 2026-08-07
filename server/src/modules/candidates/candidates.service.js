@@ -1,5 +1,9 @@
 import withTransaction from '../../db/transaction.js';
+import logger from '../../config/logger.js';
 import { AppError } from '../../middleware/error.middleware.js';
+
+// Postgres SQLSTATE for unique_violation.
+const UNIQUE_VIOLATION = '23505';
 import normalizeIndianMobile from '../../utils/phone-normalizer.js';
 import generateCandidateCode from '../../utils/candidate-code.js';
 import { roleForSlug } from '../../utils/job-roles.js';
@@ -95,7 +99,7 @@ export async function registerCandidate({ body, files, jobSlug, ipHash }) {
   const tracking = resolveTracking(body, jobSlug);
   tracking.ipHash = ipHash;
 
-  const result = await withTransaction(async (client) => {
+  const runRegistration = () => withTransaction(async (client) => {
     const existing = await findCandidateByNormalizedMobile(client, normalizedMobile);
     let candidate;
     let isExistingCandidate = false;
@@ -141,5 +145,22 @@ export async function registerCandidate({ body, files, jobSlug, ipHash }) {
     return { candidateCode: candidate.candidate_code, isExistingCandidate };
   });
 
-  return result;
+  try {
+    return await runRegistration();
+  } catch (error) {
+    // SELECT ... FOR UPDATE cannot lock a row that does not exist yet, so two
+    // genuinely simultaneous first-time submissions of the same mobile can both
+    // reach the INSERT and one loses to the unique index. That is the database
+    // correctly protecting itself — but the candidate should not see an error
+    // for it. Common in practice: a double-tapped submit button, or a retry
+    // after a flaky mobile connection. Re-running now finds the row the other
+    // request just committed and takes the update path instead.
+    if (error?.code === UNIQUE_VIOLATION) {
+      logger.warn('Concurrent registration for the same mobile; retrying as an update', {
+        constraint: error.constraint,
+      });
+      return runRegistration();
+    }
+    throw error;
+  }
 }
