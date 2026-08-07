@@ -225,19 +225,166 @@ Manual path:
 
 ## 15. Deployment Instructions
 
-1. Provision PostgreSQL, run `npm run migrate` then `npm run seed` (with real
-   `OWNER_DEFAULT_EMAIL`/`OWNER_DEFAULT_PASSWORD`, `NODE_ENV=production`).
-2. Deploy `server/` behind a process manager (pm2, systemd, or your platform's
-   equivalent) with `NODE_ENV=production` and real secrets — never reuse the
-   `.env.example` placeholder values.
-3. Run `npm run build` in `client/` and serve `client/dist/` as static files (or from
-   a CDN) with SPA fallback to `index.html`.
-4. Put the backend behind HTTPS — cookies are marked `Secure` in production and
-   won't be sent over plain HTTP.
-5. Point `CLIENT_URL` (backend) at the real frontend origin and `VITE_API_BASE_URL`
-   (frontend, baked in at build time) at the real API origin.
-6. Point your Facebook/Instagram ad destination URLs and QR codes at
-   `https://<your-domain>/apply/<job-slug>?utm_source=...` (see below).
+### Architecture (single VPS)
+
+Everything runs on one box; nginx is the only thing exposed to the internet.
+
+```
+                     https://your-domain.com
+                              │
+                    ┌─────────┴─────────┐
+                    │  nginx  :80/:443  │  TLS, static files, /api reverse proxy
+                    └─────────┬─────────┘
+                 /            │            \
+    client/dist (static)   /api/*      /uploads/*
+                              │
+                    Node API on 127.0.0.1:4000   (PM2, not public)
+                              │
+                    PostgreSQL on localhost:5432 (not public)
+```
+
+Serving the SPA and the API from the **same origin** is deliberate: the session
+cookie stays first-party, so `CROSS_SITE_COOKIES` can remain `false` (SameSite=Lax)
+and browser third-party-cookie blocking never comes into play.
+
+### 1. Base packages
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y nginx postgresql postgresql-contrib git
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+sudo npm install -g pm2
+```
+
+### 2. Database
+
+```bash
+sudo -u postgres psql -c "CREATE USER securityjob_user WITH PASSWORD 'a-strong-password';"
+sudo -u postgres psql -c "CREATE DATABASE securityjob OWNER securityjob_user;"
+```
+
+Tune `/etc/postgresql/*/main/postgresql.conf` for the box (values below assume
+16 GB RAM), then `sudo systemctl restart postgresql`:
+
+```
+shared_buffers = 4GB              # ~25% of RAM
+effective_cache_size = 12GB       # ~75% of RAM
+work_mem = 16MB
+maintenance_work_mem = 1GB
+random_page_cost = 1.1            # NVMe, not spinning disk
+```
+
+### 3. Code and environment
+
+```bash
+cd /var/www && sudo git clone <repo-url> SecurityJob && sudo chown -R $USER:$USER SecurityJob
+cd SecurityJob/server && cp .env.example .env && nano .env
+```
+
+Production values that differ from the defaults:
+
+| Variable | Value | Why |
+|---|---|---|
+| `NODE_ENV` | `production` | Enables `Secure` cookies, hides stack traces |
+| `DATABASE_URL` | `postgresql://securityjob_user:…@localhost:5432/securityjob` | Local socket |
+| `DATABASE_SSL` | `false` | Local Postgres needs no TLS |
+| `CROSS_SITE_COOKIES` | `false` | Same origin behind nginx — keep the stricter Lax |
+| `CLIENT_URL` | `https://your-domain.com` | CORS allowlist |
+| `DB_POOL_MAX` | `20` | One Node process; well under `max_connections` |
+| `REGISTRATION_RATE_LIMIT` | `60` | Generous for carrier NAT (see Security Notes) |
+| `SESSION_SECRET` / `COOKIE_SECRET` | `openssl rand -hex 32` | Never reuse the examples |
+
+### 4. Migrate, seed, start
+
+```bash
+npm install --omit=dev
+npm run migrate     # applies every migration, including the search/sort indexes
+npm run seed        # creates the owner account from OWNER_DEFAULT_*
+pm2 start src/server.js --name securityjob-api
+pm2 save && pm2 startup      # run the command it prints
+```
+
+Run **one** PM2 instance, not cluster mode. The workload is I/O-bound, so a single
+process handles this comfortably — and `express-rate-limit` keeps its counters in
+memory per process, so extra instances would silently multiply every limit
+(including the login brute-force protection). Multiple instances would need a
+shared store such as Redis before the limits mean anything again.
+
+### 5. Frontend
+
+```bash
+cd ../client && cp .env.example .env
+# VITE_API_BASE_URL=/api   <- relative, because nginx serves both from one origin
+npm install && npm run build
+```
+
+### 6. nginx
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+    root /var/www/SecurityJob/client/dist;
+    index index.html;
+
+    client_max_body_size 6M;          # Aadhaar uploads are capped at 5 MB each
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /uploads/ { proxy_pass http://127.0.0.1:4000; }
+
+    location / { try_files $uri /index.html; }   # SPA fallback — required
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/securityjob /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### 7. HTTPS and firewall
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+
+sudo ufw allow OpenSSH && sudo ufw allow 'Nginx Full' && sudo ufw enable
+```
+
+HTTPS is not optional: session cookies are marked `Secure` when
+`NODE_ENV=production` and simply will not be sent over plain HTTP.
+
+### 8. Backups
+
+`pg_dump` does **not** capture uploaded Aadhaar images — back up the database and
+the uploads directory together:
+
+```bash
+sudo -u postgres crontab -e
+0 2 * * * pg_dump securityjob | gzip > /var/backups/securityjob-$(date +\%F).sql.gz
+15 2 * * * tar czf /var/backups/uploads-$(date +\%F).tar.gz -C /var/www/SecurityJob/server uploads
+0 3 * * * find /var/backups -name "*securityjob*" -o -name "*uploads*" -mtime +14 -delete
+```
+
+### 9. Point the ads at it
+
+Facebook/Instagram destination URLs and QR codes go to
+`https://your-domain.com/apply/<job-slug>?utm_source=…` (see next section).
+
+### Redeploying later
+
+```bash
+cd /var/www/SecurityJob && git pull
+cd server && npm install --omit=dev && npm run migrate && pm2 restart securityjob-api
+cd ../client && npm install && npm run build      # static files, no restart needed
+```
 
 ## 16. Meta Advertisement URL Examples
 
