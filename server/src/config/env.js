@@ -14,6 +14,7 @@ const env = {
   port: Number(process.env.PORT || 4000),
   databaseUrl: required('DATABASE_URL'),
   databaseSsl: process.env.DATABASE_SSL === 'true',
+  dbPoolMax: Number(process.env.DB_POOL_MAX || 20),
   crossSiteCookies: process.env.CROSS_SITE_COOKIES === 'true',
   clientUrl: required('CLIENT_URL', 'http://localhost:5173'),
   sessionSecret: required('SESSION_SECRET'),

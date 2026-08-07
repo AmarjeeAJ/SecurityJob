@@ -6,7 +6,10 @@ const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: env.databaseUrl,
-  max: 20,
+  // Tunable per deployment: every PM2/cluster instance opens its own pool, so
+  // (instances x DB_POOL_MAX) must stay comfortably under Postgres
+  // max_connections (default 100) or new connections start getting refused.
+  max: env.dbPoolMax,
   idleTimeoutMillis: 30000,
   // Serverless Postgres providers (Neon, etc.) auto-suspend after inactivity
   // and can take several seconds to wake on the first connection — 5s wasn't
