@@ -36,9 +36,15 @@ export const candidateFormSchema = z
     whatsappNumber: z.string().trim().optional().or(z.literal('')),
     age: z.coerce.number({ invalid_type_error: 'Age is required' }).int().min(18, 'Minimum age is 18').max(65, 'Maximum age is 65'),
     gender: z.enum(['male', 'female', 'other'], { errorMap: () => ({ message: 'Please select a gender' }) }),
-    currentCity: z.string().trim().min(1, 'Current city is required'),
-    currentArea: z.string().trim().min(1, 'Current area / locality is required'),
-    state: z.string().trim().min(1, 'State is required'),
+    currentCity: z
+      .string({ required_error: 'Current city is required' })
+      .trim()
+      .min(1, 'Current city is required'),
+    currentArea: z
+      .string({ required_error: 'Current area / locality is required' })
+      .trim()
+      .min(1, 'Current area / locality is required'),
+    state: z.string({ required_error: 'State is required' }).trim().min(1, 'State is required'),
     highestQualification: z.string().trim().optional().or(z.literal('')),
 
     preferredRoles: z.array(z.string()).min(1, 'Please select at least one preferred job role'),

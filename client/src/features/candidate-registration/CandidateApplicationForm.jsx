@@ -79,6 +79,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     resolver: zodResolver(candidateFormSchema),
     defaultValues: {
       whatsappSameAsMobile: true,
+      // Controller-driven fields need an explicit '' default: without it RHF
+      // hands Zod `undefined`, which trips its built-in "Required" message
+      // instead of our own translatable one.
+      currentCity: '',
+      state: '',
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
       isExperienced: false,
@@ -123,6 +128,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     hasTrackedStart.current = false;
     reset({
       whatsappSameAsMobile: true,
+      // Controller-driven fields need an explicit '' default: without it RHF
+      // hands Zod `undefined`, which trips its built-in "Required" message
+      // instead of our own translatable one.
+      currentCity: '',
+      state: '',
       preferredRoles: preselectedRole ? [preselectedRole] : [],
       preferredLocations: [],
       isExperienced: false,

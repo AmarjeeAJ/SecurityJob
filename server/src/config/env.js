@@ -15,6 +15,7 @@ const env = {
   databaseUrl: required('DATABASE_URL'),
   databaseSsl: process.env.DATABASE_SSL === 'true',
   dbPoolMax: Number(process.env.DB_POOL_MAX || 20),
+  registrationRateLimit: Number(process.env.REGISTRATION_RATE_LIMIT || 60),
   crossSiteCookies: process.env.CROSS_SITE_COOKIES === 'true',
   clientUrl: required('CLIENT_URL', 'http://localhost:5173'),
   sessionSecret: required('SESSION_SECRET'),
