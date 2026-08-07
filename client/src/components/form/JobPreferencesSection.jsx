@@ -7,7 +7,7 @@ import { INDIAN_CITIES } from '../../utils/locations.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
 export default function JobPreferencesSection({ register, errors, control, watch }) {
-  const { t, tError, tRole } = useLanguage();
+  const { t, tError, tRole, tPlace } = useLanguage();
   const preferredRoles = watch('preferredRoles') || [];
 
   return (
@@ -51,6 +51,7 @@ export default function JobPreferencesSection({ register, errors, control, watch
             required
             placeholder={t('jobPrefs.searchCities')}
             options={INDIAN_CITIES}
+            getOptionLabel={tPlace}
             noMatchesText={t('jobPrefs.noMatches')}
             value={field.value}
             onChange={field.onChange}

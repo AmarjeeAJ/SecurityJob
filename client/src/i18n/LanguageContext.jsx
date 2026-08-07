@@ -43,9 +43,12 @@ export function LanguageProvider({ children }) {
 
   const tRole = useCallback((roleName) => translations[language]?.jobRoles?.[roleName] || roleName, [language]);
 
+  // City/state names fall back to the canonical English key when untranslated.
+  const tPlace = useCallback((placeName) => translations[language]?.places?.[placeName] || placeName, [language]);
+
   const value = useMemo(
-    () => ({ language, setLanguage, t, tError, tRole }),
-    [language, setLanguage, t, tError, tRole]
+    () => ({ language, setLanguage, t, tError, tRole, tPlace }),
+    [language, setLanguage, t, tError, tRole, tPlace]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

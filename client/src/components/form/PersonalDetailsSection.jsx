@@ -1,11 +1,13 @@
+import { Controller } from 'react-hook-form';
 import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
+import SearchableSelect from './SearchableSelect.jsx';
 import SectionHeading from './SectionHeading.jsx';
 import { INDIAN_CITIES, INDIAN_STATES } from '../../utils/locations.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-export default function PersonalDetailsSection({ register, errors }) {
-  const { t, tError } = useLanguage();
+export default function PersonalDetailsSection({ register, errors, control }) {
+  const { t, tError, tPlace } = useLanguage();
 
   const GENDER_OPTIONS = [
     { value: 'male', label: t('personal.male') },
@@ -57,14 +59,23 @@ export default function PersonalDetailsSection({ register, errors }) {
         />
       </div>
 
-      <TextInput
-        id="currentCity"
-        label={t('personal.currentCity')}
-        required
-        placeholder={t('personal.currentCityPlaceholder')}
-        datalistOptions={INDIAN_CITIES}
-        error={tError(errors.currentCity?.message)}
-        {...register('currentCity')}
+      <Controller
+        name="currentCity"
+        control={control}
+        render={({ field }) => (
+          <SearchableSelect
+            id="currentCity"
+            label={t('personal.currentCity')}
+            required
+            options={INDIAN_CITIES}
+            getOptionLabel={tPlace}
+            noMatchesText={t('jobPrefs.noMatches')}
+            placeholder={t('personal.currentCityPlaceholder')}
+            value={field.value || ''}
+            onChange={field.onChange}
+            error={tError(errors.currentCity?.message)}
+          />
+        )}
       />
 
       <TextInput
@@ -76,14 +87,23 @@ export default function PersonalDetailsSection({ register, errors }) {
         {...register('currentArea')}
       />
 
-      <TextInput
-        id="state"
-        label={t('personal.state')}
-        required
-        placeholder={t('personal.statePlaceholder')}
-        datalistOptions={INDIAN_STATES}
-        error={tError(errors.state?.message)}
-        {...register('state')}
+      <Controller
+        name="state"
+        control={control}
+        render={({ field }) => (
+          <SearchableSelect
+            id="state"
+            label={t('personal.state')}
+            required
+            options={INDIAN_STATES}
+            getOptionLabel={tPlace}
+            noMatchesText={t('jobPrefs.noMatches')}
+            placeholder={t('personal.statePlaceholder')}
+            value={field.value || ''}
+            onChange={field.onChange}
+            error={tError(errors.state?.message)}
+          />
+        )}
       />
 
       <SelectInput

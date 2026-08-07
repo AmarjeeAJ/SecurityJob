@@ -24,13 +24,20 @@ export default function SearchableMultiSelect({
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Deliberately 'click', not 'mousedown': this list sits in normal document
+    // flow, so closing it collapses its height and pulls everything below it
+    // upward. Doing that on mousedown moves the user's target out from under
+    // the pointer before mouseup, so the click never lands — tapping a field
+    // just below the open list (e.g. the "I have prior experience" checkbox)
+    // would silently do nothing. Closing on click lets the interaction finish
+    // first, then reflows.
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const filteredOptions = useMemo(() => {

@@ -156,7 +156,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
         <form onSubmit={handleSubmit(onSubmit)} onChange={handleFirstInteraction} noValidate className="flex flex-col gap-8">
           <ErrorBanner message={submitError} />
 
-          <PersonalDetailsSection register={register} errors={errors} />
+          <PersonalDetailsSection register={register} errors={errors} control={control} />
           <ContactDetailsSection register={register} errors={errors} watch={watch} />
           <JobPreferencesSection register={register} errors={errors} control={control} watch={watch} />
           <ExperienceSection register={register} errors={errors} watch={watch} />
