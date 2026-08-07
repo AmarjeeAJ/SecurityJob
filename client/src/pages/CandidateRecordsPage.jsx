@@ -12,6 +12,7 @@ import ErrorBanner from '../components/form/ErrorBanner.jsx';
 const DEFAULT_FILTERS = {
   search: '',
   city: '',
+  area: '',
   role: '',
   source: '',
   dateFrom: '',
@@ -32,6 +33,7 @@ export default function CandidateRecordsPage() {
 
   const debouncedSearch = useDebouncedValue(filters.search, 350);
   const debouncedCity = useDebouncedValue(filters.city, 350);
+  const debouncedArea = useDebouncedValue(filters.area, 350);
   const debouncedSource = useDebouncedValue(filters.source, 350);
 
   const loadCandidates = useCallback(async () => {
@@ -42,6 +44,7 @@ export default function CandidateRecordsPage() {
         ...filters,
         search: debouncedSearch,
         city: debouncedCity,
+        area: debouncedArea,
         source: debouncedSource,
       };
       const data = await fetchCandidates(queryFilters);
@@ -52,7 +55,7 @@ export default function CandidateRecordsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters, debouncedSearch, debouncedCity, debouncedSource]);
+  }, [filters, debouncedSearch, debouncedCity, debouncedArea, debouncedSource]);
 
   useEffect(() => {
     loadCandidates();
@@ -61,6 +64,7 @@ export default function CandidateRecordsPage() {
   const activeExportFilters = {
     search: debouncedSearch,
     city: debouncedCity,
+    area: debouncedArea,
     role: filters.role,
     source: debouncedSource,
     dateFrom: filters.dateFrom,
@@ -69,8 +73,9 @@ export default function CandidateRecordsPage() {
     sortDir: filters.sortDir,
   };
 
-  const activeFilterCount = [debouncedSearch, debouncedCity, filters.role, debouncedSource, filters.dateFrom, filters.dateTo]
-    .filter(Boolean).length;
+  const activeFilterCount = [
+    debouncedSearch, debouncedCity, debouncedArea, filters.role, debouncedSource, filters.dateFrom, filters.dateTo,
+  ].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0;
 
   function clearFilters() {

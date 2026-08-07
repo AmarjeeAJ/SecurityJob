@@ -46,6 +46,16 @@ export default function CandidateFiltersBar({ filters, onChange }) {
         />
       </FilterField>
 
+      <FilterField label="Area / Locality">
+        <input
+          type="text"
+          placeholder="e.g. Malviya Nagar"
+          value={filters.area}
+          onChange={(e) => update('area', e.target.value)}
+          className={inputClasses}
+        />
+      </FilterField>
+
       <FilterField label="Preferred Role">
         <select value={filters.role} onChange={(e) => update('role', e.target.value)} className={inputClasses}>
           <option value="">All roles</option>

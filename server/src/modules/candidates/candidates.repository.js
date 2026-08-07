@@ -112,6 +112,11 @@ function buildFilterClauses(filters, startIndex = 1) {
     values.push(`%${filters.city}%`);
     i += 1;
   }
+  if (filters.area) {
+    clauses.push(`c.current_area ILIKE $${i}`);
+    values.push(`%${filters.area}%`);
+    i += 1;
+  }
   if (filters.role) {
     clauses.push(`EXISTS (SELECT 1 FROM candidate_roles cr WHERE cr.candidate_id = c.id AND cr.role_name = $${i})`);
     values.push(filters.role);

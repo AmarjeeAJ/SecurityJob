@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const listCandidatesQuerySchema = z.object({
   search: z.string().trim().max(150).optional(),
   city: z.string().trim().max(100).optional(),
+  area: z.string().trim().max(150).optional(),
   role: z.string().trim().max(80).optional(),
   source: z.string().trim().max(100).optional(),
   dateFrom: z.string().trim().optional(),
