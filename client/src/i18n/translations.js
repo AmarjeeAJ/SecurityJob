@@ -16,6 +16,7 @@ export const translations = {
       contactDetails: 'Contact Details',
       jobPreferences: 'Job Preferences',
       experience: 'Experience',
+      documents: 'Documents',
       consent: 'Consent',
     },
     personal: {
@@ -146,6 +147,7 @@ export const translations = {
       contactDetails: 'संपर्क जानकारी',
       jobPreferences: 'नौकरी की प्राथमिकताएं',
       experience: 'अनुभव',
+      documents: 'दस्तावेज़',
       consent: 'सहमति',
     },
     personal: {

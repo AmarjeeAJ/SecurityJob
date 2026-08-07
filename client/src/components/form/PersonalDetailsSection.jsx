@@ -26,7 +26,7 @@ export default function PersonalDetailsSection({ register, errors, control }) {
 
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={1} title={t('sections.personalDetails')} totalSections={5} />
+      <SectionHeading number={1} title={t('sections.personalDetails')} totalSections={6} />
 
       <TextInput
         id="fullName"

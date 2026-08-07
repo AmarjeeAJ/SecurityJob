@@ -14,6 +14,7 @@ import PersonalDetailsSection from '../../components/form/PersonalDetailsSection
 import ContactDetailsSection from '../../components/form/ContactDetailsSection.jsx';
 import JobPreferencesSection from '../../components/form/JobPreferencesSection.jsx';
 import ExperienceSection from '../../components/form/ExperienceSection.jsx';
+import DocumentsSection from '../../components/form/DocumentsSection.jsx';
 import ConsentSection from '../../components/form/ConsentSection.jsx';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '';
@@ -160,6 +161,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           <ContactDetailsSection register={register} errors={errors} watch={watch} />
           <JobPreferencesSection register={register} errors={errors} control={control} watch={watch} />
           <ExperienceSection register={register} errors={errors} watch={watch} />
+          <DocumentsSection register={register} errors={errors} />
           <ConsentSection register={register} errors={errors} />
 
           {/* Desktop: inline submit at the end of the form. */}

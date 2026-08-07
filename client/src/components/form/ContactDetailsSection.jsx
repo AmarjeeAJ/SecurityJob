@@ -19,7 +19,7 @@ export default function ContactDetailsSection({ register, errors, watch }) {
 
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={2} title={t('sections.contactDetails')} totalSections={5} />
+      <SectionHeading number={2} title={t('sections.contactDetails')} totalSections={6} />
 
       <TextInput
         id="mobileNumber"

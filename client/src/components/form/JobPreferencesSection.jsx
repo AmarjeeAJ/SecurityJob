@@ -12,7 +12,7 @@ export default function JobPreferencesSection({ register, errors, control, watch
 
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={3} title={t('sections.jobPreferences')} totalSections={5} />
+      <SectionHeading number={3} title={t('sections.jobPreferences')} totalSections={6} />
 
       <Controller
         name="preferredRoles"

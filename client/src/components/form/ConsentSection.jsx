@@ -15,7 +15,7 @@ export default function ConsentSection({ register, errors }) {
 
   return (
     <section className="flex flex-col gap-4">
-      <SectionHeading number={5} title={t('sections.consent')} totalSections={5} />
+      <SectionHeading number={6} title={t('sections.consent')} totalSections={6} />
 
       <div className="rounded-xl bg-navy-950/5 border border-navy-900/10 p-4">
         <CheckboxInput

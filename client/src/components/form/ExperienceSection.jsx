@@ -1,7 +1,6 @@
 import TextInput from '../common/TextInput.jsx';
 import SelectInput from '../common/SelectInput.jsx';
 import CheckboxInput from '../common/CheckboxInput.jsx';
-import FileField from '../common/FileField.jsx';
 import SectionHeading from './SectionHeading.jsx';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
@@ -32,7 +31,7 @@ export default function ExperienceSection({ register, errors, watch }) {
 
   return (
     <section className="flex flex-col gap-5">
-      <SectionHeading number={4} title={t('sections.experience')} totalSections={5} />
+      <SectionHeading number={4} title={t('sections.experience')} totalSections={6} />
 
       <CheckboxInput id="isExperienced" label={t('experience.isExperienced')} {...register('isExperienced')} />
 
@@ -77,36 +76,6 @@ export default function ExperienceSection({ register, errors, watch }) {
             error={tError(errors.dutyHourPreference?.message)}
             {...register('dutyHourPreference')}
           />
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-semibold text-navy-900">{t('experience.aadhaarCard')}</p>
-              <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-500">
-                {t('experience.optional')}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FileField
-                id="aadhaarFront"
-                label={t('experience.frontSide')}
-                accept="image/jpeg,image/png,image/webp"
-                uploadText={t('experience.uploadTap')}
-                changeText={t('experience.changeImage')}
-                error={tError(errors.aadhaarFront?.message)}
-                {...register('aadhaarFront')}
-              />
-              <FileField
-                id="aadhaarBack"
-                label={t('experience.backSide')}
-                accept="image/jpeg,image/png,image/webp"
-                uploadText={t('experience.uploadTap')}
-                changeText={t('experience.changeImage')}
-                error={tError(errors.aadhaarBack?.message)}
-                {...register('aadhaarBack')}
-              />
-            </div>
-            <p className="mt-2.5 text-xs text-slate-400">{t('experience.uploadHint')}</p>
-          </div>
         </>
       )}
     </section>
