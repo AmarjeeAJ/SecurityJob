@@ -73,7 +73,7 @@ export default function OwnerLoginPage() {
                 type="email"
                 required
                 autoComplete="username"
-                placeholder="owner@securityjob.in"
+                placeholder="Enter email"
                 error={errors.email?.message}
                 {...register('email')}
               />
@@ -83,7 +83,7 @@ export default function OwnerLoginPage() {
                 type="password"
                 required
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="Enter password"
                 error={errors.password?.message}
                 {...register('password')}
               />
