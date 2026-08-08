@@ -28,6 +28,7 @@ export default function DocumentsSection({ register, errors }) {
             accept="image/jpeg,image/png,image/webp"
             uploadText={t('experience.uploadTap')}
             changeText={t('experience.changeImage')}
+            processingText={t('experience.processingImage')}
             error={tError(errors.aadhaarFront?.message)}
             {...register('aadhaarFront')}
           />
@@ -37,6 +38,7 @@ export default function DocumentsSection({ register, errors }) {
             accept="image/jpeg,image/png,image/webp"
             uploadText={t('experience.uploadTap')}
             changeText={t('experience.changeImage')}
+            processingText={t('experience.processingImage')}
             error={tError(errors.aadhaarBack?.message)}
             {...register('aadhaarBack')}
           />

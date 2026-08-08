@@ -85,6 +85,7 @@ export const translations = {
       uploadHint: 'Clear photos of both sides, JPG/PNG/WEBP, up to 5 MB each.',
       uploadTap: 'Tap to upload image',
       changeImage: 'Change image',
+      processingImage: 'Preparing…',
     },
     consent: {
       statement:
@@ -216,6 +217,7 @@ export const translations = {
       uploadHint: 'दोनों तरफ की स्पष्ट फोटो, JPG/PNG/WEBP, अधिकतम 5 MB प्रत्येक।',
       uploadTap: 'फोटो अपलोड करने के लिए टैप करें',
       changeImage: 'फोटो बदलें',
+      processingImage: 'तैयार हो रहा है…',
     },
     consent: {
       statement:

@@ -1,5 +1,6 @@
 import { forwardRef, useState } from 'react';
 import FieldShell from './FieldShell.jsx';
+import { compressImage } from '../../utils/compressImage.js';
 
 const FileField = forwardRef(function FileField(
   {
@@ -13,19 +14,52 @@ const FileField = forwardRef(function FileField(
     className = '',
     uploadText = 'Tap to upload image',
     changeText = 'Change image',
+    processingText = 'Preparing…',
     ...rest
   },
   ref
 ) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [compressing, setCompressing] = useState(false);
 
-  function handleChange(event) {
-    const file = event.target.files?.[0];
-    setFileName(file ? file.name : '');
+  async function handleChange(event) {
+    const input = event.target;
+    const original = input.files?.[0];
+
+    if (!original) {
+      setFileName('');
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      onChange?.(event);
+      return;
+    }
+
+    // Shrink the photo now, while the candidate carries on filling the form,
+    // rather than making them wait for a multi-megabyte upload at submit.
+    setCompressing(true);
+    const file = await compressImage(original);
+    setCompressing(false);
+
+    // Write the smaller file back onto the input so react-hook-form and the
+    // eventual FormData both pick up the compressed version, not the original.
+    if (file !== original) {
+      try {
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+      } catch {
+        // Older browser without DataTransfer — fall back to the original file.
+      }
+    }
+
+    const selected = input.files?.[0] || file;
+    setFileName(selected.name);
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
-      return file ? URL.createObjectURL(file) : null;
+      return URL.createObjectURL(selected);
     });
     onChange?.(event);
   }
@@ -38,7 +72,14 @@ const FileField = forwardRef(function FileField(
           bg-slate-50 text-center transition-colors hover:border-gold-400 hover:bg-gold-50/40
           ${error ? 'border-red-300' : 'border-slate-300'} ${className}`}
       >
-        {previewUrl ? (
+        {compressing ? (
+          <span className="flex flex-col items-center gap-2 text-xs font-medium text-slate-500">
+            <svg viewBox="0 0 24 24" className="h-5 w-5 animate-spin text-gold-500" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" d="M12 3a9 9 0 1 0 9 9" />
+            </svg>
+            {processingText}
+          </span>
+        ) : previewUrl ? (
           <>
             <img src={previewUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center bg-navy-900/50 opacity-0 transition-opacity group-hover:opacity-100">

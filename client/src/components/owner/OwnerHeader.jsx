@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useOwnerAuth } from '../../features/owner-auth/OwnerAuthContext.jsx';
 import Logo from '../common/Logo.jsx';
+import ConfirmDialog from '../common/ConfirmDialog.jsx';
 
 export default function OwnerHeader() {
   const { owner, logout } = useOwnerAuth();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-md">
@@ -30,7 +33,7 @@ export default function OwnerHeader() {
           )}
           <button
             type="button"
-            onClick={logout}
+            onClick={() => setConfirmingLogout(true)}
             className="group flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold
               text-slate-600 shadow-sm transition-all hover:border-red-300 hover:bg-red-50 hover:text-red-600 hover:shadow sm:text-sm"
           >
@@ -41,6 +44,19 @@ export default function OwnerHeader() {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmingLogout}
+        title="Log out of SecurityJob?"
+        message="You will need to sign in again to view candidate records."
+        confirmLabel="Log out"
+        cancelLabel="Stay signed in"
+        onConfirm={() => {
+          setConfirmingLogout(false);
+          logout();
+        }}
+        onCancel={() => setConfirmingLogout(false)}
+      />
     </header>
   );
 }
