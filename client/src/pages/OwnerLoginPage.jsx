@@ -10,8 +10,10 @@ import Button from '../components/common/Button.jsx';
 import Logo from '../components/common/Logo.jsx';
 import ErrorBanner from '../components/form/ErrorBanner.jsx';
 import OwnerLoginIllustration from '../components/owner/OwnerLoginIllustration.jsx';
+import { useNoIndex } from '../hooks/useNoIndex.js';
 
 export default function OwnerLoginPage() {
+  useNoIndex();
   const { login, isAuthenticated, checkingSession } = useOwnerAuth();
   const [formError, setFormError] = useState('');
   const navigate = useNavigate();

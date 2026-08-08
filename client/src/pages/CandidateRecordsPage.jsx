@@ -8,6 +8,7 @@ import PaginationControls from '../components/owner/PaginationControls.jsx';
 import Card from '../components/common/Card.jsx';
 import Button from '../components/common/Button.jsx';
 import ErrorBanner from '../components/form/ErrorBanner.jsx';
+import { useNoIndex } from '../hooks/useNoIndex.js';
 
 const DEFAULT_FILTERS = {
   search: '',
@@ -24,6 +25,7 @@ const DEFAULT_FILTERS = {
 };
 
 export default function CandidateRecordsPage() {
+  useNoIndex();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [candidates, setCandidates] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });

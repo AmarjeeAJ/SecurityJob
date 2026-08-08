@@ -6,6 +6,7 @@ import OwnerHeader from '../components/owner/OwnerHeader.jsx';
 import Card from '../components/common/Card.jsx';
 import LoadingSkeleton from '../components/common/LoadingSkeleton.jsx';
 import ErrorBanner from '../components/form/ErrorBanner.jsx';
+import { useNoIndex } from '../hooks/useNoIndex.js';
 
 const DOCUMENT_TYPE_LABELS = {
   aadhaar_front: 'Aadhaar Front',
@@ -48,6 +49,7 @@ const ICONS = {
 };
 
 export default function CandidateDetailsPage() {
+  useNoIndex();
   const { id } = useParams();
   const [candidate, setCandidate] = useState(null);
   const [error, setError] = useState('');

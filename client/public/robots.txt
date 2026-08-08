@@ -1,0 +1,7 @@
+# Candidate-facing pages are meant to be found; the owner area is not.
+# This keeps /owner/login out of search results — the pages behind it are
+# already protected server-side, this just stops them being advertised.
+User-agent: *
+Allow: /
+Disallow: /owner/
+Disallow: /api/
