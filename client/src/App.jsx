@@ -22,7 +22,13 @@ export default function App() {
       <OwnerAuthProvider>
         <Suspense fallback={<LoadingSkeleton />}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            {/*
+              TEMPORARY: the landing page is bypassed so ad traffic lands
+              straight on the application form. HomePage is still imported and
+              built — to bring it back, restore:
+                <Route path="/" element={<HomePage />} />
+            */}
+            <Route path="/" element={<Navigate to="/apply/security-guard" replace />} />
             <Route path="/apply/:jobSlug" element={<CandidateApplicationPage />} />
 
             <Route path="/owner/login" element={<OwnerLoginPage />} />
