@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { JOB_ROLES } from '../../utils/job-roles.js';
+import { looksLikeFakeMobile } from '../../utils/phone-normalizer.js';
 
 const boolFromForm = z.preprocess((val) => {
   if (typeof val === 'boolean') return val;
@@ -80,11 +81,18 @@ export const registerCandidateSchema = z
     browser: z.string().trim().max(100).optional().or(z.literal('')),
   })
   .superRefine((data, ctx) => {
-    if (!MOBILE_PATTERN.test(data.mobileNumber.replace(/\D/g, '').slice(-10))) {
+    const mobileDigits = data.mobileNumber.replace(/\D/g, '').slice(-10);
+    if (!MOBILE_PATTERN.test(mobileDigits)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mobileNumber'], message: 'Please enter a valid 10-digit mobile number' });
+    } else if (looksLikeFakeMobile(mobileDigits)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mobileNumber'], message: 'This does not look like a real mobile number' });
     }
-    if (!MOBILE_PATTERN.test(data.whatsappNumber.replace(/\D/g, '').slice(-10))) {
+
+    const whatsappDigits = data.whatsappNumber.replace(/\D/g, '').slice(-10);
+    if (!MOBILE_PATTERN.test(whatsappDigits)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['whatsappNumber'], message: 'Please enter a valid 10-digit WhatsApp number' });
+    } else if (looksLikeFakeMobile(whatsappDigits)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['whatsappNumber'], message: 'This does not look like a real mobile number' });
     }
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });

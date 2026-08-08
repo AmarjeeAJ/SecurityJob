@@ -374,6 +374,7 @@ export const validationMessages = {
     'Please enter a valid full name': 'कृपया सही पूरा नाम दर्ज करें',
     'Please enter a valid 10-digit mobile number': 'कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें',
     'Please enter a valid 10-digit WhatsApp number': 'कृपया सही 10 अंकों का व्हाट्सएप नंबर दर्ज करें',
+    'This does not look like a real mobile number': 'यह वास्तविक मोबाइल नंबर नहीं लगता। कृपया अपना सही नंबर दर्ज करें',
     'Age is required': 'आयु आवश्यक है',
     'Minimum age is 18': 'न्यूनतम आयु 18 वर्ष है',
     'Maximum age is 65': 'अधिकतम आयु 65 वर्ष है',

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import normalizeIndianMobile from '../utils/phone.js';
+import normalizeIndianMobile, { looksLikeFakeMobile } from '../utils/phone.js';
 
 const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 const NAME_PATTERN = /^[a-zA-Zऀ-ॿ][a-zA-Zऀ-ॿ .'-]{1,149}$/;
@@ -25,7 +25,10 @@ const imageFileField = () =>
 const mobileField = (label) =>
   z.preprocess(
     (val) => (typeof val === 'string' ? normalizeIndianMobile(val) : val),
-    z.string().regex(MOBILE_PATTERN, `Please enter a valid 10-digit ${label} number`)
+    z
+      .string()
+      .regex(MOBILE_PATTERN, `Please enter a valid 10-digit ${label} number`)
+      .refine((digits) => !looksLikeFakeMobile(digits), 'This does not look like a real mobile number')
   );
 
 export const candidateFormSchema = z
@@ -69,6 +72,8 @@ export const candidateFormSchema = z
       const normalized = normalizeIndianMobile(data.whatsappNumber);
       if (!MOBILE_PATTERN.test(normalized)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['whatsappNumber'], message: 'Please enter a valid 10-digit WhatsApp number' });
+      } else if (looksLikeFakeMobile(normalized)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['whatsappNumber'], message: 'This does not look like a real mobile number' });
       }
     }
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {

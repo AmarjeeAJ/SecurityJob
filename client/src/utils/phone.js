@@ -20,4 +20,41 @@ export function normalizeIndianMobile(rawValue) {
   return digits;
 }
 
+/**
+ * Flags 10-digit numbers that are structurally real but obviously typed to get
+ * past the field — 9999999999, 9898989898, 9977886633, 9876543210 and the like.
+ *
+ * Deliberately narrow. A recruitment funnel pays for every click, so wrongly
+ * rejecting a genuine candidate costs more than letting an occasional junk
+ * number through; each rule below only matches shapes a real allocated number
+ * effectively never takes. Mirrors the backend check of the same name.
+ */
+export function looksLikeFakeMobile(digits) {
+  if (!/^\d{10}$/.test(digits)) return false; // format rules handle these
+
+  // 9999999999, 9898989898 — one or two digits repeated throughout
+  if (new Set(digits).size <= 2) return true;
+
+  // 9977886633 — every adjacent pair doubled
+  let allPairsDoubled = true;
+  for (let i = 0; i < 10; i += 2) {
+    if (digits[i] !== digits[i + 1]) {
+      allPairsDoubled = false;
+      break;
+    }
+  }
+  if (allPairsDoubled) return true;
+
+  // 9876543210 / 6789012345 — a straight run up or down. Stepped modulo 10 so
+  // a run that wraps past 9 to 0 is still caught.
+  let ascending = true;
+  let descending = true;
+  for (let i = 1; i < 10; i += 1) {
+    const step = (Number(digits[i]) - Number(digits[i - 1]) + 10) % 10;
+    if (step !== 1) ascending = false;
+    if (step !== 9) descending = false;
+  }
+  return ascending || descending;
+}
+
 export default normalizeIndianMobile;
