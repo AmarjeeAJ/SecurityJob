@@ -74,9 +74,16 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     control,
     watch,
     reset,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(candidateFormSchema),
+    // Validate a field once the candidate leaves it, rather than holding every
+    // complaint back until submit — on a six-section form that meant a wall of
+    // errors at the end. 'onTouched' stays quiet while a field is being filled
+    // in for the first time, then (via the default onChange revalidation) gives
+    // live feedback while they correct it.
+    mode: 'onTouched',
     defaultValues: {
       whatsappSameAsMobile: true,
       // Controller-driven fields need an explicit '' default: without it RHF
@@ -168,7 +175,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           <ErrorBanner message={submitError} />
 
           <PersonalDetailsSection register={register} errors={errors} control={control} />
-          <ContactDetailsSection register={register} errors={errors} watch={watch} />
+          <ContactDetailsSection register={register} errors={errors} watch={watch} trigger={trigger} />
           <JobPreferencesSection register={register} errors={errors} control={control} watch={watch} />
           <ExperienceSection register={register} errors={errors} watch={watch} />
           <DocumentsSection register={register} errors={errors} />
