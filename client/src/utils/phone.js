@@ -45,6 +45,17 @@ export function looksLikeFakeMobile(digits) {
   }
   if (allPairsDoubled) return true;
 
+  // 9978787878 — a two-digit block repeated three times or more anywhere in
+  // the number (…787878…). Requires the two digits to differ, since a repeated
+  // single digit is already covered above.
+  for (let i = 0; i + 5 < 10; i += 1) {
+    const [a, b] = [digits[i], digits[i + 1]];
+    if (a === b) continue;
+    if (digits[i + 2] === a && digits[i + 3] === b && digits[i + 4] === a && digits[i + 5] === b) {
+      return true;
+    }
+  }
+
   // 9876543210 / 6789012345 — a straight run up or down. Stepped modulo 10 so
   // a run that wraps past 9 to 0 is still caught.
   let ascending = true;
