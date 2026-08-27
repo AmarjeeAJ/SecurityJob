@@ -112,10 +112,18 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="bg-mesh-light min-h-screen">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link to="/apply/security-guard" className="flex items-center gap-2">
-            <Logo size="sm" variant="light" showTagline={false} />
-          </Link>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Link to="/apply/security-guard" className="flex items-center gap-2">
+              <Logo size="sm" variant="light" showTagline={false} />
+            </Link>
+            {/* Stays pinned in the sticky bar once the hero scrolls past, so the
+                page's identity never disappears no matter how far down you are. */}
+            <span className="hidden items-center gap-3 border-l border-slate-200 pl-3 sm:flex">
+              <span className="text-sm font-bold text-navy-900">Privacy Policy</span>
+              <span className="text-xs text-slate-400">Updated {LAST_UPDATED}</span>
+            </span>
+          </div>
           <Link
             to="/apply/security-guard"
             className="flex items-center gap-1.5 text-sm font-semibold text-navy-700 transition-colors hover:text-gold-600"
@@ -129,7 +137,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </header>
 
-      <div className="reveal relative mx-auto max-w-5xl overflow-hidden px-4 pb-10 pt-12 text-center sm:px-6 sm:pt-16">
+      <div className="reveal relative mx-auto max-w-7xl overflow-hidden px-4 pb-10 pt-12 text-center sm:px-6 sm:pt-16">
         {/* Soft radial glow behind the emblem — decorative, brand-consistent, no external assets. */}
         <div
           aria-hidden="true"
@@ -170,7 +178,7 @@ export default function PrivacyPolicyPage() {
       </div>
 
       {/* Mobile: collapsible contents list, since a sidebar has nowhere to go on a phone. */}
-      <div className="reveal mx-auto max-w-5xl px-4 sm:px-6 lg:hidden" style={{ animationDelay: '80ms' }}>
+      <div className="reveal mx-auto max-w-7xl px-4 sm:px-6 lg:hidden" style={{ animationDelay: '80ms' }}>
         <Card className="mb-6 overflow-hidden">
           <button
             type="button"
@@ -210,8 +218,8 @@ export default function PrivacyPolicyPage() {
         </Card>
       </div>
 
-      <main className="mx-auto max-w-5xl px-4 pb-20 sm:px-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[220px_1fr]">
+      <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr]">
           {/* Desktop: sticky sidebar with scroll-spy highlighting. */}
           <aside className="hidden lg:block">
             <nav className="sticky top-24 flex flex-col gap-0.5 border-l border-slate-200 pl-4">
@@ -232,7 +240,7 @@ export default function PrivacyPolicyPage() {
             </nav>
           </aside>
 
-          <Card className="reveal p-6 sm:p-8" style={{ animationDelay: '120ms' }}>
+          <Card className="reveal p-6 sm:p-8 lg:p-10" style={{ animationDelay: '120ms' }}>
             <Section id="introduction" title="1. Introduction" index={0}>
               <p>
                 SecurityJob (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates a recruitment platform
