@@ -15,6 +15,7 @@ import CandidateApplicationPage from './pages/CandidateApplicationPage.jsx';
 const OwnerLoginPage = lazy(() => import('./pages/OwnerLoginPage.jsx'));
 const CandidateRecordsPage = lazy(() => import('./pages/CandidateRecordsPage.jsx'));
 const CandidateDetailsPage = lazy(() => import('./pages/CandidateDetailsPage.jsx'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage.jsx'));
 
 export default function App() {
   return (
@@ -30,6 +31,8 @@ export default function App() {
             */}
             <Route path="/" element={<Navigate to="/apply/security-guard" replace />} />
             <Route path="/apply/:jobSlug" element={<CandidateApplicationPage />} />
+            {/* Standalone — its own header/footer, no candidate-form or landing-page chrome. */}
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
             <Route path="/owner/login" element={<OwnerLoginPage />} />
             <Route
