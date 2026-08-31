@@ -1,14 +1,33 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect } from 'react';
 import { translations, validationMessages } from './translations.js';
 
 const LanguageContext = createContext(null);
 const STORAGE_KEY = 'sj_language';
 
+/**
+ * Automatically detects whether the user's mobile device or browser is set to Hindi.
+ * If the user has previously explicitly chosen a language, their stored preference is used.
+ * Otherwise, if the employee's mobile/browser language is Hindi (e.g., 'hi', 'hi-IN'), default to Hindi ('hi').
+ * Otherwise, default to English ('en').
+ */
 function getInitialLanguage() {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === 'hi' ? 'hi' : 'en';
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === 'hi' || stored === 'en') {
+      return stored;
+    }
   } catch {
-    return 'en'; // localStorage can be unavailable (private browsing) — default to English.
+    // localStorage unavailable (e.g., in private browsing)
+  }
+
+  try {
+    const navLangs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+    const isHindiDevice = navLangs.some(
+      (lang) => typeof lang === 'string' && lang.toLowerCase().startsWith('hi')
+    );
+    return isHindiDevice ? 'hi' : 'en';
+  } catch {
+    return 'en';
   }
 }
 
@@ -19,12 +38,20 @@ function getByPath(dict, path) {
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(getInitialLanguage);
 
+  useEffect(() => {
+    try {
+      document.documentElement.lang = language;
+    } catch {
+      // ignore
+    }
+  }, [language]);
+
   const setLanguage = useCallback((lang) => {
     setLanguageState(lang);
     try {
       window.localStorage.setItem(STORAGE_KEY, lang);
     } catch {
-      // Language just won't persist across visits; not worth failing over.
+      // Language won't persist across visits if localStorage blocked
     }
   }, []);
 
@@ -33,9 +60,6 @@ export function LanguageProvider({ children }) {
     [language]
   );
 
-  // Zod messages are looked up by their exact English text (the schema's own
-  // message), so a missing translation safely falls back to the original
-  // English rather than showing a raw key.
   const tError = useCallback(
     (message) => (message ? validationMessages[language]?.[message] || message : message),
     [language]
@@ -43,7 +67,6 @@ export function LanguageProvider({ children }) {
 
   const tRole = useCallback((roleName) => translations[language]?.jobRoles?.[roleName] || roleName, [language]);
 
-  // City/state names fall back to the canonical English key when untranslated.
   const tPlace = useCallback((placeName) => translations[language]?.places?.[placeName] || placeName, [language]);
 
   const value = useMemo(

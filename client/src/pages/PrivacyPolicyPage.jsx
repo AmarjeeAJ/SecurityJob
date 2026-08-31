@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Logo from '../components/common/Logo.jsx';
+import Navbar from '../components/layout/Navbar.jsx';
+import Footer from '../components/layout/Footer.jsx';
 import Card from '../components/common/Card.jsx';
 import { useNoIndex } from '../hooks/useNoIndex.js';
 
@@ -20,10 +20,6 @@ const SECTIONS = [
 
 const LAST_UPDATED = 'August 8, 2026';
 
-// One small icon per section — the "professional company" polish this page
-// needed came from consistent iconography and generous whitespace, not stock
-// photography, which would have meant pulling in an external asset host this
-// app deliberately has none of.
 const ICONS = {
   introduction: <path strokeLinecap="round" strokeLinejoin="round" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10ZM12 16v-4m0-4h.01" />,
   'information-we-collect': <path strokeLinecap="round" strokeLinejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
@@ -59,7 +55,7 @@ function Section({ id, title, index, children }) {
         <SectionIcon id={id} />
         <h2 className="text-lg font-bold text-navy-900 sm:text-xl">{title}</h2>
       </div>
-      <div className="mt-3 flex flex-col gap-3 pl-12 text-sm leading-relaxed text-slate-600 sm:text-[15px]">
+      <div className="prose prose-slate mt-4 max-w-none text-sm leading-relaxed text-slate-600 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1.5 [&_strong]:font-semibold [&_strong]:text-navy-900">
         {children}
       </div>
     </section>
@@ -67,9 +63,9 @@ function Section({ id, title, index, children }) {
 }
 
 export default function PrivacyPolicyPage() {
-  useNoIndex(); // policy pages carry no ranking value of their own; keep search focused on /apply
+  useNoIndex();
 
-  const [activeId, setActiveId] = useState(SECTIONS[0].id);
+  const [activeSection, setActiveSection] = useState('introduction');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
   const sectionRefs = useRef({});
@@ -77,12 +73,13 @@ export default function PrivacyPolicyPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id);
-        }
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
       },
-      { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
+      { rootMargin: '-80px 0px -60% 0px' }
     );
 
     SECTIONS.forEach(({ id }) => {
@@ -110,32 +107,8 @@ export default function PrivacyPolicyPage() {
   }
 
   return (
-    <div className="bg-mesh-light min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link to="/apply/security-guard" className="flex items-center gap-2">
-              <Logo size="sm" variant="light" showTagline={false} />
-            </Link>
-            {/* Stays pinned in the sticky bar once the hero scrolls past, so the
-                page's identity never disappears no matter how far down you are. */}
-            <span className="hidden items-center gap-3 border-l border-slate-200 pl-3 sm:flex">
-              <span className="text-sm font-bold text-navy-900">Privacy Policy</span>
-              <span className="text-xs text-slate-400">Updated {LAST_UPDATED}</span>
-            </span>
-          </div>
-          <Link
-            to="/apply/security-guard"
-            className="flex items-center gap-1.5 text-sm font-semibold text-navy-700 transition-colors hover:text-gold-600"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            <span className="hidden sm:inline">Back to Application</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-        </div>
-      </header>
+    <div className="bg-[#f8fafc] min-h-screen flex flex-col justify-between mobile-safe-bottom">
+      <Navbar variant="light" />
 
       <div className="reveal relative mx-auto max-w-7xl overflow-hidden px-4 pb-10 pt-12 text-center sm:px-6 sm:pt-16">
         {/* Soft radial glow behind the emblem — decorative, brand-consistent, no external assets. */}
@@ -367,22 +340,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/60 py-6 text-center text-xs text-slate-400">
-        &copy; {new Date().getFullYear()} SecurityJob. All rights reserved.
-      </footer>
-
-      <button
-        type="button"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        aria-label="Back to top"
-        className={`fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-navy-900 text-gold-300 shadow-lg transition-all duration-300 hover:bg-navy-800 ${
-          showBackToTop ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
-        }`}
-      >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5M5 12l7-7 7 7" />
-        </svg>
-      </button>
+      <Footer />
     </div>
   );
 }

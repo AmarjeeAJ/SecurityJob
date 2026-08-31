@@ -1,173 +1,139 @@
 @import "tailwindcss";
 
 @theme {
-  --color-navy-950: #050b18;
-  --color-navy-900: #0a1530;
-  --color-navy-800: #101f45;
-  --color-navy-700: #172a5c;
-  --color-navy-600: #1f3778;
-  --color-sky-600: #1a4f8f;
-  --color-sky-500: #2f6fc4;
-  --color-sky-400: #5c93dd;
-  --color-gold-500: #c9a447;
-  --color-gold-400: #d9bc6c;
-  --color-gold-300: #e8d493;
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --color-brand-950: #090e17;
+  --color-brand-900: #0f172a;
+  --color-brand-800: #1e293b;
+  --color-brand-700: #334155;
+  --color-brand-600: #475569;
+  --color-brand-500: #64748b;
+  
+  --color-navy-950: #091124;
+  --color-navy-900: #0f1c3f;
+  --color-navy-800: #172a5a;
+  --color-navy-700: #1e3a78;
+  --color-navy-600: #2a4e9b;
+  --color-navy-500: #3b66be;
+  
+  --color-blue-900: #1e3a8a;
+  --color-blue-800: #1e40af;
+  --color-blue-700: #1d4ed8;
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  --color-blue-400: #60a5fa;
+  --color-blue-200: #bfdbfe;
+  --color-blue-100: #dbeafe;
+  --color-blue-50: #eff6ff;
+
+  --color-gold-700: #92400e;
+  --color-gold-600: #b45309;
+  --color-gold-500: #d97706;
+  --color-gold-400: #f59e0b;
+  --color-gold-300: #fbbf24;
+  --color-gold-200: #fde68a;
+  --color-gold-100: #fef3c7;
+  --color-gold-50: #fffbeb;
+
+  --color-emerald-700: #047857;
+  --color-emerald-600: #059669;
+  --color-emerald-500: #10b981;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-50: #ecfdf5;
+
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "Plus Jakarta Sans", sans-serif;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  /* So a field auto-scrolled into view (tap-to-focus, anchor links) lands
-     clear of the sticky header / the apply form's fixed mobile submit bar
-     instead of underneath them. */
-  scroll-padding-top: 90px;
-  scroll-padding-bottom: 100px;
+  scroll-padding-top: 70px;
+  scroll-padding-bottom: 80px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f6f7fb;
-  color: #101f45;
+  background-color: #f8fafc;
+  color: #0f172a;
+  max-width: 100%;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.025em;
 }
 
 input, select, textarea, button {
   font-family: inherit;
 }
 
-/* Larger, thumb-friendly touch targets on mobile inputs. */
-input[type="text"],
-input[type="tel"],
-input[type="number"],
-input[type="email"],
-input[type="date"],
-select,
-textarea {
-  min-height: 3rem;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-/* Landing-page motion: slow ambient blobs + a staggered reveal-on-scroll utility. */
-@keyframes blob-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(3%, -4%) scale(1.08); }
-  66% { transform: translate(-3%, 3%) scale(0.96); }
-}
-
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-
-.blob {
-  animation: blob-float 16s ease-in-out infinite;
-  will-change: transform;
-}
-
-.blob-delay {
-  animation-delay: -8s;
-}
-
-.text-shimmer {
-  background-size: 200% auto;
-  animation: shimmer 6s linear infinite;
-}
-
-/*
- * Sky-navy backdrop: the base stays deep navy for the FULL page height (so it
- * never washes out to flat pale blue on a long page), with glow spots and a
- * fine grain texture tiled every ~70vh so there's always depth in view no
- * matter how far you scroll — a single giant non-repeating gradient looks
- * rich near the top and flat everywhere else once the page is 3-4 screens tall.
- */
-@keyframes aurora-drift {
-  0%, 100% { background-position: 0% 0%, 100% 0%, 0% 30vh, 0 0; }
-  50% { background-position: 6% 3%, 94% -3%, 4% calc(30vh + 2%), 0 0; }
-}
-
-.bg-aurora {
-  background-color: var(--color-navy-950);
-  background-image:
-    radial-gradient(50% 55% at 20% 8%, color-mix(in srgb, var(--color-sky-500) 30%, transparent), transparent 70%),
-    radial-gradient(45% 50% at 85% 30%, color-mix(in srgb, var(--color-gold-500) 12%, transparent), transparent 70%),
-    radial-gradient(50% 55% at 15% 62%, color-mix(in srgb, var(--color-sky-600) 26%, transparent), transparent 70%),
-    radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-repeat: no-repeat, no-repeat, repeat-y, repeat;
-  background-size: 90% 55vh, 80% 55vh, 90% 70vh, 26px 26px;
-  animation: aurora-drift 40s ease-in-out infinite;
-}
-
-/*
- * Light-theme counterpart to .bg-aurora: a soft gradient-mesh wash in the
- * brand's gold/sky/navy tones for pages that should stay light and fast
- * (e.g. the owner login) but not read as flat/empty. Colors are pastel
- * enough to keep white cards and body text fully legible on top.
- */
-@keyframes mesh-drift {
-  0%, 100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
-  50% { background-position: 6% 4%, 94% 4%, 46% 96%, 0 0; }
-}
-
-.bg-mesh-light {
-  background-color: #f6f7fb;
-  background-image:
-    radial-gradient(50% 50% at 12% 15%, color-mix(in srgb, var(--color-gold-400) 30%, transparent), transparent 70%),
-    radial-gradient(55% 55% at 88% 12%, color-mix(in srgb, var(--color-sky-400) 26%, transparent), transparent 70%),
-    radial-gradient(60% 55% at 50% 105%, color-mix(in srgb, var(--color-navy-700) 14%, transparent), transparent 70%),
-    radial-gradient(circle, rgba(10, 21, 48, 0.05) 1px, transparent 1px);
+/* Light Theme Hero and Section Background Patterns */
+.bg-light-hero {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(45% 55% at 15% 15%, rgba(37, 99, 235, 0.08), transparent 70%),
+    radial-gradient(40% 50% at 85% 20%, rgba(217, 119, 6, 0.07), transparent 70%),
+    radial-gradient(50% 50% at 50% 85%, rgba(59, 130, 246, 0.06), transparent 75%),
+    radial-gradient(circle, rgba(100, 116, 139, 0.10) 1px, transparent 1px);
   background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-  background-size: 70% 60%, 65% 55%, 90% 60%, 24px 24px;
-  animation: mesh-drift 40s ease-in-out infinite;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
 }
 
-/* A slow radar sweep behind the hero badge — subtle nod to "security control room". */
-@keyframes radar-spin {
-  to { transform: rotate(360deg); }
+.bg-light-accent {
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 50%, #fefce8 100%);
 }
 
-.radar-sweep {
-  position: absolute;
-  inset: -40%;
-  border-radius: 9999px;
-  background: conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--color-sky-400) 22%, transparent) 25deg, transparent 70deg);
-  animation: radar-spin 12s linear infinite;
+.bg-light-pattern {
+  background-color: #ffffff;
+  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-/* Soft colored glow ring on hover, used by feature/role cards for a premium feel. */
-.card-glow {
-  position: relative;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+/* Glassmorphism light navbar */
+.glass-nav-light {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.card-glow:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--color-gold-400) 45%, transparent);
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--color-gold-400) 15%, transparent);
+/* Card hover animation */
+.card-hover-effect {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
-/*
- * Runs once as each element mounts (a CSS `animation`, not a scroll-triggered
- * `transition`), so content is guaranteed visible shortly after paint no
- * matter how the page is scrolled into view — jump-scroll, anchor link,
- * screen reader, or a screenshot tool that resizes the viewport in one step.
- * A scroll-triggered (IntersectionObserver) version of this was tried first
- * and dropped: instant/programmatic scrolls don't reliably give the browser
- * a paint frame to re-run the intersection check, which could leave whole
- * sections stuck at opacity:0.
- */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (hover: hover) {
+  .card-hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  }
 }
 
-.reveal {
-  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Mobile responsive padding helper */
+.mobile-safe-bottom {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .blob { animation: none; }
-  .text-shimmer { animation: none; }
-  .reveal { animation: none; }
-  .bg-aurora { animation: none; }
-  .bg-mesh-light { animation: none; }
-  .radar-sweep { animation: none; display: none; }
+@media (min-width: 640px) {
+  .mobile-safe-bottom {
+    padding-bottom: 0;
+  }
 }

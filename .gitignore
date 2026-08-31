@@ -11,3 +11,5 @@ server/uploads/resumes/*
 *.log
 .DS_Store
 .claude/
+*.timestamp-*.mjs
+
