@@ -13,7 +13,7 @@ import {
 import Logo from '../common/Logo.jsx';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919929992886';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -24,19 +24,21 @@ export default function Footer() {
     ? [
         { label: 'Security Guard (गार्ड)', href: '/jobs/security-guard' },
         { label: 'Security Supervisor (सुपरवाइजर)', href: '/jobs/security-supervisor' },
+        { label: 'CCTV Operator (सीसीटीवी ऑपरेटर)', href: '/jobs/cctv-operator' },
         { label: 'Lady Guard (लेडी गार्ड)', href: '/jobs/lady-security-guard' },
         { label: 'Gunman (गनमैन)', href: '/jobs/gunman' },
         { label: 'Armed Guard (हथियारबंद गार्ड)', href: '/jobs/armed-guard' },
-        { label: 'Bouncer (बाउंसर)', href: '/jobs/bouncer' },
+        { label: 'Bouncer & Event Security Guards (बाउंसर)', href: '/jobs/bouncer' },
         { label: 'Field Officer (फील्ड ऑफिसर)', href: '/jobs/field-officer' },
       ]
     : [
         { label: 'Security Guard Jobs', href: '/jobs/security-guard' },
         { label: 'Security Supervisor Jobs', href: '/jobs/security-supervisor' },
+        { label: 'CCTV Operator Jobs', href: '/jobs/cctv-operator' },
         { label: 'Lady Security Guard Jobs', href: '/jobs/lady-security-guard' },
         { label: 'Gunman & Armed Guard', href: '/jobs/gunman' },
         { label: 'Armed Guard Specialist', href: '/jobs/armed-guard' },
-        { label: 'Bouncer & Event Security', href: '/jobs/bouncer' },
+        { label: 'Bouncer & Event Security Guards', href: '/jobs/bouncer' },
         { label: 'Field Officer Jobs', href: '/jobs/field-officer' },
       ];
 
@@ -73,14 +75,12 @@ export default function Footer() {
         { label: 'गोपनीयता नीति (Privacy Policy)', href: '/privacy-policy' },
         { label: 'नियम व शर्तें (Terms of Use)', href: '/terms-of-use' },
         { label: 'कैंडिडेट सहमति (Consent Policy)', href: '/candidate-consent-policy' },
-        { label: 'Owner Login', href: '/owner/login' },
       ]
     : [
         { label: 'About SecurityJob', href: '/about' },
         { label: 'Privacy Policy', href: '/privacy-policy' },
         { label: 'Terms of Use', href: '/terms-of-use' },
         { label: 'Candidate Consent Policy', href: '/candidate-consent-policy' },
-        { label: 'Owner Login', href: '/owner/login' },
       ];
 
   return (
@@ -243,49 +243,96 @@ export default function Footer() {
         </div>
 
         {/* ========================================================================= */}
-        {/* POWERED BY AVIJIT ENTERPRISES - IMPRESSIVE CORPORATE FOOTER CARD */}
+        {/* POWERED BY AVIJIT ENTERPRISES - EXECUTIVE CORPORATE GOVERNANCE CARD */}
         {/* ========================================================================= */}
-        <div className="my-8 p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-navy-900 to-slate-950 text-white shadow-lg border border-slate-800/80">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black tracking-wide uppercase">
-                  <Building className="w-3.5 h-3.5 text-blue-400" />
-                  Powered By AVIJIT ENTERPRISES
-                </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
-                  <Award className="w-3.5 h-3.5 text-amber-400" />
-                  Govt. MSME Registered
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Verified Portal
+        <div className="relative my-8 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-navy-950 p-6 sm:p-8 text-white shadow-2xl border border-slate-800/90 ring-1 ring-white/10">
+          {/* Ambient Decorative Backlights */}
+          <div className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-blue-600/15 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-cyan-600/15 blur-3xl" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 lg:gap-8">
+            {/* Left Column: Corporate Entity Details & Badges */}
+            <div className="space-y-4 max-w-3xl">
+              {/* Enterprise Title Bar */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-blue-500/15 border border-blue-400/30 text-blue-300 shadow-xs">
+                  <Building className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="text-xs sm:text-sm font-black tracking-wider uppercase">
+                    Powered by AVIJIT ENTERPRISES
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-slate-700 hidden sm:block" />
+                <span className="text-[11px] sm:text-xs font-semibold text-slate-400">
+                  {isHindi ? 'अधिकृत सिक्योरिटी व मैनपावर कंसल्टेंसी' : 'Authorized Security & Manpower Management'}
                 </span>
               </div>
 
-              <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
-                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              {/* Trust & Registration Badges Strip */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-0.5">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-400/25 text-cyan-300 text-xs font-bold tracking-wide">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>GST Approved</span>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-400/25 text-amber-300 text-xs font-bold tracking-wide">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Govt. MSME Registered</span>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-400/25 text-emerald-300 text-xs font-bold tracking-wide">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>100% Verified Job Portal</span>
+                </div>
+              </div>
+
+              {/* Registered Office Address */}
+              <div className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300/90 pt-1">
+                <div className="p-1 rounded-md bg-white/5 border border-white/10 text-blue-400 shrink-0 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5" />
+                </div>
                 <p className="leading-relaxed">
-                  <strong className="text-white font-semibold">{isHindi ? 'पंजीकृत कार्यालय' : 'Registered Office'}:</strong> 159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021
+                  <span className="text-white font-bold">{isHindi ? 'पंजीकृत कार्यालय' : 'Registered Office'}:</span> 159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            {/* Right Column: Premium Contact Action Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col xl:flex-row items-center gap-3 shrink-0">
+              {/* Phone / WhatsApp Action Card */}
               <a
-                href="tel:+919828044998"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs sm:text-sm transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98]"
+                href="tel:+919929992886"
+                className="group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-white/[0.04] hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 text-white transition-all shadow-lg hover:shadow-emerald-500/10 hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
               >
-                <Phone className="w-4 h-4 text-emerald-400" />
-                <span>+91 98280 44998</span>
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 group-hover:bg-emerald-500 text-emerald-400 group-hover:text-white border border-emerald-500/30 flex items-center justify-center transition-colors shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 group-hover:text-emerald-300 transition-colors">
+                    {isHindi ? 'हेल्पलाइन व व्हाट्सएप' : 'Helpline & WhatsApp'}
+                  </div>
+                  <div className="text-xs sm:text-sm font-black text-white tracking-wide">
+                    +91 99299 92886
+                  </div>
+                </div>
               </a>
 
+              {/* Email Action Card */}
               <a
-                href="mailto:bansalvicky738@gmail.com"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98]"
+                href="mailto:hr@securityjob.in"
+                className="group relative flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-white/[0.04] hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/30 text-white transition-all shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] w-full lg:w-auto"
               >
-                <Mail className="w-4 h-4 text-white" />
-                <span>bansalvicky738@gmail.com</span>
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 group-hover:bg-blue-500 text-blue-400 group-hover:text-white border border-blue-500/30 flex items-center justify-center transition-colors shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 group-hover:text-blue-300 transition-colors">
+                    {isHindi ? 'आधिकारिक ईमेल डेस्क' : 'Official HR Desk'}
+                  </div>
+                  <div className="text-xs sm:text-sm font-black text-white tracking-wide">
+                    hr@securityjob.in
+                  </div>
+                </div>
               </a>
             </div>
           </div>

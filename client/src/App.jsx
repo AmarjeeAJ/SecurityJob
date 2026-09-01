@@ -4,6 +4,7 @@ import { OwnerAuthProvider } from './features/owner-auth/OwnerAuthContext.jsx';
 import { LanguageProvider } from './i18n/LanguageContext.jsx';
 import ProtectedRoute from './components/owner/ProtectedRoute.jsx';
 import LoadingSkeleton from './components/common/LoadingSkeleton.jsx';
+import ScrollToTop from './components/common/ScrollToTop.jsx';
 
 // Core Public Pages (100% Employee / Candidate Focused)
 import HomePage from './pages/HomePage.jsx';
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <LanguageProvider>
       <OwnerAuthProvider>
+        <ScrollToTop />
         <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] p-6"><LoadingSkeleton rows={10} /></div>}>
           <Routes>
             {/* 1. Landing Page (Pure Employee / Job Seeker focus) */}

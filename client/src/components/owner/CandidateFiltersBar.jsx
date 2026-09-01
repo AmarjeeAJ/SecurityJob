@@ -17,6 +17,7 @@ const QUICK_ROLES = [
   'All',
   'Security Guard',
   'Security Supervisor',
+  'CCTV Operator',
   'Armed Guard',
   'Gunman',
   'Bouncer',

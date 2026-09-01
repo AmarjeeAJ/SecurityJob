@@ -12,7 +12,7 @@ export const translations = {
       warning: 'Take the first step toward a great security job — fill in your details and our recruitment team will reach out as soon as a matching opportunity is available.',
     },
     sections: {
-      personalDetails: 'Personal Details',
+      personalDetails: 'Candidate Details',
       contactDetails: 'Contact Details',
       jobPreferences: 'Job Preferences',
       experience: 'Experience',
@@ -144,7 +144,7 @@ export const translations = {
       warning: 'एक अच्छी सुरक्षा नौकरी की दिशा में पहला कदम बढ़ाएं — अपनी जानकारी भरें, और उपयुक्त अवसर उपलब्ध होते ही हमारी भर्ती टीम आपसे संपर्क करेगी।',
     },
     sections: {
-      personalDetails: 'व्यक्तिगत जानकारी',
+      personalDetails: 'उम्मीदवार विवरण',
       contactDetails: 'संपर्क जानकारी',
       jobPreferences: 'नौकरी की प्राथमिकताएं',
       experience: 'अनुभव',

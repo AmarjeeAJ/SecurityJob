@@ -20,7 +20,9 @@ import {
   Phone,
   HelpCircle,
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  Send
 } from 'lucide-react';
 import { candidateFormSchema } from '../../schemas/candidateSchema.js';
 import { submitCandidateApplication } from '../../api/candidates.js';
@@ -29,10 +31,10 @@ import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import Card from '../../components/common/Card.jsx';
 import SuccessState from '../../components/form/SuccessState.jsx';
 import ErrorBanner from '../../components/form/ErrorBanner.jsx';
-import { RAJASTHAN_CITIES } from '../../utils/locations.js';
+import { RAJASTHAN_CITIES, getSmartAreasForDistrict } from '../../utils/locations.js';
 import JOB_ROLES from '../../utils/jobRoles.js';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 function buildFormData(data, trackingData) {
   const formData = new FormData();
@@ -83,6 +85,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const [aadhaarBackPreview, setAadhaarBackPreview] = useState(null);
   const hasTrackedStart = useRef(false);
   const isSubmittingRef = useRef(false);
+  const step3EnteredAtRef = useRef(0);
 
   const initialRole = preselectedRole || 'Security Guard';
 
@@ -125,12 +128,19 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const watchWhatsappSame = watch('whatsappSameAsMobile');
   const watchGender = watch('gender');
   const watchCity = watch('currentCity');
+  const watchArea = watch('currentArea');
   const watchRoles = watch('preferredRoles') || [];
   const watchLocations = watch('preferredLocations') || [];
   const watchExperienced = watch('isExperienced');
   const watchDutyHour = watch('dutyHourPreference');
   const watchJoining = watch('joiningAvailability');
   const watchConsent = watch('consentGiven');
+
+  useEffect(() => {
+    if (currentStep === 3) {
+      step3EnteredAtRef.current = Date.now();
+    }
+  }, [currentStep]);
 
   useEffect(() => {
     if (preselectedRole && !watchRoles.includes(preselectedRole)) {
@@ -147,9 +157,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const stepFields = {
     1: ['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'],
-    2: ['currentCity', 'currentArea', 'state'],
-    3: ['preferredRoles', 'otherRoleText', 'preferredLocations', 'isExperienced', 'securityExperienceMonths', 'currentEmploymentStatus', 'joiningAvailability', 'dutyHourPreference'],
-    4: ['highestQualification', 'aadhaarFront', 'aadhaarBack', 'consentGiven'],
+    2: ['currentCity', 'currentArea', 'state', 'preferredRoles'],
+    3: ['highestQualification', 'consentGiven'],
   };
 
   const handleNextStep = async () => {
@@ -172,7 +181,27 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     window.scrollTo({ top: 120, behavior: 'smooth' });
   };
 
+  const handleFormKeyDown = (e) => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+      e.preventDefault();
+      if (currentStep < TOTAL_STEPS) {
+        handleNextStep();
+      }
+    }
+  };
+
   const onSubmit = async (data) => {
+    // STRICT GUARD 1: Prevent submission if not on final step (Step 3)
+    if (currentStep !== 3) {
+      await handleNextStep();
+      return;
+    }
+
+    // STRICT GUARD 2: Prevent ghost clicks / touch event transfer from Step 2 Next button
+    if (Date.now() - step3EnteredAtRef.current < 400) {
+      return;
+    }
+
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     setSubmitError('');
@@ -210,7 +239,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     { label: 'Security Supervisor (सुपरवाइजर)', value: 'Security Supervisor', icon: '👮' },
     { label: 'Lady Security Guard (लेडी गार्ड)', value: 'Lady Security Guard', icon: '👩' },
     { label: 'CCTV Operator (सीसीटीवी ऑपरेटर)', value: 'CCTV Operator', icon: '📹' },
-    { label: 'Bouncer / Event Guard (बाउंसर)', value: 'Bouncer', icon: '🏋️' },
+    { label: 'Bouncer & Event Security Guards (बाउंसर)', value: 'Bouncer', icon: '🏋️' },
     { label: 'Armed Guard / Gunman (गनमैन)', value: 'Armed Guard', icon: '🎯' },
     { label: 'Field Officer (फील्ड ऑफिसर)', value: 'Field Officer', icon: '📋' },
     { label: 'Facility Supervisor (सुपरवाइजर)', value: 'Facility Supervisor', icon: '🏢' },
@@ -236,10 +265,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   }
 
   const stepsMeta = [
-    { num: 1, title: 'व्यक्तिगत जानकारी', sub: 'Personal Info' },
-    { num: 2, title: 'राजस्थान का पता', sub: 'Location' },
-    { num: 3, title: 'जॉब व अनुभव', sub: 'Role & Exp' },
-    { num: 4, title: 'आधार व पुष्टि', sub: 'Submit' },
+    { num: 1, title: 'उम्मीदवार विवरण', sub: 'Candidate Profile' },
+    { num: 2, title: 'स्थान व जॉब रोल', sub: 'Location & Role' },
+    { num: 3, title: 'अनुभव व दस्तावेज', sub: 'Exp & ID Proof' },
   ];
 
   return (
@@ -271,7 +299,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       <Card className="p-5 sm:p-8 shadow-md border-slate-200/90">
         {/* Step Indicator Progress Bar */}
         <div className="mb-8">
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3">
             {stepsMeta.map((s) => {
               const isPassed = currentStep > s.num;
               const isCurrent = currentStep === s.num;
@@ -310,9 +338,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-6">
           {/* ========================================================================= */}
-          {/* STEP 1: PERSONAL DETAILS (व्यक्तिगत जानकारी) */}
+          {/* STEP 1: CANDIDATE PROFILE (उम्मीदवार विवरण) */}
           {/* ========================================================================= */}
           {currentStep === 1 && (
             <motion.div
@@ -322,9 +350,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
               className="space-y-5"
             >
               <div className="border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 1 ऑफ 4</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 1 ऑफ 3</span>
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
-                  अपनी बुनियादी जानकारी भरें (Personal Details)
+                  उम्मीदवार विवरण (Candidate Profile)
                 </h3>
               </div>
 
@@ -476,19 +504,19 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           )}
 
           {/* ========================================================================= */}
-          {/* STEP 2: LOCATION IN RAJASTHAN (स्थान और शहर) */}
+          {/* STEP 2: LOCATION & PREFERRED JOB ROLE (स्थान व पसंदीदा जॉब रोल) */}
           {/* ========================================================================= */}
           {currentStep === 2 && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="space-y-5"
+              className="space-y-6"
             >
               <div className="border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 2 ऑफ 4</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 2 ऑफ 3</span>
                 <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
-                  राजस्थान में अपना जिला और क्षेत्र चुनें (Location in Rajasthan)
+                  स्थान व पसंदीदा जॉब रोल (Location & Job Role)
                 </h3>
               </div>
 
@@ -504,16 +532,23 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 <input type="hidden" value="Rajasthan" {...register('state')} />
               </div>
 
-              {/* City Selection */}
+              {/* City / District Selection */}
               <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  वर्तमान शहर / जिला (Current City in Rajasthan) <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-900">
+                    वर्तमान जिला / शहर (Current District in Rajasthan) <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                    33+ जिले उपलब्ध
+                  </span>
+                </div>
                 <select
                   value={watchCity}
                   onChange={(e) => {
                     setValue('currentCity', e.target.value, { shouldValidate: true });
                     setValue('preferredLocations', [e.target.value]);
+                    // Clear custom area to prompt new area selection
+                    setValue('currentArea', '');
                   }}
                   className={`w-full px-4 py-3.5 rounded-xl border text-sm font-bold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none transition-all cursor-pointer ${
                     errors.currentCity ? 'border-red-500' : 'border-slate-300 focus:border-blue-600'
@@ -528,9 +563,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 )}
               </div>
 
-              {/* Quick Popular Rajasthan City Buttons */}
+              {/* Quick Popular Rajasthan District Buttons */}
               <div>
-                <p className="text-xs font-semibold text-slate-500 mb-2">मुख्य शहर (Quick Select):</p>
+                <p className="text-xs font-semibold text-slate-500 mb-2">मुख्य जिले (Quick Select):</p>
                 <div className="flex flex-wrap gap-2">
                   {['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Alwar', 'Bhiwadi', 'Neemrana', 'Bhilwara', 'Sikar'].map((city) => (
                     <button
@@ -539,6 +574,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       onClick={() => {
                         setValue('currentCity', city, { shouldValidate: true });
                         setValue('preferredLocations', [city]);
+                        setValue('currentArea', '');
                       }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         watchCity === city
@@ -552,50 +588,73 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 </div>
               </div>
 
-              {/* Area / Tehsil / Village */}
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  तहसील / गांव / एरिया (Area / Tehsil / Colony Name) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="उदा. मानसरोवर, वैशाली नगर, सांगानेर, बगरू, आदि"
-                  {...register('currentArea')}
-                  className={`w-full px-4 py-3.5 rounded-xl border text-sm font-medium text-slate-900 focus:outline-none transition-all ${
-                    errors.currentArea ? 'border-red-500 bg-red-50/50' : 'border-slate-300 bg-slate-50/50 focus:bg-white focus:border-blue-600'
-                  }`}
-                />
-                {errors.currentArea && (
-                  <p className="text-xs font-semibold text-red-600 mt-1">{errors.currentArea.message}</p>
-                )}
-                <p className="text-[11px] text-slate-500 mt-1">
-                  ताकि आपके नजदीकी ड्यूटी स्थल की जानकारी दी जा सके।
-                </p>
-              </div>
-            </motion.div>
-          )}
+              {/* AI-Assisted Smart Area / Tehsil / Industrial Hub Selector */}
+              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/90 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs sm:text-sm font-bold text-slate-900">
+                    तहसील / एरिया / औद्योगिक क्षेत्र (Area / Tehsil / RIICO Hub) <span className="text-red-500">*</span>
+                  </label>
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200 shadow-2xs">
+                    ⚡ AI Smart Match
+                  </span>
+                </div>
 
-          {/* ========================================================================= */}
-          {/* STEP 3: ROLE & EXPERIENCE (जॉब व अनुभव) */}
-          {/* ========================================================================= */}
-          {currentStep === 3 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="space-y-5"
-            >
-              <div className="border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 3 ऑफ 4</span>
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
-                  पसंदीदा जॉब रोल व अनुभव (Preferred Role & Experience)
-                </h3>
+                <div className="relative">
+                  <input
+                    type="text"
+                    list="smart-areas-list"
+                    placeholder={`उदा. ${watchCity || 'Jaipur'} का अपना एरिया या रीको हब टाइप करें या नीचे से चुनें`}
+                    {...register('currentArea')}
+                    className={`w-full px-4 py-3.5 rounded-xl border text-sm font-semibold text-slate-900 bg-white focus:outline-none transition-all ${
+                      errors.currentArea ? 'border-red-500 bg-red-50/50' : 'border-blue-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100'
+                    }`}
+                  />
+                  <datalist id="smart-areas-list">
+                    {getSmartAreasForDistrict(watchCity || 'Jaipur').map((area) => (
+                      <option key={area} value={area} />
+                    ))}
+                  </datalist>
+                </div>
+
+                {errors.currentArea && (
+                  <p className="text-xs font-semibold text-red-600">{errors.currentArea.message}</p>
+                )}
+
+                {/* Smart Suggested Area Pills for the Selected District */}
+                <div>
+                  <p className="text-[11px] font-bold text-slate-600 mb-1.5">
+                    💡 {watchCity || 'Jaipur'} के प्रमुख सुरक्षा ड्यूटी व औद्योगिक क्षेत्र (क्लिक करके चुनें):
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                    {getSmartAreasForDistrict(watchCity || 'Jaipur').map((area) => {
+                      const isSelected = watchArea === area;
+                      return (
+                        <button
+                          key={area}
+                          type="button"
+                          onClick={() => setValue('currentArea', area, { shouldValidate: true })}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-left cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-600 text-white font-bold shadow-2xs'
+                              : 'bg-white text-slate-700 hover:bg-blue-100 hover:text-blue-900 border border-slate-200'
+                          }`}
+                        >
+                          {area}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500">
+                  🔒 आपके नजदीकी 15-20 किमी के दायरे में डायरेक्ट ड्यूटी अलॉटमेंट के लिए सटीक एरिया चुनें।
+                </p>
               </div>
 
               {/* Preferred Job Role Selection Cards */}
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-2">
-                  आप किस जॉब के लिए आवेदन करना चाहते हैं? <span className="text-red-500">*</span>
+              <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                <label className="block text-xs sm:text-sm font-bold text-slate-900">
+                  आप किस पद / जॉब के लिए आवेदन करना चाहते हैं? <span className="text-red-500">*</span>
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -627,8 +686,27 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   <p className="text-xs font-semibold text-red-600 mt-1">{errors.preferredRoles.message}</p>
                 )}
               </div>
+            </motion.div>
+          )}
 
-              {/* Experience Status Toggle */}
+          {/* ========================================================================= */}
+          {/* STEP 3: EXPERIENCE, EDUCATION & ID PROOF (अनुभव, शिक्षा व पहचान पत्र) */}
+          {/* ========================================================================= */}
+          {currentStep === 3 && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-5"
+            >
+              <div className="border-b border-slate-100 pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 3 ऑफ 3</span>
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
+                  अनुभव, शिक्षा व पहचान पत्र (Experience, Education & ID Proof)
+                </h3>
+              </div>
+
+              {/* Prior Experience Toggle */}
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-2">
                   क्या आपको पहले सिक्योरिटी का अनुभव है? (Prior Experience?)
@@ -636,36 +714,46 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setValue('isExperienced', false)}
-                    className={`py-3.5 px-4 rounded-xl border text-center font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                    onClick={() => {
+                      setValue('isExperienced', false);
+                      setValue('securityExperienceMonths', 0);
+                    }}
+                    className={`py-3.5 px-4 rounded-xl border text-center font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       !watchExperienced
-                        ? 'bg-emerald-50 border-emerald-600 text-emerald-800 ring-2 ring-emerald-200'
+                        ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-200'
                         : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    🟢 नया गार्ड / फ्रेशर (No Experience)
+                    <ShieldCheck className={`w-4 h-4 ${!watchExperienced ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <span>नया गार्ड / फ्रेशर (Fresher)</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setValue('isExperienced', true)}
-                    className={`py-3.5 px-4 rounded-xl border text-center font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                    onClick={() => {
+                      setValue('isExperienced', true);
+                      if (!watch('securityExperienceMonths') || watch('securityExperienceMonths') === 0) {
+                        setValue('securityExperienceMonths', 12);
+                      }
+                    }}
+                    className={`py-3.5 px-4 rounded-xl border text-center font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       watchExperienced
                         ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-200'
                         : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    🔵 अनुभवी गार्ड (Have Experience)
+                    <Briefcase className={`w-4 h-4 ${watchExperienced ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <span>अनुभवी गार्ड (Experienced)</span>
                   </button>
                 </div>
               </div>
 
-              {/* If Experienced, Show Experience Fields */}
+              {/* If Experienced, Show Experience Details */}
               {watchExperienced && (
                 <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1">
-                      कितने महीने / साल का अनुभव है? (Experience in Months)
+                      कितने महीने का अनुभव है? (Experience in Months)
                     </label>
                     <div className="flex items-center gap-2">
                       <input
@@ -674,7 +762,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         max={360}
                         placeholder="उदा. 12"
                         {...register('securityExperienceMonths', { valueAsNumber: true })}
-                        className="w-32 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold"
+                        className="w-32 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                       />
                       <span className="text-xs font-semibold text-slate-600">महीने (Months)</span>
                     </div>
@@ -682,7 +770,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1">
-                      ड्यूटी घंटे की पसंद (Duty Shift Preference)
+                      ड्यूटी शिफ्ट की पसंद (Duty Shift Preference)
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {['8_hours', '12_hours', 'any'].map((opt) => (
@@ -690,10 +778,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                           key={opt}
                           type="button"
                           onClick={() => setValue('dutyHourPreference', opt)}
-                          className={`py-2 px-2 rounded-lg text-xs font-bold border transition-all ${
+                          className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             watchDutyHour === opt
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-slate-700 border-slate-200'
+                              ? 'bg-blue-600 text-white shadow-2xs border-blue-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                           }`}
                         >
                           {opt === '8_hours' ? '8 घंटे' : opt === '12_hours' ? '12 घंटे' : 'कोई भी'}
@@ -712,10 +800,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                           key={opt}
                           type="button"
                           onClick={() => setValue('joiningAvailability', opt)}
-                          className={`py-2 px-2 rounded-lg text-xs font-bold border transition-all ${
+                          className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                             watchJoining === opt
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-white text-slate-700 border-slate-200'
+                              ? 'bg-blue-600 text-white shadow-2xs border-blue-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                           }`}
                         >
                           {opt === 'immediate' ? 'तुरंत (Immediate)' : opt === 'within_15_days' ? '2-3 दिन में' : '1 हफ्ते में'}
@@ -725,73 +813,67 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   </div>
                 </div>
               )}
-            </motion.div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* STEP 4: DOCUMENTS & CONFIRMATION (दस्तावेज व पुष्टि) */}
-          {/* ========================================================================= */}
-          {currentStep === 4 && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="space-y-5"
-            >
-              <div className="border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-600">स्टेप 4 ऑफ 4</span>
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
-                  शिक्षा व आधार कार्ड (Education & Document Verification)
-                </h3>
-              </div>
 
               {/* Education Level */}
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  उच्चतम योग्यता (Highest Qualification)
+                  उच्चतम योग्यता / पढ़ाई (Highest Qualification)
                 </label>
                 <select
                   {...register('highestQualification')}
                   className="w-full px-4 py-3.5 rounded-xl border border-slate-300 bg-slate-50 text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
-                  <option value="Non-Matric (8th Pass)">8वीं पास / नॉन-मैट्रिक</option>
                   <option value="10th Pass">10वीं पास (Secondary)</option>
+                  <option value="Non-Matric (8th Pass)">8वीं पास / नॉन-मैट्रिक</option>
                   <option value="12th Pass">12वीं पास (Sr. Secondary)</option>
                   <option value="Graduate">ग्रेजुएट / स्नातक</option>
                   <option value="Ex-Servicemen (Defence)">भूतपूर्व सैनिक (Ex-Servicemen / Army)</option>
                 </select>
               </div>
 
-              {/* Aadhaar Upload Box (Optional but Guard-Friendly) */}
+              {/* ID Proof / Aadhaar Upload Box (Guard-Friendly & Voluntary) */}
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Camera className="w-5 h-5 text-blue-600" />
                     <span className="text-xs sm:text-sm font-bold text-slate-900">
-                      आधार कार्ड फोटो (Aadhaar Card Photo)
+                      पहचान पत्र / आधार फोटो (ID Proof / Aadhaar Photo)
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
                     वैकल्पिक (Optional)
                   </span>
                 </div>
 
                 <p className="text-xs text-slate-500">
-                  यदि आपके पास आधार कार्ड की फोटो है तो अपलोड करें, इससे जॉइनिंग तेजी से होती है:
+                  पहचान व आयु सत्यापन हेतु स्वैच्छिक फोटो (यदि आपके पास फोटो है तो अपलोड करें, इससे जल्दी जॉइनिंग होती है):
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Front Side */}
                   <div className="p-3 rounded-xl bg-white border border-dashed border-slate-300 text-center space-y-2">
-                    <p className="text-[11px] font-bold text-slate-700">आगे का भाग (Front Side)</p>
+                    <p className="text-[11px] font-bold text-slate-700">आगे का भाग (Front Photo)</p>
                     {aadhaarFrontPreview ? (
-                      <div className="relative">
-                        <img src={aadhaarFrontPreview} alt="Aadhaar Front" className="h-20 w-full object-cover rounded-lg mx-auto" />
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">✓ फोटो सेलेक्टेड</span>
+                      <div className="relative space-y-1.5">
+                        <img src={aadhaarFrontPreview} alt="ID Front Preview" className="h-20 w-full object-cover rounded-lg mx-auto border border-slate-200" />
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[10px] text-emerald-600 font-bold">✓ फोटो सेलेक्टेड</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAadhaarFrontPreview(null);
+                              setValue('aadhaarFront', null);
+                            }}
+                            className="text-[10px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
+                          >
+                            ✕ हटाएं (Remove)
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <label className="block p-3 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs cursor-pointer">
-                        📷 फोटो चुनें (Upload Front)
+                      <label className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs cursor-pointer transition-colors border border-blue-200">
+                        <Upload className="w-4 h-4 text-blue-600" />
+                        <span>फोटो अपलोड करें (Front Photo)</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -805,15 +887,28 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
                   {/* Back Side */}
                   <div className="p-3 rounded-xl bg-white border border-dashed border-slate-300 text-center space-y-2">
-                    <p className="text-[11px] font-bold text-slate-700">पीछे का भाग (Back Side)</p>
+                    <p className="text-[11px] font-bold text-slate-700">पीछे का भाग (Back Photo)</p>
                     {aadhaarBackPreview ? (
-                      <div className="relative">
-                        <img src={aadhaarBackPreview} alt="Aadhaar Back" className="h-20 w-full object-cover rounded-lg mx-auto" />
-                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">✓ फोटो सेलेक्टेड</span>
+                      <div className="relative space-y-1.5">
+                        <img src={aadhaarBackPreview} alt="ID Back Preview" className="h-20 w-full object-cover rounded-lg mx-auto border border-slate-200" />
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[10px] text-emerald-600 font-bold">✓ फोटो सेलेक्टेड</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAadhaarBackPreview(null);
+                              setValue('aadhaarBack', null);
+                            }}
+                            className="text-[10px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
+                          >
+                            ✕ हटाएं (Remove)
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <label className="block p-3 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs cursor-pointer">
-                        📷 फोटो चुनें (Upload Back)
+                      <label className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs cursor-pointer transition-colors border border-blue-200">
+                        <Upload className="w-4 h-4 text-blue-600" />
+                        <span>फोटो अपलोड करें (Back Photo)</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -866,6 +961,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
             {currentStep < TOTAL_STEPS ? (
               <button
                 type="button"
+                key="step-btn-next"
                 onClick={handleNextStep}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer ml-auto"
               >
@@ -874,16 +970,18 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
               </button>
             ) : (
               <button
-                type="submit"
+                type="button"
+                key="step-btn-submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-extrabold text-sm sm:text-base text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-60 ml-auto"
+                onClick={handleSubmit(onSubmit)}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-extrabold text-sm sm:text-base text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer disabled:opacity-60 ml-auto"
               >
                 {isSubmitting ? (
                   <span>फॉर्म जमा हो रहा है...</span>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 text-white" />
-                    <span>आवेदन जमा करें (Submit Free Application)</span>
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                    <span>आवेदन जमा करें (Submit Application)</span>
                   </>
                 )}
               </button>

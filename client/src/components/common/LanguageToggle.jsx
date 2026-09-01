@@ -14,7 +14,7 @@ export default function LanguageToggle({ className = '' }) {
         type="button"
         onClick={() => setLanguage('hi')}
         aria-pressed={language === 'hi'}
-        className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer ${
+        className={`inline-flex items-center gap-1 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-bold transition-all cursor-pointer ${
           language === 'hi'
             ? 'bg-blue-600 text-white shadow-xs font-extrabold'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -27,7 +27,7 @@ export default function LanguageToggle({ className = '' }) {
         type="button"
         onClick={() => setLanguage('en')}
         aria-pressed={language === 'en'}
-        className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 transition-all cursor-pointer ${
+        className={`inline-flex items-center gap-1 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-bold transition-all cursor-pointer ${
           language === 'en'
             ? 'bg-blue-600 text-white shadow-xs font-extrabold'
             : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'

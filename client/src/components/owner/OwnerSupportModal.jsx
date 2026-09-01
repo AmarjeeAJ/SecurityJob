@@ -68,7 +68,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
           <div className="space-y-3 mb-6">
             {/* WhatsApp Priority Channel */}
             <a
-              href="https://wa.me/919828044998?text=Hello%20SecurityJob%20Admin%20Support,%20I%20need%20assistance%20with%20Owner%20Console%20access."
+              href="https://wa.me/919929992886?text=Hello%20SecurityJob%20Admin%20Support,%20I%20need%20assistance%20with%20Owner%20Console%20access."
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 transition-all group cursor-pointer"
@@ -81,7 +81,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
                   <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
                     WhatsApp Admin Support
                   </h4>
-                  <p className="text-xs text-slate-400">Direct instant assistance: +91 98280 44998</p>
+                  <p className="text-xs text-slate-400">Direct instant assistance: +91 99299 92886</p>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -89,7 +89,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
 
             {/* Direct Phone Helpline */}
             <a
-              href="tel:+919828044998"
+              href="tel:+919929992886"
               className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 transition-all group cursor-pointer"
             >
               <div className="flex items-center gap-3.5">
@@ -100,7 +100,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
                   <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">
                     Emergency Call Desk
                   </h4>
-                  <p className="text-xs text-slate-400">+91 98280 44998 (Mon – Sat, 9 AM – 7 PM IST)</p>
+                  <p className="text-xs text-slate-400">+91 99299 92886 (Mon – Sat, 9 AM – 7 PM IST)</p>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -108,7 +108,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
 
             {/* Email Support */}
             <a
-              href="mailto:bansalvicky738@gmail.com?subject=Owner%20Portal%20Access%20Request"
+              href="mailto:hr@securityjob.in?subject=Owner%20Portal%20Access%20Request"
               className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 transition-all group cursor-pointer"
             >
               <div className="flex items-center gap-3.5">
@@ -119,7 +119,7 @@ export default function OwnerSupportModal({ isOpen, onClose }) {
                   <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
                     Email Desk
                   </h4>
-                  <p className="text-xs text-slate-400">bansalvicky738@gmail.com</p>
+                  <p className="text-xs text-slate-400">hr@securityjob.in</p>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
