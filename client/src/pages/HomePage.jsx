@@ -208,7 +208,7 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    Security Guards Job in Rajasthan & <span className="text-blue-600">Direct Joining</span>
+                    Security Guard Jobs in Rajasthan & <span className="text-blue-600">Direct Joining</span>
                   </>
                 )}
               </h1>
