@@ -5,25 +5,25 @@ const SIZE_CONFIGS = {
     icon: 'h-7 w-7 sm:h-8 sm:w-8',
     text: 'text-sm sm:text-base',
     dot: 'text-[10px] sm:text-xs',
-    tagline: 'text-[8px] sm:text-[9px]',
-  },
-  md: {
-    icon: 'h-8 w-8 sm:h-10 sm:w-10',
-    text: 'text-sm sm:text-base md:text-lg',
-    dot: 'text-xs sm:text-sm',
-    tagline: 'text-[8.5px] sm:text-[9.5px]',
-  },
-  lg: {
-    icon: 'h-10 w-10 sm:h-12 sm:w-14',
-    text: 'text-lg sm:text-2xl',
-    dot: 'text-sm sm:text-base',
     tagline: 'text-[10px] sm:text-[11px]',
   },
-  xl: {
-    icon: 'h-14 w-14 sm:h-16 sm:w-20',
-    text: 'text-2xl sm:text-3xl md:text-4xl',
-    dot: 'text-base sm:text-lg',
+  md: {
+    icon: 'h-9 w-9 sm:h-12 sm:w-12 md:h-[50px] md:w-[50px]',
+    text: 'text-base sm:text-2xl md:text-[26px]',
+    dot: 'text-xs sm:text-base md:text-lg',
+    tagline: 'text-[10.5px] sm:text-[12.5px]',
+  },
+  lg: {
+    icon: 'h-11 w-11 sm:h-14 sm:w-14',
+    text: 'text-xl sm:text-3xl md:text-4xl',
+    dot: 'text-sm sm:text-xl',
     tagline: 'text-xs sm:text-sm',
+  },
+  xl: {
+    icon: 'h-14 w-14 sm:h-18 sm:w-18',
+    text: 'text-2xl sm:text-4xl md:text-5xl',
+    dot: 'text-base sm:text-2xl',
+    tagline: 'text-sm sm:text-base',
   },
 };
 
@@ -63,12 +63,14 @@ export default function Logo({
           </span>
         </div>
 
-        {/* Official Brand Tagline with Cyan Accent Lines (Hidden on mobile phones < 640px to prevent navbar squeeze) */}
+        {/* Official Brand Tagline with Cyan Accent Lines (Rendered with full line-height to prevent letter descender cutoffs) */}
         {showTagline && (
-          <div className="hidden sm:flex items-center gap-1.5 mt-1 leading-none">
+          <div className="hidden sm:flex items-center gap-1.5 mt-0.5 leading-normal pb-0.5 overflow-visible">
             <span className="h-[1.5px] w-2 bg-blue-400 rounded-full shrink-0" />
             <span
-              className={`${cfg.tagline} font-bold tracking-tight text-slate-500 whitespace-nowrap truncate`}
+              className={`${cfg.tagline} font-semibold tracking-tight ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              } whitespace-nowrap`}
             >
               Right Job. Right People. Right Security.
             </span>

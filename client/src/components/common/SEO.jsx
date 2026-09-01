@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
 export default function SEO({
-  title = "SecurityJob.in — India's Security Recruitment Platform",
-  description = "India's focused recruitment platform for security jobs. Discover and apply for Security Guard, Supervisor, CCTV Operator, Armed Guard, Bouncer, and Facility roles across India.",
-  keywords = "Security Jobs, Security Guard Jobs, Security Supervisor, Lady Guard, Bouncer, Armed Guard, CCTV Operator, Jaipur, Delhi NCR, India",
+  title = "SecurityJob.in — Rajasthan's #1 Security Recruitment Platform",
+  description = "Rajasthan's focused recruitment portal for security jobs. Discover and apply for Security Guard, Supervisor, CCTV Operator, Armed Guard, Bouncer, and Facility roles across Jaipur, Jodhpur, Udaipur, Kota, Alwar, and all Rajasthan districts.",
+  keywords = "Security Jobs Rajasthan, Security Guard Jobs Jaipur, Security Supervisor, Lady Guard, Bouncer, Armed Guard, CCTV Operator, Jaipur, Jodhpur, Udaipur, Kota, Ajmer, Alwar, Bhiwadi, Rajasthan",
   canonicalUrl = "https://securityjob.in/",
   structuredData = null,
 }) {
