@@ -4,12 +4,16 @@ import {
   MessageSquare, 
   MapPin, 
   CheckCircle2, 
-  ArrowUpRight 
+  ArrowUpRight,
+  Phone,
+  Mail,
+  Building,
+  Award
 } from 'lucide-react';
 import Logo from '../common/Logo.jsx';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919999900000';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,8 +25,8 @@ export default function Footer() {
         { label: 'Security Guard (गार्ड)', href: '/jobs/security-guard' },
         { label: 'Security Supervisor (सुपरवाइजर)', href: '/jobs/security-supervisor' },
         { label: 'Lady Guard (लेडी गार्ड)', href: '/jobs/lady-security-guard' },
-        { label: 'CCTV Operator (सीसीटीवी)', href: '/jobs/cctv-operator' },
-        { label: 'Armed Guard (गनमैन)', href: '/jobs/armed-guard' },
+        { label: 'Gunman (गनमैन)', href: '/jobs/gunman' },
+        { label: 'Armed Guard (हथियारबंद गार्ड)', href: '/jobs/armed-guard' },
         { label: 'Bouncer (बाउंसर)', href: '/jobs/bouncer' },
         { label: 'Field Officer (फील्ड ऑफिसर)', href: '/jobs/field-officer' },
       ]
@@ -30,8 +34,8 @@ export default function Footer() {
         { label: 'Security Guard Jobs', href: '/jobs/security-guard' },
         { label: 'Security Supervisor Jobs', href: '/jobs/security-supervisor' },
         { label: 'Lady Security Guard Jobs', href: '/jobs/lady-security-guard' },
-        { label: 'CCTV Operator Jobs', href: '/jobs/cctv-operator' },
-        { label: 'Armed Guard & Gunman', href: '/jobs/armed-guard' },
+        { label: 'Gunman & Armed Guard', href: '/jobs/gunman' },
+        { label: 'Armed Guard Specialist', href: '/jobs/armed-guard' },
         { label: 'Bouncer & Event Security', href: '/jobs/bouncer' },
         { label: 'Field Officer Jobs', href: '/jobs/field-officer' },
       ];
@@ -89,8 +93,8 @@ export default function Footer() {
             <Logo size="lg" variant="light" />
             <p className="text-slate-500 text-xs sm:text-sm leading-relaxed max-w-lg">
               {isHindi
-                ? 'राजस्थान का 100% फ्री सिक्योरिटी जॉब पोर्टल। सिक्योरिटी गार्ड, सुपरवाइजर, लेडी गार्ड, गनमैन व सीसीटीवी ऑपरेटर की भर्ती। ₹0 फीस और सीधी जॉइनिंग।'
-                : "Rajasthan's 100% free job application platform for security guards, supervisors, CCTV operators, and security staff. Fast 2-minute mobile registration with zero charges and direct job joining."}
+                ? 'राजस्थान का 100% फ्री सिक्योरिटी जॉब पोर्टल। सिक्योरिटी गार्ड, सुपरवाइजर, लेडी गार्ड, गनमैन व बाउंसर की भर्ती। ₹0 फीस और सीधी जॉइनिंग।'
+                : "Rajasthan's 100% free job application platform for security guards, supervisors, gunmen, and security staff. Fast 2-minute mobile registration with zero charges and direct job joining."}
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -238,13 +242,59 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* ========================================================================= */}
+        {/* POWERED BY AVIJIT ENTERPRISES - IMPRESSIVE CORPORATE FOOTER CARD */}
+        {/* ========================================================================= */}
+        <div className="my-8 p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-navy-900 to-slate-950 text-white shadow-lg border border-slate-800/80">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-black tracking-wide uppercase">
+                  <Building className="w-3.5 h-3.5 text-blue-400" />
+                  Powered By AVIJIT ENTERPRISES
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  Govt. MSME Registered
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Verified Portal
+                </span>
+              </div>
+
+              <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-300">
+                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <p className="leading-relaxed">
+                  <strong className="text-white font-semibold">{isHindi ? 'पंजीकृत कार्यालय' : 'Registered Office'}:</strong> 159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              <a
+                href="tel:+919828044998"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs sm:text-sm transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Phone className="w-4 h-4 text-emerald-400" />
+                <span>+91 98280 44998</span>
+              </a>
+
+              <a
+                href="mailto:bansalvicky738@gmail.com"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Mail className="w-4 h-4 text-white" />
+                <span>bansalvicky738@gmail.com</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom Copyright */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
           <p>
-            &copy; {currentYear} SecurityJob.in.{' '}
-            {isHindi
-              ? 'राजस्थान के सुरक्षा कर्मियों के लिए 100% फ्री जॉब पोर्टल।'
-              : '100% Free Job Portal for Security Personnel in Rajasthan.'}
+            &copy; {currentYear} SecurityJob.in &middot; Powered by <strong>Avijit Enterprises</strong>. {isHindi ? 'सर्वाधिकार सुरक्षित।' : 'All Rights Reserved.'}
           </p>
           <div className="flex items-center gap-3">
             <Link to="/privacy-policy" className="hover:text-slate-600">Privacy Policy</Link>

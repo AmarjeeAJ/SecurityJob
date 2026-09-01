@@ -4,9 +4,13 @@ import {
   Phone, 
   MessageSquare, 
   CheckCircle2, 
-  Users, 
   HelpCircle,
-  Sparkles
+  Sparkles,
+  MapPin,
+  Mail,
+  Building,
+  Award,
+  Clock
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar.jsx';
 import Footer from '../components/layout/Footer.jsx';
@@ -15,10 +19,14 @@ import SEO from '../components/common/SEO.jsx';
 import TextInput from '../components/common/TextInput.jsx';
 import TextAreaInput from '../components/common/TextAreaInput.jsx';
 import { submitContactMessage } from '../services/inquiry.service.js';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919999900000';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
 
 export default function ContactPage() {
+  const { language } = useLanguage();
+  const isHindi = language === 'hi';
+
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -39,7 +47,11 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.mobile || !formData.message) {
-      setErrorMsg('Please enter your name, mobile number, and message.');
+      setErrorMsg(
+        isHindi
+          ? 'कृपया अपना नाम, मोबाइल नंबर और संदेश दर्ज करें।'
+          : 'Please enter your name, mobile number, and message.'
+      );
       return;
     }
     setErrorMsg('');
@@ -49,7 +61,11 @@ export default function ContactPage() {
       const res = await submitContactMessage(formData);
       setSubmittedResult(res);
     } catch (err) {
-      setErrorMsg('Failed to send message. Please connect via WhatsApp.');
+      setErrorMsg(
+        isHindi
+          ? 'संदेश भेजने में विफल। कृपया सीधे WhatsApp पर संपर्क करें।'
+          : 'Failed to send message. Please connect via WhatsApp.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -58,8 +74,8 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between mobile-safe-bottom">
       <SEO
-        title="Candidate Support Desk — SecurityJob.in"
-        description="Get in touch with SecurityJob.in candidate support. Inquire about your application status, job openings, or document verification via WhatsApp or message."
+        title={isHindi ? "उम्मीदवार सहायता केंद्र (Contact Support) — SecurityJob.in | Avijit Enterprises" : "Candidate Support Desk — SecurityJob.in | Avijit Enterprises"}
+        description={isHindi ? "SecurityJob.in (Avijit Enterprises, जयपुर) सहायता डेस्क से संपर्क करें। अपने फॉर्म स्टेटस, नई जॉब्स या जरूरी डॉक्युमेंट्स की जानकारी WhatsApp या फोन +91 98280 44998 पर प्राप्त करें।" : "Get in touch with SecurityJob.in (Avijit Enterprises, Jaipur). Inquire about your application status, job openings, or document verification via WhatsApp or call +91 98280 44998."}
       />
 
       <Navbar />
@@ -70,15 +86,17 @@ export default function ContactPage() {
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-4">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
               <Phone className="w-3.5 h-3.5" />
-              Candidate Support Desk
+              {isHindi ? 'कैंडिडेट सहायता केंद्र (Support Desk)' : 'Candidate Support Desk'}
             </span>
 
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              We're Here to Help You
+              {isHindi ? 'हम आपकी सहायता के लिए तैयार हैं' : "We're Here to Help You"}
             </h1>
 
             <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
-              Have a question about your job application, candidate ID, or open security vacancies? Reach out and our support desk will assist you.
+              {isHindi
+                ? 'अपने आवेदन फॉर्म, कैंडिडेट आईडी या सिक्योरिटी जॉब वैकेंसी से जुड़ा कोई भी सवाल हो, हमारी सपोर्ट टीम से संपर्क करें।'
+                : 'Have a question about your job application, candidate ID, or open security vacancies? Reach out and our support desk will assist you.'}
             </p>
           </div>
         </section>
@@ -87,74 +105,119 @@ export default function ContactPage() {
         <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-              {/* Left Column: Direct Candidate Channels (5 cols) */}
+              {/* Left Column: Direct Candidate Channels & Corporate Info (5 cols) */}
               <div className="lg:col-span-5 space-y-6">
-                {/* WhatsApp Channel */}
+                
+                {/* 1. WhatsApp Channel */}
                 <div className="p-6 rounded-3xl bg-emerald-50/70 border border-emerald-200 space-y-3 shadow-2xs">
                   <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-xs">
                       <MessageSquare className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">WhatsApp Helpdesk</h3>
-                      <p className="text-xs text-slate-500">Fastest response for candidates</p>
+                      <h3 className="text-base font-bold text-slate-900">
+                        {isHindi ? 'WhatsApp हेल्पलाइन' : 'WhatsApp Helpdesk'}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        +91 98280 44998 &middot; {isHindi ? 'सबसे तेज़ जवाब' : 'Fastest Response'}
+                      </p>
                     </div>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Message us with your Candidate ID for fast application status checks or general questions about job openings.
+                    {isHindi
+                      ? 'अपनी कैंडिडेट आईडी या जॉब से जुड़ा सवाल सीधे WhatsApp पर भेजें और तुरंत सहायता पाएं।'
+                      : 'Message us with your Candidate ID for fast application status checks or general questions about job openings.'}
                   </p>
                   <a
-                    href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi SecurityJob Team, I am looking for a job and have a question.')}`}
+                    href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(isHindi ? 'नमस्ते SecurityJob टीम, मुझे जॉब संबंधित सहायता चाहिए।' : 'Hi SecurityJob Team, I am looking for a job and have a question.')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-all"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-all cursor-pointer"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    Chat on WhatsApp Now
+                    {isHindi ? 'WhatsApp पर चैट करें' : 'Chat on WhatsApp Now'}
                   </a>
                 </div>
 
-                {/* Candidate Quick Link */}
-                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 space-y-3 shadow-2xs">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
-                      <Sparkles className="w-6 h-6" />
+                {/* 2. Registered Office & Corporate Entity Card */}
+                <div className="p-6 rounded-3xl bg-white border border-slate-200/90 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                        <Building className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          {isHindi ? 'पंजीकृत उद्यम' : 'Registered Enterprise'}
+                        </span>
+                        <h3 className="text-sm font-extrabold text-slate-900">
+                          AVIJIT ENTERPRISES
+                        </h3>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-base font-bold text-slate-900">New Job Seeker?</h3>
-                      <p className="text-xs text-slate-500">Free online application</p>
+                    <span className="px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold">
+                      MSME Micro
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs text-slate-600">
+                    <div className="flex items-start gap-2.5">
+                      <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-slate-800 block">
+                          {isHindi ? 'कार्यालय का पता' : 'Office Address'}:
+                        </strong>
+                        <span>159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <Phone className="w-4 h-4 text-blue-600 shrink-0" />
+                      <div>
+                        <strong className="text-slate-800 mr-1">{isHindi ? 'फोन / मोबाइल' : 'Phone'}:</strong>
+                        <a href="tel:+919828044998" className="text-blue-600 hover:underline font-bold">
+                          +91 98280 44998
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <Mail className="w-4 h-4 text-blue-600 shrink-0" />
+                      <div>
+                        <strong className="text-slate-800 mr-1">{isHindi ? 'ईमेल' : 'Email'}:</strong>
+                        <a href="mailto:bansalvicky738@gmail.com" className="text-blue-600 hover:underline font-semibold">
+                          bansalvicky738@gmail.com
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 pt-1 text-slate-500">
+                      <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span>{isHindi ? 'सोमवार से शनिवार (9:00 AM – 7:00 PM)' : 'Mon – Sat (9:00 AM – 7:00 PM IST)'}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    If you haven't applied yet, register your profile for free in 2 minutes to start getting matched with jobs.
-                  </p>
-                  <Link
-                    to="/apply/security-guard"
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-xs"
-                  >
-                    Start Free Application
-                  </Link>
                 </div>
 
-                {/* Help FAQ Quick Link */}
-                <div className="p-6 rounded-3xl bg-white border border-slate-200/80 space-y-3 shadow-2xs">
+                {/* 3. Help FAQ Quick Link */}
+                <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex items-center justify-between gap-4 shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-2xl bg-slate-100 text-slate-700">
-                      <HelpCircle className="w-6 h-6" />
+                    <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700">
+                      <HelpCircle className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">Read FAQs</h3>
-                      <p className="text-xs text-slate-500">Common candidate questions</p>
+                      <h4 className="text-xs font-bold text-slate-900">
+                        {isHindi ? 'सामान्य सवाल व जवाब' : 'Common Questions'}
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        {isHindi ? 'सैलरी, जॉइनिंग व दस्तावेज' : 'Salaries, documents & joining'}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Check answers to common questions about salaries, documents, and joining.
-                  </p>
                   <Link
                     to="/help"
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-semibold text-xs sm:text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors shrink-0"
                   >
-                    View Help & FAQs
+                    {isHindi ? 'FAQs देखें' : 'View FAQs'}
                   </Link>
                 </div>
               </div>
@@ -164,13 +227,15 @@ export default function ContactPage() {
                 <div className="rounded-3xl bg-white border border-slate-200/80 p-6 sm:p-10 shadow-sm space-y-6">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                      Send a Message
+                      {isHindi ? 'संदेश भेजें' : 'Send a Message'}
                     </span>
                     <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
-                      Candidate Support Request
+                      {isHindi ? 'कैंडिडेट सहायता अनुरोध' : 'Candidate Support Request'}
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                      Fill in your details below and our team will get back to you promptly.
+                      {isHindi
+                        ? 'नीचे अपना विवरण भरें, हमारी टीम जल्द ही आपसे संपर्क करेगी।'
+                        : 'Fill in your details below and our team will get back to you promptly.'}
                     </p>
                   </div>
 
@@ -180,17 +245,17 @@ export default function ContactPage() {
                         <CheckCircle2 className="w-6 h-6" />
                       </div>
                       <h4 className="font-bold text-slate-900 text-base">
-                        Message Sent Successfully!
+                        {isHindi ? 'संदेश सफलतापूर्वक भेजा गया!' : 'Message Sent Successfully!'}
                       </h4>
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
-                        {submittedResult.message}
+                        {submittedResult.message || (isHindi ? 'आपका संदेश प्राप्त हो गया है। हमारी टीम जल्द ही आपसे संपर्क करेगी।' : 'Your message has been received. Our team will contact you shortly.')}
                       </p>
                       <button
                         type="button"
                         onClick={() => setSubmittedResult(null)}
                         className="text-xs font-semibold text-blue-600 underline pt-2 cursor-pointer"
                       >
-                        Send Another Message
+                        {isHindi ? 'दूसरा संदेश भेजें' : 'Send Another Message'}
                       </button>
                     </div>
                   ) : (
@@ -204,19 +269,19 @@ export default function ContactPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <TextInput
                           id="name"
-                          label="Your Full Name"
+                          label={isHindi ? 'आपका पूरा नाम (Full Name)' : 'Your Full Name'}
                           required
-                          placeholder="e.g. Ramesh Sharma"
+                          placeholder={isHindi ? 'उदा. रमेश शर्मा' : 'e.g. Ramesh Sharma'}
                           value={formData.name}
                           onChange={(e) => handleChange('name', e.target.value)}
                         />
 
                         <TextInput
                           id="mobile"
-                          label="Mobile Number"
+                          label={isHindi ? 'मोबाइल नंबर (Mobile Number)' : 'Mobile Number'}
                           required
                           type="tel"
-                          placeholder="e.g. 9876543210"
+                          placeholder={isHindi ? 'उदा. 9828044998' : 'e.g. 9828044998'}
                           value={formData.mobile}
                           onChange={(e) => handleChange('mobile', e.target.value)}
                         />
@@ -225,17 +290,17 @@ export default function ContactPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <TextInput
                           id="candidateId"
-                          label="Candidate ID (If Registered)"
-                          placeholder="e.g. SJ-123456"
+                          label={isHindi ? 'कैंडिडेट आईडी (यदि उपलब्ध हो)' : 'Candidate ID (If Registered)'}
+                          placeholder={isHindi ? 'उदा. SJ-123456' : 'e.g. SJ-123456'}
                           value={formData.candidateId}
                           onChange={(e) => handleChange('candidateId', e.target.value)}
                         />
 
                         <TextInput
                           id="email"
-                          label="Email Address (Optional)"
+                          label={isHindi ? 'ईमेल पता (वैकल्पिक)' : 'Email Address (Optional)'}
                           type="email"
-                          placeholder="e.g. ramesh@example.com"
+                          placeholder="e.g. name@example.com"
                           value={formData.email}
                           onChange={(e) => handleChange('email', e.target.value)}
                         />
@@ -243,18 +308,18 @@ export default function ContactPage() {
 
                       <TextInput
                         id="subject"
-                        label="Subject / Topic"
-                        placeholder="e.g. Application Status / Document Query / Salary Info"
+                        label={isHindi ? 'विषय / समस्या का प्रकार' : 'Subject / Topic'}
+                        placeholder={isHindi ? 'उदा. आवेदन स्थिति / दस्तावेज सत्यापन / सैलरी जानकारी' : 'e.g. Application Status / Document Query / Salary Info'}
                         value={formData.subject}
                         onChange={(e) => handleChange('subject', e.target.value)}
                       />
 
                       <TextAreaInput
                         id="message"
-                        label="Your Message / Query"
+                        label={isHindi ? 'आपका संदेश / सवाल' : 'Your Message / Query'}
                         required
                         rows={4}
-                        placeholder="Please write your question here..."
+                        placeholder={isHindi ? 'कृपया अपना सवाल या संदेश यहाँ लिखें...' : 'Please write your question here...'}
                         value={formData.message}
                         onChange={(e) => handleChange('message', e.target.value)}
                       />
@@ -264,7 +329,9 @@ export default function ContactPage() {
                         disabled={isSubmitting}
                         className="w-full py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-60"
                       >
-                        {isSubmitting ? 'Sending Message...' : 'Send Message'}
+                        {isSubmitting 
+                          ? (isHindi ? 'संदेश भेजा जा रहा है...' : 'Sending Message...') 
+                          : (isHindi ? 'संदेश भेजें (Send Message)' : 'Send Message')}
                       </button>
                     </form>
                   )}

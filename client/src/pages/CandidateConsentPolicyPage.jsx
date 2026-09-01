@@ -1,101 +1,69 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  FileCheck, 
+  UserCheck, 
+  PhoneCall, 
+  FileText, 
+  Building, 
+  RotateCcw, 
+  AlertCircle, 
+  Scale, 
+  HelpCircle, 
+  CheckCircle2, 
+  ChevronDown, 
+  ShieldCheck,
+  MessageSquare
+} from 'lucide-react';
 import Navbar from '../components/layout/Navbar.jsx';
 import Footer from '../components/layout/Footer.jsx';
-import Card from '../components/common/Card.jsx';
+import MobileBottomBar from '../components/layout/MobileBottomBar.jsx';
+import SEO from '../components/common/SEO.jsx';
 import { useNoIndex } from '../hooks/useNoIndex.js';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
 
-const SECTIONS = [
-  { id: 'overview', title: '1. Overview' },
-  { id: 'what-you-consent-to', title: '2. What You Are Consenting To' },
-  { id: 'communication', title: '3. Consent to Be Contacted' },
-  { id: 'documents', title: '4. Consent to Document Upload' },
-  { id: 'sharing', title: '5. Consent to Share With Employers' },
-  { id: 'withdrawing', title: '6. Withdrawing Your Consent' },
-  { id: 'reapplying', title: '7. Re-Applying' },
-  { id: 'changes', title: '8. Changes to This Policy' },
-  { id: 'contact', title: '9. Contact Us' },
-];
-
-const LAST_UPDATED = 'August 8, 2026';
-
-const ICONS = {
-  overview: <path strokeLinecap="round" strokeLinejoin="round" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10ZM12 16v-4m0-4h.01" />,
-  'what-you-consent-to': <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4M20.618 5.984A11 11 0 0 1 12 2 11 11 0 0 1 3.382 5.984 11 11 0 0 0 12 22a11 11 0 0 0 8.618-16.016Z" />,
-  communication: <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 0 1 2-2h2.28a1 1 0 0 1 .95.68l1.2 3.6a1 1 0 0 1-.27 1.05L7.6 9.9a12 12 0 0 0 6.5 6.5l1.58-1.56a1 1 0 0 1 1.05-.27l3.6 1.2a1 1 0 0 1 .68.95V19a2 2 0 0 1-2 2h-1C10.1 21 3 13.9 3 5Z" />,
-  documents: <path strokeLinecap="round" strokeLinejoin="round" d="M9 3h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1V4a1 1 0 0 1 1-1Zm0 5h6M9 12h6M9 16h4" />,
-  sharing: <path strokeLinecap="round" strokeLinejoin="round" d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM8.6 13.5l6.8-4M8.6 10.5l6.8 4" />,
-  withdrawing: <path strokeLinecap="round" strokeLinejoin="round" d="M18 6 6 18M6 6l12 12" />,
-  reapplying: <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5" />,
-  changes: <path strokeLinecap="round" strokeLinejoin="round" d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4l3 3" />,
-  contact: <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h16v12H7l-3 3V4Z" />,
-};
-
-function SectionIcon({ id }) {
-  return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-500/15 text-gold-600">
-      <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2">
-        {ICONS[id]}
-      </svg>
-    </span>
-  );
-}
-
-function Section({ id, title, index, children }) {
-  return (
-    <section
-      id={id}
-      className="reveal scroll-mt-24 border-b border-slate-100 py-8 first:pt-0 last:border-b-0"
-      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
-    >
-      <div className="flex items-center gap-3">
-        <SectionIcon id={id} />
-        <h2 className="text-lg font-bold text-navy-900 sm:text-xl">{title}</h2>
-      </div>
-      <div className="prose prose-slate mt-4 max-w-none text-sm leading-relaxed text-slate-600 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1.5 [&_strong]:font-semibold [&_strong]:text-navy-900">
-        {children}
-      </div>
-    </section>
-  );
-}
+const LAST_UPDATED = 'September 1, 2026';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
 
 export default function CandidateConsentPolicyPage() {
   useNoIndex();
+  const { language } = useLanguage();
+  const isHindi = language === 'hi';
 
-  const [activeId, setActiveId] = useState(SECTIONS[0].id);
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [activeSection, setActiveSection] = useState('overview');
   const [tocOpen, setTocOpen] = useState(false);
-  const sectionRefs = useRef({});
+
+  const SECTIONS = [
+    { id: 'overview', title: isHindi ? '1. सहमति नीति का उद्देश्य' : '1. Consent Policy Overview', icon: FileCheck },
+    { id: 'what-you-consent-to', title: isHindi ? '2. आप किन बातों की सहमति देते हैं' : '2. What You Agree To', icon: CheckCircle2 },
+    { id: 'communication', title: isHindi ? '3. कॉल व अलर्ट की अनुमति' : '3. Communication & Job Alerts', icon: PhoneCall },
+    { id: 'documents', title: isHindi ? '4. दस्तावेज सत्यापन सुरक्षा' : '4. Document Verification Consent', icon: FileText },
+    { id: 'sharing', title: isHindi ? '5. नियोक्ताओं से मिलान' : '5. Sharing With Hiring Agencies', icon: Building },
+    { id: 'withdrawing', title: isHindi ? '6. सहमति वापस लेने की सुविधा' : '6. Withdrawing Your Consent', icon: RotateCcw },
+    { id: 'reapplying', title: isHindi ? '7. प्रोफाइल अपडेट व पुनः आवेदन' : '7. Re-Applying & Profile Updates', icon: UserCheck },
+    { id: 'changes', title: isHindi ? '8. नीति में संशोधन' : '8. Policy Modifications', icon: Scale },
+    { id: 'contact', title: isHindi ? '9. आधिकारिक सहायता डेस्क' : '9. Official Support Desk', icon: HelpCircle },
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id);
-        }
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
       },
-      { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
+      { rootMargin: '-100px 0px -60% 0px' }
     );
 
     SECTIONS.forEach(({ id }) => {
       const el = document.getElementById(id);
-      if (el) {
-        sectionRefs.current[id] = el;
-        observer.observe(el);
-      }
+      if (el) observer.observe(el);
     });
 
-    function handleScroll() {
-      setShowBackToTop(window.scrollY > 480);
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+    return () => observer.disconnect();
+  }, [language]);
 
   function goToSection(id) {
     setTocOpen(false);
@@ -104,179 +72,353 @@ export default function CandidateConsentPolicyPage() {
 
   return (
     <div className="bg-[#f8fafc] min-h-screen flex flex-col justify-between mobile-safe-bottom">
-      <Navbar variant="light" />
+      <SEO
+        title={isHindi ? "उम्मीदवार सहमति नीति (Candidate Consent) — SecurityJob.in | Avijit Enterprises" : "Candidate Consent & Placement Policy — SecurityJob.in | Avijit Enterprises"}
+        description={isHindi ? "SecurityJob.in उम्मीदवार सहमति नीति — जानिए फॉर्म सबमिट करते समय आप किन बातों की सहमति देते हैं और आपके अधिकार क्या हैं।" : "Candidate Consent and data handling policy on SecurityJob.in by Avijit Enterprises, Jaipur."}
+      />
 
-      <div className="reveal relative mx-auto max-w-7xl overflow-hidden px-4 pb-10 pt-12 text-center sm:px-6 sm:pt-16">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-6 h-56 w-56 -translate-x-1/2 rounded-full bg-gold-400/25 blur-3xl"
-        />
-        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 shadow-[0_10px_30px_-8px_rgba(10,21,48,0.5)]">
-          <svg viewBox="0 0 24 24" className="h-8 w-8 text-gold-300" fill="none" stroke="currentColor" strokeWidth="1.75">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4M20.618 5.984A11 11 0 0 1 12 2 11 11 0 0 1 3.382 5.984 11 11 0 0 0 12 22a11 11 0 0 0 8.618-16.016Z" />
-          </svg>
-        </div>
-        <h1 className="relative mt-5 text-2xl font-extrabold text-navy-900 sm:text-4xl">Candidate Consent Policy</h1>
-        <p className="relative mt-2 text-sm text-slate-500">Last updated: {LAST_UPDATED}</p>
-        <p className="relative mx-auto mt-4 max-w-2xl text-sm text-slate-600 sm:text-base">
-          This page explains, separately from our Privacy Policy, exactly what you are agreeing to when you check
-          the consent box and submit the SecurityJob application form.
-        </p>
-      </div>
+      <Navbar />
 
-      <div className="reveal mx-auto max-w-7xl px-4 sm:px-6 lg:hidden" style={{ animationDelay: '80ms' }}>
-        <Card className="mb-6 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setTocOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3.5 text-left text-sm font-semibold text-navy-900"
-          >
-            <span className="flex items-center gap-2">
-              <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-              </svg>
-              Contents
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="bg-light-hero border-b border-slate-200/80 pt-12 pb-16 text-center relative overflow-hidden">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-4 relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-2xs">
+              <FileCheck className="w-3.5 h-3.5 text-blue-600" />
+              {isHindi ? 'उम्मीदवार सहमति व सत्यापन' : 'Candidate Consent & Verification'}
             </span>
-            <svg
-              viewBox="0 0 24 24"
-              className={`h-4 w-4 text-slate-400 transition-transform ${tocOpen ? 'rotate-180' : ''}`}
-              fill="none" stroke="currentColor" strokeWidth="2"
+
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+              {isHindi ? 'उम्मीदवार सहमति नीति' : 'Candidate Consent Policy'}
+            </h1>
+
+            <p className="text-xs sm:text-sm font-semibold text-slate-500">
+              {isHindi ? `अंतिम अद्यतन: ${LAST_UPDATED}` : `Last Updated: ${LAST_UPDATED}`} &middot; {isHindi ? 'लागू: SecurityJob.in एवं Avijit Enterprises' : 'Operated by Avijit Enterprises, Jaipur'}
+            </p>
+
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed pt-1">
+              {isHindi
+                ? 'यह पृष्ठ अलग से स्पष्ट करता है कि जब आप फॉर्म में सहमति बॉक्स चेक करते हैं, तो आप किन शर्तों की अनुमति दे रहे हैं और आपके डेटा पर आपका क्या नियंत्रण है।'
+                : 'This document transparently explains what permissions you grant when checking the consent checkbox on the application form and how you stay in full control of your details.'}
+            </p>
+
+            {/* 3 High-Trust Highlight Badges */}
+            <div className="pt-3 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs font-bold text-slate-700">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {isHindi ? 'स्पष्ट व पारदर्शी सहमति' : 'Explicit Transparent Opt-In'}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                {isHindi ? 'सुरक्षित दस्तावेज सत्यापन' : 'Encrypted Document Vault'}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <RotateCcw className="w-4 h-4 text-purple-600" />
+                {isHindi ? 'सहमति वापस लेने की सुविधा' : 'Withdraw Anytime'}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Mobile Collapsible Table of Contents */}
+        <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:hidden">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setTocOpen(!tocOpen)}
+              className="flex w-full items-center justify-between px-5 py-3.5 text-left text-sm font-bold text-slate-900 bg-slate-50/80 hover:bg-slate-100 transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
-          {tocOpen && (
-            <nav className="border-t border-slate-100 px-2 py-2">
-              {SECTIONS.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => goToSection(s.id)}
-                  className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    activeId === s.id ? 'bg-gold-500/10 font-semibold text-navy-900' : 'text-slate-500'
-                  }`}
+              <span className="flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-blue-600" />
+                {isHindi ? 'विषय सूची (Table of Contents)' : 'Table of Contents'}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${tocOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {tocOpen && (
+              <nav className="p-3 border-t border-slate-100 space-y-1">
+                {SECTIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => goToSection(s.id)}
+                    className={`block w-full rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors ${
+                      activeSection === s.id
+                        ? 'bg-blue-50 text-blue-700 font-bold'
+                        : 'text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {s.title}
+                  </button>
+                ))}
+              </nav>
+            )}
+          </div>
+        </div>
+
+        {/* Main Content Layout with Sticky Sidebar */}
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 items-start">
+            
+            {/* Desktop Sticky Sidebar (4 cols) */}
+            <aside className="hidden lg:block lg:col-span-4 sticky top-24 space-y-6">
+              <div className="rounded-3xl bg-white border border-slate-200/90 p-5 shadow-xs space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">
+                  {isHindi ? 'अनुभाग नेविगेशन' : 'Consent Navigation'}
+                </h3>
+                <nav className="space-y-1">
+                  {SECTIONS.map((s) => {
+                    const Icon = s.icon;
+                    const isSelected = activeSection === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => goToSection(s.id)}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                        }`}
+                      >
+                        <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                        <span className="truncate">{s.title}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Support Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 to-navy-950 text-white border border-slate-800 shadow-md space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-400/30">
+                    <HelpCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">
+                      {isHindi ? 'सहमति संबंधी सवाल?' : 'Consent Questions?'}
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      {isHindi ? 'कैंडिडेट हेल्पडेस्क' : 'Direct Support Desk'}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {isHindi
+                    ? 'यदि आप अपनी सहमति वापस लेना चाहते हैं या दस्तावेज हटाना चाहते हैं, तो तुरंत संपर्क करें।'
+                    : 'To revoke consent or remove your uploaded verification files, message our team.'}
+                </p>
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(isHindi ? 'नमस्ते, मुझे Candidate Consent Policy के बारे में सहायता चाहिए।' : 'Hello, I have a question regarding the Candidate Consent Policy.')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-xs text-white transition-all shadow-xs"
                 >
-                  {s.title}
-                </button>
-              ))}
-            </nav>
-          )}
-        </Card>
-      </div>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  {isHindi ? 'WhatsApp हेल्पलाइन' : 'WhatsApp Desk'}
+                </a>
+              </div>
+            </aside>
 
-      <main className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr]">
-          <aside className="hidden lg:block">
-            <nav className="sticky top-24 flex flex-col gap-0.5 border-l border-slate-200 pl-4">
-              {SECTIONS.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => goToSection(s.id)}
-                  className={`-ml-px border-l-2 py-1.5 pl-4 text-left text-sm transition-colors ${
-                    activeId === s.id
-                      ? 'border-gold-500 font-semibold text-navy-900'
-                      : 'border-transparent text-slate-400 hover:text-navy-700'
-                  }`}
-                >
-                  {s.title}
-                </button>
-              ))}
-            </nav>
-          </aside>
+            {/* Consent Content Card (8 cols) */}
+            <div className="lg:col-span-8 rounded-3xl bg-white border border-slate-200/90 p-6 sm:p-10 lg:p-12 shadow-xs space-y-10 text-slate-700 text-sm leading-relaxed">
+              
+              {/* Section 1: Overview */}
+              <section id="overview" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <FileCheck className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '1. सहमति नीति का उद्देश्य (Consent Policy Overview)' : '1. Consent Policy Overview'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    जब आप SecurityJob.in पर अपना आवेदन जमा करते हैं और सहमति चेकबॉक्स को चुनते हैं, तो आप अपनी पहचान और संपर्क विवरण को सुरक्षित रूप से संसाधित करने की अनुमति देते हैं।
+                  </p>
+                ) : (
+                  <p>
+                    When submitting your application on SecurityJob.in and checking the consent box, you grant explicit consent for us to process your contact details and job preferences for security recruitment matching.
+                  </p>
+                )}
+              </section>
 
-          <Card className="reveal p-6 sm:p-8 lg:p-10" style={{ animationDelay: '120ms' }}>
-            <Section id="overview" title="1. Overview" index={0}>
-              <p>
-                The SecurityJob application form includes a consent checkbox that must be ticked before you can
-                submit your details. This policy explains, in plain language, exactly what that consent covers. It
-                supplements — and does not replace — our{' '}
-                <Link to="/privacy-policy" className="font-semibold text-gold-600 hover:underline">
-                  Privacy Policy
-                </Link>
-                .
-              </p>
-            </Section>
+              {/* Section 2: What you consent to */}
+              <section id="what-you-consent-to" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '2. आप किन बातों की सहमति देते हैं (What You Agree To)' : '2. What You Are Consenting To'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
+                    <li>अपने नाम, उम्र, जिले और कार्य अनुभव को प्रमाणित सुरक्षा कंपनियों के समक्ष प्रस्तुत करने की अनुमति।</li>
+                    <li>नौकरी रिक्तियों, साक्षात्कार समय और चयन स्थिति की सूचना प्राप्त करने की अनुमति।</li>
+                    <li>सरकारी श्रम विनियमों (PSARA, न्यूनतम मजदूरी) के अनुपालन में अपना प्रोफाइल दर्ज कराने की अनुमति।</li>
+                  </ul>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
+                    <li>Allowing your name, age, city preferences, and security experience to be presented to verified hiring employers.</li>
+                    <li>Receiving notifications regarding job vacancies, interview schedules, and placement status.</li>
+                    <li>Enabling statutory verification in compliance with Indian Private Security Agencies regulations (PSARA).</li>
+                  </ul>
+                )}
+              </section>
 
-            <Section id="what-you-consent-to" title="2. What You Are Consenting To" index={1}>
-              <p>By checking the consent box, you confirm that:</p>
-              <ul className="list-disc space-y-1.5 pl-5">
-                <li>The information you have provided in the form is correct to the best of your knowledge</li>
-                <li>SecurityJob and its authorized recruitment partners may contact you regarding suitable employment opportunities</li>
-                <li>You have read and agree to this Candidate Consent Policy and our Privacy Policy</li>
-              </ul>
-            </Section>
+              {/* Section 3: Communication */}
+              <section id="communication" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                    <PhoneCall className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '3. कॉल व संदेश की अनुमति (Communication & Job Alerts)' : '3. Communication & Job Alerts'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    आप सहमत होते हैं कि हमारी रिक्रूटमेंट टीम या अधिकृत नियोक्ता आपके दिए गए मोबाइल नंबर या WhatsApp पर जॉब इंटरव्यू, सैलरी विवरण और जॉइनिंग स्थान की जानकारी देने के लिए कॉल या मैसेज कर सकते हैं।
+                  </p>
+                ) : (
+                  <p>
+                    You authorize our recruitment coordinators and verified hiring employers to contact you via phone call, WhatsApp, or SMS regarding job matches, interview timings, salary structures, and duty locations.
+                  </p>
+                )}
+              </section>
 
-            <Section id="communication" title="3. Consent to Be Contacted" index={2}>
-              <p>
-                You consent to being contacted by phone call, WhatsApp message or SMS at the mobile and WhatsApp
-                numbers you provide, regarding job opportunities that match your profile. We do not use your number
-                for unrelated marketing.
-              </p>
-            </Section>
+              {/* Section 4: Document Verification */}
+              <section id="documents" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '4. पहचान पत्र सत्यापन (Document Verification Consent)' : '4. Document Verification Consent'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 text-purple-900 text-xs font-semibold leading-relaxed">
+                    🔒 <strong>दस्तावेज सुरक्षा:</strong> आधार कार्ड या आईडी अपलोड करना पूरी तरह स्वैच्छिक (वैकल्पिक) है। अपलोड किए गए पहचान पत्र केवल आपकी उम्र और पहचान सत्यापन के लिए उपयोग होते हैं और कभी किसी अन्य उद्देश्य के लिए साझा नहीं किए जाते।
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 text-purple-900 text-xs font-semibold leading-relaxed">
+                    🔒 <strong>Document Security:</strong> Uploading an Aadhaar or identity document is entirely optional. Uploaded files are used solely to verify age and identity eligibility and are never shared for unauthorized third-party purposes.
+                  </div>
+                )}
+              </section>
 
-            <Section id="documents" title="4. Consent to Document Upload" index={3}>
-              <p>
-                If you choose to upload a photo identity document, you consent to it being transmitted securely,
-                stored using a non-identifying file reference, and viewed only by authorized recruitment staff for
-                verification purposes. Uploading a document is always optional and is never required to complete
-                your application.
-              </p>
-            </Section>
+              {/* Section 5: Sharing With Employers */}
+              <section id="sharing" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <Building className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '5. नियोक्ताओं के साथ मिलान (Sharing With Hiring Agencies)' : '5. Sharing With Hiring Agencies'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    हम केवल उन्हीं नियोक्ताओं के साथ आपका प्रोफाइल साझा करते हैं जिनके पास राजस्थान के जिलों (जयपुर, कोटा, जोधपुर आदि) में वास्तविक और वेतन-सत्यापित सुरक्षा पद खाली हैं।
+                  </p>
+                ) : (
+                  <p>
+                    Your profile is shared only with verified security agencies and direct corporate employers having active, wage-compliant openings across Rajasthan districts (Jaipur, Kota, Jodhpur, Udaipur, etc.).
+                  </p>
+                )}
+              </section>
 
-            <Section id="sharing" title="5. Consent to Share With Employers" index={4}>
-              <p>
-                You consent to your application details being shared with our authorized recruitment partners and
-                hiring employers, strictly for the purpose of considering you for a role. We do not sell your
-                information, and it is never shared beyond what is described in our{' '}
-                <Link to="/privacy-policy" className="font-semibold text-gold-600 hover:underline">
-                  Privacy Policy
-                </Link>
-                .
-              </p>
-            </Section>
+              {/* Section 6: Withdrawing */}
+              <section id="withdrawing" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600">
+                    <RotateCcw className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '6. सहमति वापस लेना (Withdrawing Your Consent)' : '6. Withdrawing Your Consent'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    आप कभी भी अपनी सहमति वापस ले सकते हैं। इसके लिए बस हमारे WhatsApp सपोर्ट नंबर या ईमेल पर अपना नाम और कैंडिडेट कोड भेजें, और आपका डेटा हमारे एक्टिव डेटाबेस से हटा दिया जाएगा।
+                  </p>
+                ) : (
+                  <p>
+                    You retain the right to withdraw your consent at any time. Simply message our WhatsApp support desk or email us with your Candidate Code, and your profile will be removed from our active database.
+                  </p>
+                )}
+              </section>
 
-            <Section id="withdrawing" title="6. Withdrawing Your Consent" index={5}>
-              <p>
-                You may withdraw your consent to be contacted, or request that your information be deleted, at any
-                time by reaching out through our{' '}
-                <Link to="/contact" className="font-semibold text-gold-600 hover:underline">
-                  Contact page
-                </Link>
-                . Withdrawing consent stops future outreach but does not affect the lawfulness of anything already
-                done with your information before withdrawal.
-              </p>
-            </Section>
+              {/* Section 7: Reapplying */}
+              <section id="reapplying" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '7. प्रोफाइल अपडेट (Re-Applying & Profile Updates)' : '7. Re-Applying & Profile Updates'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    यदि आपका मोबाइल नंबर वही रहता है और आप दोबारा फॉर्म भरते हैं, तो आपका पुराना प्रोफाइल नवीनतम विवरण (जैसे नया शहर या अनुभव) के साथ अपडेट हो जाता है।
+                  </p>
+                ) : (
+                  <p>
+                    If you submit a new application with the same registered mobile number, your profile is refreshed with your latest details (e.g. updated location or experience) rather than creating duplicate accounts.
+                  </p>
+                )}
+              </section>
 
-            <Section id="reapplying" title="7. Re-Applying" index={6}>
-              <p>
-                If you submit the application form again using the same mobile number, your existing profile is
-                updated with your latest details, and this consent applies to the updated submission as well.
-              </p>
-            </Section>
+              {/* Section 8: Modifications */}
+              <section id="changes" className="scroll-mt-28 space-y-3 pb-8 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700">
+                    <Scale className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '8. नीति में संशोधन (Policy Modifications)' : '8. Policy Modifications'}
+                  </h2>
+                </div>
+                {isHindi ? (
+                  <p>
+                    यदि सहमति के नियमों में कोई महत्वपूर्ण बदलाव किया जाता है, तो इसकी सूचना वेबसाइट पर प्रकाशित की जाएगी।
+                  </p>
+                ) : (
+                  <p>
+                    Any amendments to our consent and verification practices will be posted on this page with an updated timestamp.
+                  </p>
+                )}
+              </section>
 
-            <Section id="changes" title="8. Changes to This Policy" index={7}>
-              <p>
-                We may update this Candidate Consent Policy from time to time. The &ldquo;Last updated&rdquo; date
-                at the top of this page reflects the most recent revision.
-              </p>
-            </Section>
+              {/* Section 9: Contact */}
+              <section id="contact" className="scroll-mt-28 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <HelpCircle className="w-5 h-5" />
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                    {isHindi ? '9. आधिकारिक सहायता डेस्क (Official Support Desk)' : '9. Official Support Desk'}
+                  </h2>
+                </div>
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2 text-xs">
+                  <p className="font-bold text-slate-900">AVIJIT ENTERPRISES (SecurityJob.in Compliance)</p>
+                  <p className="text-slate-600">159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021</p>
+                  <p className="text-slate-600"><strong>{isHindi ? 'हेल्पलाइन:' : 'Helpline:'}</strong> +91 98280 44998 &middot; <strong>{isHindi ? 'ईमेल:' : 'Email:'}</strong> bansalvicky738@gmail.com</p>
+                </div>
+              </section>
 
-            <Section id="contact" title="9. Contact Us" index={8}>
-              <p>
-                If you have questions about this Candidate Consent Policy or wish to withdraw consent, please reach
-                out through our{' '}
-                <Link to="/contact" className="font-semibold text-gold-600 hover:underline">
-                  Contact page
-                </Link>{' '}
-                or the WhatsApp link provided on your registration confirmation screen.
-              </p>
-            </Section>
-          </Card>
+            </div>
+          </div>
         </div>
       </main>
 
       <Footer />
+      <MobileBottomBar />
     </div>
   );
 }

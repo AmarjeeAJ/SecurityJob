@@ -6,7 +6,7 @@ export default function Header() {
   const { t } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-sm">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-4 sm:px-6">
         <Logo size="md" variant="light" />
 

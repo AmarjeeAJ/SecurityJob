@@ -166,25 +166,19 @@ export default function HomePage() {
       ? ROLE_SLUGS
       : ROLE_SLUGS.filter((r) => {
           if (selectedCategory === 'Guarding & Field') {
-            return ['security-guard', 'lady-security-guard', 'armed-guard', 'bouncer', 'bodyguard', 'gunman', 'event-security-guard', 'dog-handler'].includes(r.slug);
+            return ['security-guard', 'lady-security-guard', 'armed-guard', 'bouncer', 'bodyguard', 'gunman', 'event-security-guard'].includes(r.slug);
           }
-          if (selectedCategory === 'Supervisory & Ops') {
-            return ['security-supervisor', 'field-officer', 'facility-supervisor', 'security-inspector', 'security-manager'].includes(r.slug);
+          if (selectedCategory === 'Supervisory & Management') {
+            return ['security-supervisor', 'field-officer', 'security-inspector', 'security-manager'].includes(r.slug);
           }
-          if (selectedCategory === 'Technical & Control') {
-            return ['cctv-operator', 'control-room-operator', 'fire-marshal'].includes(r.slug);
-          }
-          if (selectedCategory === 'Specialized & Logistics') {
-            return ['cash-van-driver', 'atm-custodian', 'housekeeping-staff'].includes(r.slug);
-          }
-          return true;
+          return r.category === selectedCategory;
         });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between mobile-safe-bottom">
       <SEO
         title={isHindi ? "SecurityJob.in — राजस्थान सिक्योरिटी गार्ड व सुपरवाइजर भर्ती 2026 (100% फ्री आवेदन)" : "SecurityJob.in — Find Security Guard & Security Staff Jobs in Rajasthan (100% Free)"}
-        description={isHindi ? "राजस्थान के सभी जिलों (जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि) में सिक्योरिटी गार्ड भर्ती। ₹0 फीस, सीधा ऑनलाइन आवेदन।" : "Apply for verified Security Guard, Supervisor, Lady Guard, and CCTV Operator jobs across Rajasthan (Jaipur, Jodhpur, Udaipur, Kota, Alwar, Neemrana). 100% Free candidate registration."}
+        description={isHindi ? "राजस्थान के सभी जिलों (जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि) में सिक्योरिटी गार्ड भर्ती। ₹0 फीस, सीधा ऑनलाइन आवेदन।" : "Apply for verified Security Guard, Supervisor, Lady Guard, and Armed Guard jobs across Rajasthan (Jaipur, Jodhpur, Udaipur, Kota, Alwar, Neemrana). 100% Free candidate registration."}
       />
 
       <Navbar />
@@ -210,11 +204,11 @@ export default function HomePage() {
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
                 {isHindi ? (
                   <>
-                    राजस्थान में सिक्योरिटी जॉब्स & <span className="text-blue-600">सीधी भर्ती</span>
+                    राजस्थान में सिक्योरिटी गार्ड जॉब्स & <span className="text-blue-600">सीधी भर्ती</span>
                   </>
                 ) : (
                   <>
-                    Security Jobs in Rajasthan & <span className="text-blue-600">Direct Joining</span>
+                    Security Guards Job in Rajasthan & <span className="text-blue-600">Direct Joining</span>
                   </>
                 )}
               </h1>
@@ -222,8 +216,8 @@ export default function HomePage() {
               {/* Sub-headline */}
               <p className="text-xs sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
                 {isHindi
-                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में सिक्योरिटी गार्ड, सुपरवाइजर व सीसीटीवी ऑपरेटर की भर्ती। ₹0 फीस, सरकारी PF व ESIC सुविधा।'
-                  : 'Apply for verified Security Guard, Supervisor, Lady Guard, and CCTV Operator jobs across Jaipur, Jodhpur, Udaipur, Kota, Alwar, and Neemrana. ₹0 fees, statutory PF & ESIC benefits.'}
+                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में सिक्योरिटी गार्ड, सुपरवाइजर, गनमैन व लेडी गार्ड की भर्ती। ₹0 फीस, सरकारी PF व ESIC सुविधा।'
+                  : 'Apply for verified Security Guard, Supervisor, Lady Guard, and Armed Guard jobs across Jaipur, Jodhpur, Udaipur, Kota, Alwar, and Neemrana. ₹0 fees, statutory PF & ESIC benefits.'}
               </p>
 
               {/* Prominent Apply Now Hero Button */}
@@ -242,7 +236,7 @@ export default function HomePage() {
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-all shadow-2xs"
                 >
                   <Briefcase className="w-4 h-4 text-slate-500" />
-                  <span>{isHindi ? 'सभी पद देखें (View Roles)' : 'Browse 19+ Roles'}</span>
+                  <span>{isHindi ? `सभी ${ROLE_SLUGS.length} पद देखें` : `Browse All ${ROLE_SLUGS.length} Roles`}</span>
                 </Link>
               </div>
 
@@ -254,7 +248,7 @@ export default function HomePage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
-                  {isHindi ? '19+ सिक्योरिटी पद' : '19+ Security Roles'}
+                  {isHindi ? `${ROLE_SLUGS.length}+ सिक्योरिटी पद` : `${ROLE_SLUGS.length}+ Security Roles`}
                 </span>
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
@@ -271,7 +265,7 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================================= */}
-        {/* 2. SECURITY CATEGORIES (19 Roles in Rajasthan) */}
+        {/* 2. SECURITY CATEGORIES (Core Roles in Rajasthan) */}
         {/* ========================================================================= */}
         <section className="py-12 sm:py-20 bg-white border-b border-slate-200/80">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -281,7 +275,7 @@ export default function HomePage() {
                   {isHindi ? 'जॉब पद सूची (Job Catalog)' : 'Job Role Catalog'}
                 </span>
                 <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 mt-0.5">
-                  {isHindi ? 'राजस्थान में 19+ सिक्योरिटी जॉब श्रेणियां' : 'Explore Security Roles in Rajasthan'}
+                  {isHindi ? `राजस्थान में ${ROLE_SLUGS.length}+ सिक्योरिटी जॉब श्रेणियां` : `Explore ${ROLE_SLUGS.length}+ Security Roles in Rajasthan`}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1">
                   {isHindi
@@ -294,14 +288,14 @@ export default function HomePage() {
                 to="/jobs"
                 className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 group shrink-0"
               >
-                <span>{isHindi ? 'सभी पद देखें' : 'Browse All 19 Roles'}</span>
+                <span>{isHindi ? `सभी ${ROLE_SLUGS.length} पद देखें` : `Browse All ${ROLE_SLUGS.length} Roles`}</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
 
             {/* Category Filter Pills */}
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-6 sm:mb-8">
-              {['All', 'Guarding & Field', 'Supervisory & Ops', 'Technical & Control', 'Specialized & Logistics'].map((cat) => (
+              {['All', 'Guarding & Field', 'Supervisory & Management'].map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -312,7 +306,11 @@ export default function HomePage() {
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-slate-200/60'
                   }`}
                 >
-                  {cat === 'All' ? (isHindi ? 'सभी पद' : 'All Roles') : cat}
+                  {cat === 'All' 
+                    ? (isHindi ? 'सभी पद' : 'All Roles') 
+                    : cat === 'Guarding & Field'
+                    ? (isHindi ? 'गार्डिंग व फील्ड पद' : 'Guarding & Field')
+                    : (isHindi ? 'सुपरविजन व मैनेजमेंट' : 'Supervisory & Management')}
                 </button>
               ))}
             </div>
