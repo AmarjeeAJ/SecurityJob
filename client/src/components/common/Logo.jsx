@@ -1,23 +1,29 @@
+import shieldEmblem from '../../assets/shield-emblem.png';
+
 const SIZE_CONFIGS = {
   sm: {
-    svg: 'h-8 w-8',
-    text: 'text-base',
-    tagline: 'text-[9px]',
+    icon: 'h-7 w-7 sm:h-8 sm:w-8',
+    text: 'text-sm sm:text-base',
+    dot: 'text-[10px] sm:text-xs',
+    tagline: 'text-[8px] sm:text-[9px]',
   },
   md: {
-    svg: 'h-9 w-9 sm:h-10 sm:w-10',
-    text: 'text-base sm:text-lg',
-    tagline: 'text-[10px]',
+    icon: 'h-8 w-8 sm:h-10 sm:w-10',
+    text: 'text-sm sm:text-base md:text-lg',
+    dot: 'text-xs sm:text-sm',
+    tagline: 'text-[8.5px] sm:text-[9.5px]',
   },
   lg: {
-    svg: 'h-11 w-11 sm:h-12 sm:w-12',
-    text: 'text-lg sm:text-xl',
-    tagline: 'text-[11px]',
+    icon: 'h-10 w-10 sm:h-12 sm:w-14',
+    text: 'text-lg sm:text-2xl',
+    dot: 'text-sm sm:text-base',
+    tagline: 'text-[10px] sm:text-[11px]',
   },
   xl: {
-    svg: 'h-14 w-14 sm:h-16 sm:w-16',
-    text: 'text-2xl sm:text-3xl',
-    tagline: 'text-xs',
+    icon: 'h-14 w-14 sm:h-16 sm:w-20',
+    text: 'text-2xl sm:text-3xl md:text-4xl',
+    dot: 'text-base sm:text-lg',
+    tagline: 'text-xs sm:text-sm',
   },
 };
 
@@ -31,89 +37,43 @@ export default function Logo({
   const cfg = SIZE_CONFIGS[size] || SIZE_CONFIGS.md;
 
   return (
-    <div className={`flex items-center gap-2.5 sm:gap-3 select-none ${className}`}>
-      {/* Modern High-End Security & Job Emblem */}
-      <div className={`relative ${cfg.svg} shrink-0`}>
-        <svg viewBox="0 0 48 48" className="w-full h-full drop-shadow-sm">
-          <defs>
-            {/* Primary Shield Gradient */}
-            <linearGradient id="sj-shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="60%" stopColor="#1d4ed8" />
-              <stop offset="100%" stopColor="#0f172a" />
-            </linearGradient>
-
-            {/* Gold Job Star Accent Gradient */}
-            <linearGradient id="sj-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="50%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#d97706" />
-            </linearGradient>
-
-            {/* Inner Sheen */}
-            <linearGradient id="sj-sheen" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
-
-          {/* Shield Base */}
-          <path
-            d="M24 4 L8 10.5 C8 24 14.5 35.5 24 43 C33.5 35.5 40 24 40 10.5 L24 4 Z"
-            fill="url(#sj-shield-grad)"
-            stroke={isDark ? '#3b82f6' : '#1e40af'}
-            strokeWidth="1.2"
-          />
-
-          {/* Inner Highlight Layer */}
-          <path
-            d="M24 6.5 L10.5 12 C10.5 23.5 16 33.5 24 40 C32 33.5 37.5 23.5 37.5 12 L24 6.5 Z"
-            fill="url(#sj-sheen)"
-          />
-
-          {/* Security Star Core (Job Excellence Emblem) */}
-          <path
-            d="M24 14 L26.2 19.5 L32 20.2 L27.5 24 L28.8 29.8 L24 26.5 L19.2 29.8 L20.5 24 L16 20.2 L21.8 19.5 Z"
-            fill="url(#sj-gold-grad)"
-            stroke="#b45309"
-            strokeWidth="0.5"
-          />
-
-          {/* Stylized Verified Checkmark / Eagle Wing Arc */}
-          <path
-            d="M17 24.5 L22.5 30 L33 19"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+    <div className={`flex items-center gap-2 sm:gap-2.5 select-none group min-w-0 ${className}`}>
+      {/* 1. Official High-Resolution Transparent Shield Emblem */}
+      <div className="relative shrink-0 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+        <img
+          src={shieldEmblem}
+          alt="SecurityJob.in Emblem"
+          className={`${cfg.icon} w-auto object-contain drop-shadow-xs`}
+          loading="eager"
+        />
       </div>
 
-      {/* Modern Wordmark */}
-      <div className="min-w-0 flex flex-col justify-center">
-        <div className="flex items-center gap-1 leading-none">
-          <span
-            className={`${cfg.text} font-black tracking-tight ${
-              isDark ? 'text-white' : 'text-slate-900'
-            }`}
-          >
-            Security<span className="text-blue-600">Job</span>
+      {/* 2. Official Horizontal Brand Lockup & Tagline */}
+      <div className="flex flex-col justify-center min-w-0">
+        {/* Main Wordmark: SECURITYJOB.IN */}
+        <div className="flex items-baseline leading-none font-black tracking-tight whitespace-nowrap">
+          <span className={`${cfg.text} ${isDark ? 'text-white' : 'text-slate-900'} uppercase font-black tracking-wide`}>
+            SECURITY
           </span>
-          <span className="text-[10px] sm:text-xs font-extrabold px-1.5 py-0.2 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80">
-            .in
+          <span className={`${cfg.text} text-blue-600 uppercase font-black tracking-wide ml-0.5`}>
+            JOB
+          </span>
+          <span className={`${cfg.dot} text-blue-500 font-extrabold ml-0.5 uppercase`}>
+            .IN
           </span>
         </div>
 
+        {/* Official Brand Tagline with Cyan Accent Lines (Hidden on mobile phones < 640px to prevent navbar squeeze) */}
         {showTagline && (
-          <p
-            className={`${cfg.tagline} font-bold tracking-wider uppercase mt-1 leading-none ${
-              isDark ? 'text-blue-200/80' : 'text-slate-400'
-            }`}
-          >
-            Security Careers India
-          </p>
+          <div className="hidden sm:flex items-center gap-1.5 mt-1 leading-none">
+            <span className="h-[1.5px] w-2 bg-blue-400 rounded-full shrink-0" />
+            <span
+              className={`${cfg.tagline} font-bold tracking-tight text-slate-500 whitespace-nowrap truncate`}
+            >
+              Right Job. Right People. Right Security.
+            </span>
+            <span className="h-[1.5px] w-2 bg-blue-400 rounded-full shrink-0" />
+          </div>
         )}
       </div>
     </div>
