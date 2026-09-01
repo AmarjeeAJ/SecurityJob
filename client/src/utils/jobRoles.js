@@ -7,17 +7,9 @@ export const JOB_ROLES = [
   'Field Officer',
   'Security Inspector',
   'Security Manager',
-  'CCTV Operator',
-  'Control Room Operator',
   'Bouncer',
   'Event Security Guard',
-  'Fire Marshal',
   'Bodyguard',
-  'Dog Handler',
-  'Facility Supervisor',
-  'Housekeeping Staff',
-  'Cash Van Driver',
-  'ATM Custodian',
   'Other',
 ];
 

@@ -114,8 +114,8 @@ export default function JobsPage() {
               </h1>
               <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
                 {isHindi
-                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में गार्ड, सुपरवाइजर व सीसीटीवी ऑपरेटर की भर्ती।'
-                  : 'Discover active guarding, supervision, CCTV, and facility openings across Rajasthan with transparent monthly salaries.'}
+                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में गार्ड, सुपरवाइजर, लेडी गार्ड व गनमैन की भर्ती।'
+                  : 'Discover active guarding, supervision, gunman, and security openings across Rajasthan with transparent monthly salaries.'}
               </p>
             </div>
           </div>

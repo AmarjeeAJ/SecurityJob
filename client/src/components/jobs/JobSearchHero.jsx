@@ -29,15 +29,15 @@ export default function JobSearchHero({ onSearch = null, initialRole = '', initi
         { label: 'Security Guard (गार्ड)', role: 'security-guard' },
         { label: 'Supervisor (सुपरवाइजर)', role: 'security-supervisor' },
         { label: 'Lady Guard (लेडी गार्ड)', role: 'lady-security-guard' },
-        { label: 'CCTV Operator (सीसीटीवी)', role: 'cctv-operator' },
-        { label: 'Armed Guard (गनमैन)', role: 'armed-guard' },
+        { label: 'Gunman (गनमैन)', role: 'gunman' },
+        { label: 'Armed Guard (हथियारबंद गार्ड)', role: 'armed-guard' },
         { label: 'Bouncer (बाउंसर)', role: 'bouncer' },
       ]
     : [
         { label: 'Security Guard', role: 'security-guard' },
         { label: 'Security Supervisor', role: 'security-supervisor' },
         { label: 'Lady Security Guard', role: 'lady-security-guard' },
-        { label: 'CCTV Operator', role: 'cctv-operator' },
+        { label: 'Gunman', role: 'gunman' },
         { label: 'Armed Guard', role: 'armed-guard' },
         { label: 'Bouncer', role: 'bouncer' },
       ];
@@ -62,7 +62,7 @@ export default function JobSearchHero({ onSearch = null, initialRole = '', initi
               onChange={(e) => setSelectedRole(e.target.value)}
               className="w-full bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
             >
-              <option value="">{isHindi ? 'सभी सिक्योरिटी रोल (19+ श्रेणियां)' : 'All Security Roles (19+ Categories)'}</option>
+              <option value="">{isHindi ? 'सभी सिक्योरिटी रोल' : 'All Security Roles'}</option>
               {ROLE_SLUGS.map((r) => (
                 <option key={r.slug} value={r.slug}>
                   {r.label}
