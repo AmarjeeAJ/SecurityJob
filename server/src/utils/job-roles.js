@@ -3,6 +3,7 @@ export const JOB_ROLES = [
   'Lady Security Guard',
   'Armed Guard',
   'Gunman',
+  'CCTV Operator',
   'Security Supervisor',
   'Field Officer',
   'Security Inspector',
