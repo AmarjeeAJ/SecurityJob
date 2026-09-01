@@ -31,7 +31,7 @@ export default function JobSearchHero({ onSearch = null, initialRole = '', initi
         { label: 'Lady Guard (लेडी गार्ड)', role: 'lady-security-guard' },
         { label: 'Gunman (गनमैन)', role: 'gunman' },
         { label: 'Armed Guard (हथियारबंद गार्ड)', role: 'armed-guard' },
-        { label: 'Bouncer (बाउंसर)', role: 'bouncer' },
+        { label: 'Bouncer & Event Guards (बाउंसर)', role: 'bouncer' },
       ]
     : [
         { label: 'Security Guard', role: 'security-guard' },
@@ -39,7 +39,7 @@ export default function JobSearchHero({ onSearch = null, initialRole = '', initi
         { label: 'Lady Security Guard', role: 'lady-security-guard' },
         { label: 'Gunman', role: 'gunman' },
         { label: 'Armed Guard', role: 'armed-guard' },
-        { label: 'Bouncer', role: 'bouncer' },
+        { label: 'Bouncer & Event Guards', role: 'bouncer' },
       ];
 
   return (
