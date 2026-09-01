@@ -10,12 +10,12 @@ export default function OwnerHeader() {
   const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-50 border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-xs">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-4">
-          <Link to="/owner/candidates" className="group flex items-center gap-2.5">
+          <Link to="/owner/candidates" className="group flex items-center gap-2.5 shrink-0">
             <Logo size="md" variant="light" showTagline={false} />
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[11px] font-extrabold text-blue-700">
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[11px] font-extrabold text-blue-700">
               <Lock className="h-3 w-3 text-blue-600" />
               Owner Console
             </span>
