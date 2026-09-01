@@ -22,7 +22,13 @@ import {
   FileCheck,
   AlertCircle,
   Upload,
-  Send
+  Send,
+  Shield,
+  UserCheck,
+  Video,
+  Target,
+  ClipboardCheck,
+  Building2
 } from 'lucide-react';
 import { candidateFormSchema } from '../../schemas/candidateSchema.js';
 import { submitCandidateApplication } from '../../api/candidates.js';
@@ -235,14 +241,54 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   };
 
   const roleOptions = [
-    { label: 'Security Guard (सिक्योरिटी गार्ड)', value: 'Security Guard', icon: '🛡️' },
-    { label: 'Security Supervisor (सुपरवाइजर)', value: 'Security Supervisor', icon: '👮' },
-    { label: 'Lady Security Guard (लेडी गार्ड)', value: 'Lady Security Guard', icon: '👩' },
-    { label: 'CCTV Operator (सीसीटीवी ऑपरेटर)', value: 'CCTV Operator', icon: '📹' },
-    { label: 'Bouncer & Event Security Guards (बाउंसर)', value: 'Bouncer', icon: '🏋️' },
-    { label: 'Armed Guard / Gunman (गनमैन)', value: 'Armed Guard', icon: '🎯' },
-    { label: 'Field Officer (फील्ड ऑफिसर)', value: 'Field Officer', icon: '📋' },
-    { label: 'Facility Supervisor (सुपरवाइजर)', value: 'Facility Supervisor', icon: '🏢' },
+    {
+      label: 'Security Guard (सिक्योरिटी गार्ड)',
+      value: 'Security Guard',
+      icon: Shield,
+      color: 'text-blue-600 bg-blue-100/80',
+    },
+    {
+      label: 'Security Supervisor (सुपरवाइजर)',
+      value: 'Security Supervisor',
+      icon: Award,
+      color: 'text-indigo-600 bg-indigo-100/80',
+    },
+    {
+      label: 'Lady Security Guard (लेडी गार्ड)',
+      value: 'Lady Security Guard',
+      icon: UserCheck,
+      color: 'text-purple-600 bg-purple-100/80',
+    },
+    {
+      label: 'CCTV Operator (सीसीटीवी ऑपरेटर)',
+      value: 'CCTV Operator',
+      icon: Video,
+      color: 'text-emerald-600 bg-emerald-100/80',
+    },
+    {
+      label: 'Bouncer & Event Security Guards (बाउंसर)',
+      value: 'Bouncer',
+      icon: Zap,
+      color: 'text-amber-600 bg-amber-100/80',
+    },
+    {
+      label: 'Armed Guard / Gunman (गनमैन)',
+      value: 'Armed Guard',
+      icon: Target,
+      color: 'text-rose-600 bg-rose-100/80',
+    },
+    {
+      label: 'Field Officer (फील्ड ऑफिसर)',
+      value: 'Field Officer',
+      icon: ClipboardCheck,
+      color: 'text-cyan-600 bg-cyan-100/80',
+    },
+    {
+      label: 'Facility Supervisor (सुपरवाइजर)',
+      value: 'Facility Supervisor',
+      icon: Building2,
+      color: 'text-teal-600 bg-teal-100/80',
+    },
   ];
 
   if (submissionResult) {
@@ -660,6 +706,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {roleOptions.map((opt) => {
                     const isSelected = watchRoles.includes(opt.value);
+                    const IconComponent = opt.icon;
                     return (
                       <button
                         key={opt.value}
@@ -667,15 +714,17 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         onClick={() => {
                           setValue('preferredRoles', [opt.value], { shouldValidate: true });
                         }}
-                        className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-200'
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                            ? 'bg-blue-50/80 border-blue-600 text-blue-950 ring-2 ring-blue-200 shadow-2xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-lg">{opt.icon}</span>
-                          <span className="text-xs sm:text-sm font-bold">{opt.label}</span>
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg shrink-0 ${opt.color}`}>
+                            <IconComponent className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">{opt.label}</span>
                         </div>
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
                       </button>
