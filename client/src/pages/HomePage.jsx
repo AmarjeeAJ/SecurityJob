@@ -166,7 +166,7 @@ export default function HomePage() {
       ? ROLE_SLUGS
       : ROLE_SLUGS.filter((r) => {
           if (selectedCategory === 'Guarding & Field') {
-            return ['security-guard', 'lady-security-guard', 'armed-guard', 'bouncer', 'bodyguard', 'gunman', 'event-security-guard'].includes(r.slug);
+            return ['security-guard', 'lady-security-guard', 'cctv-operator', 'armed-guard', 'bouncer', 'bodyguard', 'gunman', 'event-security-guard'].includes(r.slug);
           }
           if (selectedCategory === 'Supervisory & Management') {
             return ['security-supervisor', 'field-officer', 'security-inspector', 'security-manager'].includes(r.slug);

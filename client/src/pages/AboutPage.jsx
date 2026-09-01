@@ -165,6 +165,9 @@ export default function AboutPage() {
                   <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider">
                     {isHindi ? 'कंपनी परिचय व पंजीकरण' : 'Corporate Governance'}
                   </span>
+                  <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-bold">
+                    GST Registered
+                  </span>
                   <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">
                     Govt. MSME Registered
                   </span>
@@ -176,8 +179,8 @@ export default function AboutPage() {
                   </h2>
                   <p className="text-sm sm:text-base text-slate-300 mt-2 leading-relaxed">
                     {isHindi
-                      ? 'SecurityJob.in का संचालन AVIJIT ENTERPRISES द्वारा किया जाता है, जो भारत सरकार के सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME) में पंजीकृत एक अधिकृत उद्यम है।'
-                      : 'SecurityJob.in is proudly operated and managed by AVIJIT ENTERPRISES, an authorized proprietary enterprise registered under the Ministry of Micro, Small and Medium Enterprises (MSME), Government of India.'}
+                      ? 'SecurityJob.in का संचालन AVIJIT ENTERPRISES द्वारा किया जाता है, जो भारत सरकार के सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME) एवं GST में पंजीकृत एक अधिकृत उद्यम है।'
+                      : 'SecurityJob.in is proudly operated and managed by AVIJIT ENTERPRISES, an authorized proprietary enterprise registered under MSME & GST, Government of India.'}
                   </p>
                 </div>
 
@@ -192,14 +195,14 @@ export default function AboutPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-300">
-                  <a href="tel:+919828044998" className="inline-flex items-center gap-1.5 hover:text-white">
+                  <a href="tel:+919929992886" className="inline-flex items-center gap-1.5 hover:text-white">
                     <Phone className="w-4 h-4 text-blue-400" />
-                    +91 98280 44998
+                    +91 99299 92886
                   </a>
                   <span>&middot;</span>
-                  <a href="mailto:bansalvicky738@gmail.com" className="inline-flex items-center gap-1.5 hover:text-white">
+                  <a href="mailto:hr@securityjob.in" className="inline-flex items-center gap-1.5 hover:text-white">
                     <Mail className="w-4 h-4 text-blue-400" />
-                    bansalvicky738@gmail.com
+                    hr@securityjob.in
                   </a>
                 </div>
               </div>

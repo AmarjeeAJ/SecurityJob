@@ -21,7 +21,7 @@ import TextAreaInput from '../components/common/TextAreaInput.jsx';
 import { submitContactMessage } from '../services/inquiry.service.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919929992886';
 
 export default function ContactPage() {
   const { language } = useLanguage();
@@ -155,9 +155,14 @@ export default function ContactPage() {
                         </h3>
                       </div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold">
-                      MSME Micro
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-md bg-cyan-50 border border-cyan-200 text-cyan-800 text-[10px] font-bold">
+                        GST Registered
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold">
+                        MSME Micro
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-2.5 text-xs text-slate-600">
@@ -175,8 +180,8 @@ export default function ContactPage() {
                       <Phone className="w-4 h-4 text-blue-600 shrink-0" />
                       <div>
                         <strong className="text-slate-800 mr-1">{isHindi ? 'फोन / मोबाइल' : 'Phone'}:</strong>
-                        <a href="tel:+919828044998" className="text-blue-600 hover:underline font-bold">
-                          +91 98280 44998
+                        <a href="tel:+919929992886" className="text-blue-600 hover:underline font-bold">
+                          +91 99299 92886
                         </a>
                       </div>
                     </div>
@@ -185,8 +190,8 @@ export default function ContactPage() {
                       <Mail className="w-4 h-4 text-blue-600 shrink-0" />
                       <div>
                         <strong className="text-slate-800 mr-1">{isHindi ? 'ईमेल' : 'Email'}:</strong>
-                        <a href="mailto:bansalvicky738@gmail.com" className="text-blue-600 hover:underline font-semibold">
-                          bansalvicky738@gmail.com
+                        <a href="mailto:hr@securityjob.in" className="text-blue-600 hover:underline font-semibold">
+                          hr@securityjob.in
                         </a>
                       </div>
                     </div>

@@ -23,7 +23,7 @@ import { useNoIndex } from '../hooks/useNoIndex.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 
 const LAST_UPDATED = 'September 1, 2026';
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919828044998';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919929992886';
 
 export default function TermsOfUsePage() {
   useNoIndex();
@@ -452,7 +452,7 @@ export default function TermsOfUsePage() {
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-2 text-xs">
                   <p className="font-bold text-slate-900">AVIJIT ENTERPRISES (SecurityJob.in Compliance)</p>
                   <p className="text-slate-600">159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021</p>
-                  <p className="text-slate-600"><strong>{isHindi ? 'हेल्पलाइन:' : 'Helpline:'}</strong> +91 98280 44998 &middot; <strong>{isHindi ? 'ईमेल:' : 'Email:'}</strong> bansalvicky738@gmail.com</p>
+                  <p className="text-slate-600"><strong>{isHindi ? 'हेल्पलाइन:' : 'Helpline:'}</strong> +91 99299 92886 &middot; <strong>{isHindi ? 'ईमेल:' : 'Email:'}</strong> hr@securityjob.in</p>
                 </div>
               </section>
 
