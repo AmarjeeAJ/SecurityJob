@@ -42,9 +42,13 @@ import JOB_ROLES from '../../utils/jobRoles.js';
 
 const TOTAL_STEPS = 3;
 
-function buildFormData(data, trackingData) {
+function buildFormData(data, trackingData, frontFile, backFile) {
   const formData = new FormData();
   const whatsappNumber = data.whatsappSameAsMobile ? data.mobileNumber : data.whatsappNumber;
+
+  const actualFront = frontFile || data.aadhaarFront?.[0] || data.aadhaarFront;
+  const actualBack = backFile || data.aadhaarBack?.[0] || data.aadhaarBack;
+  const hasAadhaar = Boolean(actualFront || actualBack);
 
   const scalarFields = {
     fullName: data.fullName,
@@ -62,7 +66,7 @@ function buildFormData(data, trackingData) {
     currentEmploymentStatus: data.isExperienced ? (data.currentEmploymentStatus || 'unemployed') : undefined,
     joiningAvailability: data.isExperienced ? (data.joiningAvailability || 'immediate') : undefined,
     dutyHourPreference: data.isExperienced ? (data.dutyHourPreference || '12_hours') : undefined,
-    aadhaarAvailable: Boolean(data.aadhaarFront?.[0] || data.aadhaarBack?.[0] || data.aadhaarAvailable),
+    aadhaarAvailable: hasAadhaar,
     consentGiven: data.consentGiven,
     ...trackingData,
   };
@@ -76,8 +80,8 @@ function buildFormData(data, trackingData) {
   formData.append('preferredRoles', JSON.stringify(data.preferredRoles || ['Security Guard']));
   formData.append('preferredLocations', JSON.stringify(data.preferredLocations || [data.currentCity || 'Jaipur']));
 
-  if (data.aadhaarFront?.[0]) formData.append('aadhaarFront', data.aadhaarFront[0]);
-  if (data.aadhaarBack?.[0]) formData.append('aadhaarBack', data.aadhaarBack[0]);
+  if (actualFront instanceof File) formData.append('aadhaarFront', actualFront);
+  if (actualBack instanceof File) formData.append('aadhaarBack', actualBack);
 
   return formData;
 }
@@ -88,7 +92,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const [submissionResult, setSubmissionResult] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [aadhaarFrontPreview, setAadhaarFrontPreview] = useState(null);
+  const [aadhaarFrontFile, setAadhaarFrontFile] = useState(null);
   const [aadhaarBackPreview, setAadhaarBackPreview] = useState(null);
+  const [aadhaarBackFile, setAadhaarBackFile] = useState(null);
   const hasTrackedStart = useRef(false);
   const isSubmittingRef = useRef(false);
   const step3EnteredAtRef = useRef(0);
@@ -213,7 +219,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     setSubmitError('');
 
     try {
-      const payload = buildFormData(data, trackingData);
+      const payload = buildFormData(data, trackingData, aadhaarFrontFile, aadhaarBackFile);
       const res = await submitCandidateApplication(payload);
 
       trackEvent('form_submit_success', {
@@ -235,8 +241,14 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      if (side === 'front') setAadhaarFrontPreview(url);
-      if (side === 'back') setAadhaarBackPreview(url);
+      if (side === 'front') {
+        setAadhaarFrontPreview(url);
+        setAadhaarFrontFile(file);
+      }
+      if (side === 'back') {
+        setAadhaarBackPreview(url);
+        setAadhaarBackFile(file);
+      }
     }
   };
 
@@ -303,7 +315,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
             setSubmissionResult(null);
             setCurrentStep(1);
             setAadhaarFrontPreview(null);
+            setAadhaarFrontFile(null);
             setAadhaarBackPreview(null);
+            setAadhaarBackFile(null);
           }}
         />
       </Card>
@@ -911,6 +925,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                             type="button"
                             onClick={() => {
                               setAadhaarFrontPreview(null);
+                              setAadhaarFrontFile(null);
                               setValue('aadhaarFront', null);
                             }}
                             className="text-[10px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
@@ -946,6 +961,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                             type="button"
                             onClick={() => {
                               setAadhaarBackPreview(null);
+                              setAadhaarBackFile(null);
                               setValue('aadhaarBack', null);
                             }}
                             className="text-[10px] font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
