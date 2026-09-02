@@ -38,6 +38,7 @@ import Card from '../../components/common/Card.jsx';
 import SuccessState from '../../components/form/SuccessState.jsx';
 import ErrorBanner from '../../components/form/ErrorBanner.jsx';
 import { RAJASTHAN_CITIES, getSmartAreasForDistrict } from '../../utils/locations.js';
+import { OFFICIAL_WHATSAPP_NUMBER } from '../../constants/contact.js';
 import JOB_ROLES from '../../utils/jobRoles.js';
 
 const TOTAL_STEPS = 3;
@@ -309,7 +310,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
         <SuccessState
           candidateCode={submissionResult.candidateCode}
           isExistingCandidate={submissionResult.isExistingCandidate}
-          whatsappNumber={submissionResult.whatsappNumber || '919999900000'}
+          whatsappNumber={submissionResult.whatsappNumber || OFFICIAL_WHATSAPP_NUMBER}
           onSubmitAnother={() => {
             reset();
             setSubmissionResult(null);

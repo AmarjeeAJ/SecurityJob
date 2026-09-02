@@ -12,8 +12,9 @@ import Footer from '../components/layout/Footer.jsx';
 import MobileBottomBar from '../components/layout/MobileBottomBar.jsx';
 import SEO from '../components/common/SEO.jsx';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { OFFICIAL_WHATSAPP_NUMBER } from '../constants/contact.js';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919999900000';
+const WHATSAPP_NUMBER = OFFICIAL_WHATSAPP_NUMBER;
 
 export default function HelpPage() {
   const { language } = useLanguage();

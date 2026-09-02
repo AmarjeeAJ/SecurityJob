@@ -1,4 +1,6 @@
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919999900000';
+import { OFFICIAL_WHATSAPP_NUMBER } from '../constants/contact.js';
+
+const WHATSAPP_NUMBER = OFFICIAL_WHATSAPP_NUMBER;
 
 export async function submitContactMessage(contactData) {
   try {

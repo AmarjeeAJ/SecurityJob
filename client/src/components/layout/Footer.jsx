@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 import Logo from '../common/Logo.jsx';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
+import { OFFICIAL_WHATSAPP_NUMBER } from '../../constants/contact.js';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919929992886';
+const WHATSAPP_NUMBER = OFFICIAL_WHATSAPP_NUMBER;
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();

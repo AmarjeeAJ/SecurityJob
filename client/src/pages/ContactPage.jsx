@@ -20,8 +20,9 @@ import TextInput from '../components/common/TextInput.jsx';
 import TextAreaInput from '../components/common/TextAreaInput.jsx';
 import { submitContactMessage } from '../services/inquiry.service.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { OFFICIAL_WHATSAPP_NUMBER, OFFICIAL_PHONE } from '../constants/contact.js';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '919929992886';
+const WHATSAPP_NUMBER = OFFICIAL_WHATSAPP_NUMBER;
 
 export default function ContactPage() {
   const { language } = useLanguage();
@@ -75,7 +76,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between mobile-safe-bottom">
       <SEO
         title={isHindi ? "उम्मीदवार सहायता केंद्र (Contact Support) — SecurityJob.in | Avijit Enterprises" : "Candidate Support Desk — SecurityJob.in | Avijit Enterprises"}
-        description={isHindi ? "SecurityJob.in (Avijit Enterprises, जयपुर) सहायता डेस्क से संपर्क करें। अपने फॉर्म स्टेटस, नई जॉब्स या जरूरी डॉक्युमेंट्स की जानकारी WhatsApp या फोन +91 98280 44998 पर प्राप्त करें।" : "Get in touch with SecurityJob.in (Avijit Enterprises, Jaipur). Inquire about your application status, job openings, or document verification via WhatsApp or call +91 98280 44998."}
+        description={isHindi ? `SecurityJob.in (Avijit Enterprises, जयपुर) सहायता डेस्क से संपर्क करें। अपने फॉर्म स्टेटस, नई जॉब्स या जरूरी डॉक्युमेंट्स की जानकारी WhatsApp या फोन ${OFFICIAL_PHONE} पर प्राप्त करें।` : `Get in touch with SecurityJob.in (Avijit Enterprises, Jaipur). Inquire about your application status, job openings, or document verification via WhatsApp or call ${OFFICIAL_PHONE}.`}
       />
 
       <Navbar />
@@ -119,7 +120,7 @@ export default function ContactPage() {
                         {isHindi ? 'WhatsApp हेल्पलाइन' : 'WhatsApp Helpdesk'}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        +91 98280 44998 &middot; {isHindi ? 'सबसे तेज़ जवाब' : 'Fastest Response'}
+                        {OFFICIAL_PHONE} &middot; {isHindi ? 'सबसे तेज़ जवाब' : 'Fastest Response'}
                       </p>
                     </div>
                   </div>
@@ -286,7 +287,7 @@ export default function ContactPage() {
                           label={isHindi ? 'मोबाइल नंबर (Mobile Number)' : 'Mobile Number'}
                           required
                           type="tel"
-                          placeholder={isHindi ? 'उदा. 9828044998' : 'e.g. 9828044998'}
+                          placeholder={isHindi ? 'उदा. 9929992886' : 'e.g. 9929992886'}
                           value={formData.mobile}
                           onChange={(e) => handleChange('mobile', e.target.value)}
                         />
