@@ -10,7 +10,17 @@ import {
   MapPin,
   Phone,
   Mail,
-  FileCheck
+  CheckCircle2,
+  HeartPulse,
+  IndianRupee,
+  ShieldAlert,
+  ArrowRight,
+  Sparkles,
+  Users,
+  Check,
+  FileCheck2,
+  Scale,
+  Clock
 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar.jsx';
 import Footer from '../components/layout/Footer.jsx';
@@ -23,141 +33,378 @@ export default function AboutPage() {
   const isHindi = language === 'hi';
 
   const stats = [
-    { value: '11+', label: isHindi ? 'प्रमुख सिक्योरिटी जॉब पद' : 'Core Security Roles' },
-    { value: '₹0', label: isHindi ? 'कैंडिडेट रजिस्ट्रेशन फीस' : 'Candidate Registration Fee' },
-    { value: '33+', label: isHindi ? 'राजस्थान के जिले' : 'Rajasthan Districts' },
-    { value: '< 2 min', label: isHindi ? 'ऑनलाइन आवेदन का समय' : 'Online Application Time' },
+    { 
+      value: '₹0', 
+      label: isHindi ? 'कैंडिडेट फीस (Zero Commission)' : 'Candidate Fee (Zero Commission)',
+      sub: isHindi ? 'हमेशा के लिए 100% फ्री' : '100% Free Forever' 
+    },
+    { 
+      value: '33+', 
+      label: isHindi ? 'राजस्थान के सभी जिले' : 'Rajasthan Districts Covered',
+      sub: isHindi ? 'जयपुर से नीमराना तक' : 'Jaipur to Neemrana' 
+    },
+    { 
+      value: '100%', 
+      label: isHindi ? 'वैधानिक PF व ESIC समर्थन' : 'Statutory PF & ESIC Advocacy',
+      sub: isHindi ? 'सीधा बैंक खाते में वेतन' : 'Direct Bank Deposits' 
+    },
+    { 
+      value: '< 2 min', 
+      label: isHindi ? 'मोबाइल आवेदन समय' : 'Mobile Application Time',
+      sub: isHindi ? 'बिना किसी जटिलता के' : 'Zero Bureaucracy' 
+    },
   ];
 
-  const values = isHindi
+  const pillars = isHindi
     ? [
         {
-          icon: ShieldCheck,
-          title: 'सुरक्षा उद्योग पर विशेष ध्यान',
-          desc: 'हम विशेष रूप से प्राइवेट सिक्योरिटी उद्योग के लिए बने हैं — बिना किसी भटकाव के सीधी और पारदर्शी भर्ती।',
+          icon: Award,
+          title: '100% फ्री एवं दलाली-मुक्त भर्ती',
+          subtitle: 'Zero Brokerage & Zero Fee Guarantee',
+          desc: 'हमारा सबसे पहला और अटल नियम है: नौकरी पाने वाले किसी भी सुरक्षा गार्ड या सुपरवाइजर से कभी भी ₹1 भी नहीं लिया जाएगा। रजिस्ट्रेशन, इंटरव्यू या साइट जॉइनिंग सब कुछ पूरी तरह निःशुल्क है।',
         },
         {
-          icon: HeartHandshake,
-          title: 'उम्मीदवारों के लिए 100% फ्री',
-          desc: 'जॉब ढूंढने वाले युवाओं से कभी भी कोई फीस या कमीशन नहीं लिया जाता। हम बिचौलियों के शोषण को समाप्त करते हैं।',
+          icon: HeartPulse,
+          title: 'सुरक्षा कर्मियों का सम्मान एवं गरिमा',
+          subtitle: 'Restoring Dignity to Private Security',
+          desc: 'सुरक्षा गार्ड हमारे उद्योगों, अस्पतालों, आवासीय सोसायटियों और शिक्षण संस्थानों की रक्षा करते हैं। उन्हें समाज में पूरा मान-सम्मान, उचित कार्य परिस्थितियां और मानवीय व्यवहार मिलना अनिवार्य है।',
+        },
+        {
+          icon: Scale,
+          title: 'वेतन, PF व ESIC का कानूनी अधिकार',
+          subtitle: 'Statutory Wage & Healthcare Rights',
+          desc: 'हम यह सुनिश्चित करने के लिए प्रतिबद्ध हैं कि सुरक्षा कर्मियों को उनका तय मासिक वेतन महीने की 7 से 10 तारीख तक सीधे बैंक में मिले, साथ ही सरकारी PF पेंशन और पूरे परिवार के लिए ESIC मेडिकल कार्ड की सुविधा मिले।',
         },
         {
           icon: Building2,
-          title: 'वेरिफाइड व विश्वसनीय एम्प्लॉयर्स',
-          desc: 'हम केवल लाइसेंस प्राप्त व कानूनी रूप से मान्यता प्राप्त सिक्योरिटी कंपनियों से जुड़ते हैं जो समय पर PF व ESIC देती हैं।',
-        },
-        {
-          icon: Award,
-          title: 'कैरियर विकास और सम्मान',
-          desc: 'हम मानते हैं कि सुरक्षा एक सम्मानजनक पेशा है, जहाँ गार्ड से लेकर सुपरवाइजर व फील्ड ऑफिसर बनने के पूरे अवसर हैं।',
+          title: 'प्रमाणित व उत्तरदायी कंपनियों से जुड़ाव',
+          subtitle: 'Direct Connect with Verified Employers',
+          desc: 'हम केवल कानूनी रूप से वैध, PSARA-मान्यता प्राप्त और उत्तरदायी सिक्योरिटी कंपनियों व कॉर्पोरेट संस्थानों के साथ काम करते हैं, ताकि किसी भी उम्मीदवार के साथ कोई धोखा या वेतन की चोरी न हो सके।',
         },
       ]
     : [
         {
-          icon: ShieldCheck,
-          title: 'Industry-Dedicated Focus',
-          desc: 'We are built specifically for the private security industry — not a generic job board filled with unrelated white-collar listings.',
+          icon: Award,
+          title: '100% Free & Zero Brokerage',
+          subtitle: 'Permanent Zero-Fee Guarantee',
+          desc: 'Our first and unbreakable pledge: No candidate is ever charged a single rupee. Application, document verification, interview scheduling, and site deployment are 100% free forever.',
         },
         {
-          icon: HeartHandshake,
-          title: 'Free & Transparent for Candidates',
-          desc: 'Security job seekers never pay a single rupee. We protect workers from exploitative commission middlemen.',
+          icon: HeartPulse,
+          title: 'Professional Dignity for Security Staff',
+          subtitle: 'Restoring Dignity to Frontline Protectors',
+          desc: 'Security personnel protect our factories, hospitals, residential societies, and campuses. They are the backbone of community safety and deserve profound respect, fair shift rosters, and humane treatment.',
+        },
+        {
+          icon: Scale,
+          title: 'Statutory Wage & Healthcare Welfare',
+          subtitle: 'Advocating for PF & ESIC Compliance',
+          desc: 'We stand firmly for transparent wage structures: monthly salary credited directly to bank accounts by the 7th–10th, statutory provident fund (PF) retirement accumulation, and comprehensive ESIC medical cover.',
         },
         {
           icon: Building2,
-          title: 'Compliant & Verified Employers',
-          desc: 'We partner with licensed security companies and employers committed to statutory labour benefits (PF, ESIC).',
-        },
-        {
-          icon: Award,
-          title: 'Dignity & Career Growth',
-          desc: 'We believe private security is a vital nation-building profession with clear paths from guarding to supervision and management.',
+          title: 'Direct Link to Compliant Employers',
+          subtitle: 'No Freelance Middlemen or Ghost Contractors',
+          desc: 'We connect candidates directly with licensed, PSARA-compliant security agencies and established facility enterprises across Rajasthan, shielding workers from unauthorized sub-brokers.',
         },
       ];
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between mobile-safe-bottom">
       <SEO
-        title={isHindi ? "हमारे बारे में — Avijit Enterprises | SecurityJob.in राजस्थान" : "About Us — Avijit Enterprises | SecurityJob.in Rajasthan"}
-        description={isHindi ? "SecurityJob.in (Avijit Enterprises, जयपुर) के बारे में जानें — हमारा मिशन, विज़न, सरकारी एमएसएमई पंजीकरण और राजस्थान में सुरक्षा कर्मियों के लिए प्रतिबद्धता।" : "Learn about SecurityJob.in (Avijit Enterprises, Jaipur) — our mission, vision, Govt MSME registration, and commitment to security recruitment in Rajasthan."}
+        title={isHindi ? "हमारा परिचय एवं मुख्य उद्देश्य — SecurityJob.in राजस्थान" : "Our Purpose & Mission — SecurityJob.in Rajasthan"}
+        description={isHindi ? "SecurityJob.in का उद्देश्य: राजस्थान में सुरक्षा कर्मियों को दलालों व कमीशन से मुक्त कर सीधे 100% फ्री रोजगार, समय पर वेतन और PF व ESIC का कानूनी अधिकार दिलाना।" : "The mission of SecurityJob.in: Eliminating recruitment middlemen in Rajasthan, providing 100% free security hiring, transparent bank salaries, and statutory PF/ESIC welfare."}
       />
 
       <Navbar />
 
       <main className="flex-1">
-        {/* Hero Section (Light Theme) */}
-        <section className="bg-light-hero py-16 sm:py-24 border-b border-slate-200/80 text-center">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {isHindi ? 'SecurityJob.in के बारे में' : 'About SecurityJob.in'}
+        {/* ========================================================================= */}
+        {/* HERO: The Purpose & Origin */}
+        {/* ========================================================================= */}
+        <section className="bg-light-hero py-14 sm:py-20 border-b border-slate-200/80 text-center relative overflow-hidden">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-5">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              {isHindi ? 'हमारा परिचय एवं स्थापना का उद्देश्य' : 'About Our Purpose & Founding Mission'}
             </span>
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              {isHindi 
-                ? 'राजस्थान के सुरक्षा उद्योग के लिए समर्पित भर्ती प्लेटफ़ॉर्म' 
-                : "A Dedicated Recruitment Platform for the Security Industry"}
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+              {isHindi ? (
+                <>
+                  सुरक्षा कर्मियों का सम्मान, दलालों से मुक्ति और <span className="text-blue-600">पारदर्शी रोजगार</span>
+                </>
+              ) : (
+                <>
+                  Restoring Dignity to Security Staff, Ending Exploitation & <span className="text-blue-600">Championing Fair Work</span>
+                </>
+              )}
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xs sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
               {isHindi
-                ? 'सिक्योरिटी गार्ड, सुपरवाइजर, लेडी गार्ड, गनमैन व फील्ड ऑफिसर्स को राजस्थान की प्रमाणित कंपनियों व प्रोजेक्ट्स से सीधे जोड़ना।'
-                : 'Connecting security guards, supervisors, gunmen, and management personnel with verified employers and facility contracts across Rajasthan.'}
+                ? 'SecurityJob.in कोई सामान्य जॉब बोर्ड या व्यावसायिक दलाल नहीं है। यह राजस्थान के मेहनतकश युवाओं को बिना किसी कमीशन या घूसखोरी के सीधे सुरक्षित और सम्मानजनक सुरक्षा पदों पर नियुक्त कराने की एक पारदर्शी पहल है।'
+                : 'SecurityJob.in is not a commercial broker or generic job board. It is a dedicated, zero-fee initiative founded to connect Rajasthan’s hardworking security personnel directly with licensed employers — free from middleman cuts, fraud, and recruitment delays.'}
             </p>
+
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-bold text-slate-700">
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                {isHindi ? '100% फ्री रजिस्ट्रेशन' : '100% Free Registration'}
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                {isHindi ? 'शून्य कमीशन (Zero Brokerage)' : 'Zero Middleman Commission'}
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                {isHindi ? 'Avijit Enterprises (MSME पंजीकृत)' : 'Govt MSME Registered Enterprise'}
+              </span>
+            </div>
           </div>
         </section>
 
-        {/* Stats Grid */}
-        <section className="py-12 bg-white border-b border-slate-200/80">
+        {/* ========================================================================= */}
+        {/* STATS STRIP */}
+        {/* ========================================================================= */}
+        <section className="py-10 bg-white border-b border-slate-200/80">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-              {stats.map((stat) => (
-                <div key={stat.label} className="p-4">
-                  <p className="text-3xl sm:text-4xl font-extrabold text-blue-600">{stat.value}</p>
-                  <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">{stat.label}</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-center">
+              {stats.map((stat, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60">
+                  <p className="text-2xl sm:text-4xl font-extrabold text-blue-600">{stat.value}</p>
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 mt-1">{stat.label}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{stat.sub}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Mission & Vision */}
-        <section className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200/80">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
-                  <Target className="w-6 h-6" />
+        {/* ========================================================================= */}
+        {/* THE REAL PROBLEM: Why SecurityJob.in Was Born */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-slate-50 border-b border-slate-200/80">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-10">
+            <div className="text-center max-w-3xl mx-auto space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-red-600">
+                {isHindi ? 'सुरक्षा उद्योग की जमीनी सच्चाई' : 'The Ground Reality in Security Recruitment'}
+              </span>
+              <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900">
+                {isHindi ? 'SecurityJob.in की शुरुआत क्यों हुई?' : 'Why Was SecurityJob.in Founded?'}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {isHindi
+                  ? 'राजस्थान में प्राइवेट सुरक्षा उद्योग में काम करने वाले हजारों गार्ड्स हर साल अनैतिक दलालों और फर्जी एजेंसियों के शोषण का शिकार होते हैं। इस शोषण को जड़ से खत्म करने के लिए हमारा जन्म हुआ।'
+                  : 'Every year, thousands of job seekers across Rajasthan fall victim to exploitative sub-agents, fake job promises, and wage deductions. SecurityJob.in was built to end this injustice once and for all.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+              {/* Pain Point 1 */}
+              <div className="p-6 rounded-3xl bg-white border border-red-200/80 shadow-2xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                  01
                 </div>
-                <h2 className="text-2xl font-extrabold text-slate-900">
-                  {isHindi ? 'हमारा मिशन (Our Mission)' : 'Our Mission'}
-                </h2>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="text-base font-bold text-slate-900">
+                  {isHindi ? 'फर्जी रजिस्ट्रेशन व यूनिफॉर्म के नाम पर वसूली' : 'Extortion in the Name of Registration & Uniforms'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   {isHindi
-                    ? 'सिक्योरिटी क्षेत्र में बिचौलियों, कमीशन और भर्ती में होने वाली देरी को समाप्त करना और उम्मीदवारों को 100% फ्री, पारदर्शी व मोबाइल-आधारित जॉइनिंग सुविधा देना।'
-                    : 'To eliminate exploitation, middlemen fees, and recruitment delays in the private security sector by providing a fast, transparent, and mobile-first hiring bridge between workers and employers.'}
+                    ? 'गाँव-कस्बों से आने वाले युवाओं से फॉर्म भरने, इंटरव्यू कराने या यूनिफॉर्म देने के नाम पर ₹1,500 से ₹5,000 तक की अग्रिम राशि ऐंठ ली जाती है, और फिर कोई नौकरी नहीं दी जाती।'
+                    : 'Job seekers from rural areas are routinely charged upfront fees ranging from ₹1,500 to ₹5,000 for "interview registration" or uniforms, only to be given fake appointments or ghosted.'}
                 </p>
               </div>
 
-              <div className="p-8 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
-                  <Eye className="w-6 h-6" />
+              {/* Pain Point 2 */}
+              <div className="p-6 rounded-3xl bg-white border border-red-200/80 shadow-2xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                  02
                 </div>
-                <h2 className="text-2xl font-extrabold text-slate-900">
-                  {isHindi ? 'हमारा विज़न (Our Vision)' : 'Our Vision'}
-                </h2>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="text-base font-bold text-slate-900">
+                  {isHindi ? 'पहले महीने की तनख्वाह में से 50% से 100% की दलाली' : 'Massive Wage Deductions by Middlemen'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   {isHindi
-                    ? 'राजस्थान व पूरे भारत में सुरक्षा कर्मियों के लिए सबसे भरोसेमंद रोजगार मंच बनना, सुरक्षा मानकों को ऊंचा उठाना और हर गार्ड के काम को सम्मान दिलाना।'
-                    : "To become India's most trusted employment ecosystem for security personnel, elevating workforce standards, accelerating agency deployments, and championing worker dignity across the country."}
+                    ? 'अनेक दलाल सुरक्षा गार्ड का पहला वेतन पूरा का पूरा अपनी जेब में रख लेते हैं या हर महीने उसकी तनख्वाह में से ₹1,000-₹2,000 की कटौतियां करते रहते हैं।'
+                    : 'Unauthorized middlemen frequently pocket 50% to 100% of a guard’s first month salary, or siphon recurring monthly commissions directly from their hard-earned wages.'}
+                </p>
+              </div>
+
+              {/* Pain Point 3 */}
+              <div className="p-6 rounded-3xl bg-white border border-red-200/80 shadow-2xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                  03
+                </div>
+                <h3 className="text-base font-bold text-slate-900">
+                  {isHindi ? 'PF व ESIC के झूठे वादे, कागजात जब्त करना' : 'Deceptive PF/ESIC Promises & Confiscated IDs'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {isHindi
+                    ? 'गार्ड्स को सैलरी स्लिप नहीं दी जाती, न ही उनका PF नंबर दिया जाता है। दुर्घटना या बीमारी के समय उनका कोई मेडिकल रिकॉर्ड नहीं होता, जिससे उनका परिवार असहाय हो जाता है।'
+                    : 'Candidates are often left without official wage slips, UAN numbers, or ESIC health cards. When an injury or illness occurs, workers have zero institutional safety net.'}
+                </p>
+              </div>
+
+              {/* Pain Point 4 */}
+              <div className="p-6 rounded-3xl bg-white border border-red-200/80 shadow-2xs space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                  04
+                </div>
+                <h3 className="text-base font-bold text-slate-900">
+                  {isHindi ? 'शिकायत व सुनवाई का कोई मंच न होना' : 'Total Lack of Grievance Redressal'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {isHindi
+                    ? 'अनऑर्गनाइज्ड दलाल फोन बंद कर लेते हैं और गार्ड्स अपनी परेशानी लेकर कहाँ जाएं, इसका कोई सहारा नहीं होता।'
+                    : 'When sub-agents switch off their phones after placement, security personnel have nowhere to turn for salary disputes, harassment, or delayed joining letters.'}
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Corporate Entity & MSME Registration Profile */}
-        <section className="py-16 sm:py-20 bg-white border-b border-slate-200/80">
+        {/* ========================================================================= */}
+        {/* OUR 4 PILLARS OF PURPOSE */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-white border-b border-slate-200/80">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                {isHindi ? 'हमारे 4 मुख्य स्तंभ' : 'Our 4 Core Pillars'}
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
+                {isHindi ? 'हम किन मूल्यों और सिद्धांतों के लिए खड़े हैं' : 'What We Stand For & How We Work'}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500">
+                {isHindi ? 'हर उम्मीदवार और हर कंपनी के साथ हमारा रिश्ता इन सिद्धांतों पर टिका है।' : 'Every application and employer relationship is anchored to these four commitments.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              {pillars.map((p, idx) => {
+                const Icon = p.icon;
+                return (
+                  <div key={idx} className="p-7 sm:p-8 rounded-3xl bg-slate-50 border border-slate-200/80 hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 mb-5">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-xs font-bold uppercase text-blue-600 tracking-wider">
+                        {p.subtitle}
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-1 mb-3">
+                        {p.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        {p.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* DIGNITY OF LABOR: The Frontline Protector */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-slate-900 text-white relative overflow-hidden">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider">
+              <HeartPulse className="w-3.5 h-3.5" />
+              <span>{isHindi ? 'सुरक्षा कर्मियों का सम्मान' : 'Dignity of Labor'}</span>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+                {isHindi
+                  ? 'सिक्योरिटी गार्ड्स केवल कर्मचारी नहीं, हमारे समाज के प्रथम रक्षक हैं'
+                  : 'Security Guards Are Frontline Protectors, Not Mere Workers'}
+              </h2>
+              <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-3xl">
+                {isHindi
+                  ? 'चाहे 45 डिग्री की चिलचिलाती धूप हो या कड़ाके की सर्द रात — सिक्योरिटी गार्ड, लेडी गार्ड और सुपरवाइजर पूरी निष्ठा से खड़े होकर हमारे परिवारों, कारखानों और व्यापारिक प्रतिष्ठानों की सुरक्षा करते हैं। जब तक उनके काम को वह सम्मान और सामाजिक सुरक्षा नहीं मिलेगी जिसके वे हकदार हैं, तब तक समाज सुरक्षित नहीं रह सकता।'
+                  : 'Whether standing in scorching Rajasthan summers or guarding through freezing winter nights, security guards, lady guards, and supervisors ensure that businesses operate peacefully and families sleep safely. They deserve profound professional honor, fair hours, and complete institutional protection.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs sm:text-sm text-slate-200">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                <p className="font-bold text-white mb-1">{isHindi ? 'उचित कार्य घंटे (Fixed Shifts)' : 'Standard Shifts'}</p>
+                <p className="text-slate-400 text-xs">{isHindi ? '8 घंटे या 12 घंटे की स्पष्ट ड्यूटी रोस्टर, बिना किसी जबरन ओवरटाइम के।' : 'Standard 8-hour or 12-hour rosters with voluntary overtime compensation.'}</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                <p className="font-bold text-white mb-1">{isHindi ? 'बैंक खाते में सीधा भुगतान' : 'Direct Bank Credit'}</p>
+                <p className="text-slate-400 text-xs">{isHindi ? 'नकद की जगह सीधा बैंक में सैलरी, जिससे कोई भी बिचौलिया कटौती न कर सके।' : 'Zero cash envelopes. All wages directly deposited into verified bank accounts.'}</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                <p className="font-bold text-white mb-1">{isHindi ? 'परिवार के लिए ESIC मेडिकल' : 'Family Medical Protection'}</p>
+                <p className="text-slate-400 text-xs">{isHindi ? 'बीमारी या चोट लगने पर ESIC अस्पतालों में मुफ्त जांच, दवाएं और उपचार।' : 'Free consultations, medicines, and hospitalization for worker and dependents.'}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* ANTI-FRAUD & ZERO FEE CHARTER */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-amber-50/60 border-b border-amber-200/80">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl bg-white border-2 border-amber-300 p-6 sm:p-10 shadow-lg space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                    {isHindi ? 'उम्मीदवार सुरक्षा घोषणापत्र' : 'Candidate Protection Charter'}
+                  </span>
+                  <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900">
+                    {isHindi ? 'SecurityJob.in का एंटी-फ्रॉड (Anti-Fraud) संकल्प' : 'Our Anti-Fraud Pledge to All Candidates'}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                <p className="font-bold text-slate-900">
+                  {isHindi
+                    ? 'कृपया ध्यान दें: SecurityJob.in किसी भी परिस्थिति में किसी भी उम्मीदवार से पैसे नहीं मांगता है।'
+                    : 'Important Notice: SecurityJob.in NEVER charges candidates any fee, at any stage of recruitment.'}
+                </p>
+                <ul className="space-y-2 text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{isHindi ? 'कोई भी रजिस्ट्रेशन फीस, प्रोसेसिंग चार्ज या इंटरव्यू फीस नहीं।' : 'Zero registration fees, interview fees, or processing charges.'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{isHindi ? 'कोई भी एजेंट अगर हमारे नाम पर पैसे या OTP मांगता है, तो वह फर्जी है।' : 'Anyone demanding money, OTPs, or commissions in our name is fraudulent.'}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{isHindi ? 'अपने मूल कागजात (आधार, मार्कशीट) किसी भी दलाल को न सौंपें।' : 'Never surrender original Aadhaar or educational certificates to any agency.'}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="pt-3 border-t border-amber-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-slate-600">
+                  {isHindi ? 'किसी भी संदिग्ध कॉल या वसूली की तुरंत रिपोर्ट करें:' : 'Report suspicious recruiters or demands immediately:'}
+                </span>
+                <a href="tel:+919929992886" className="font-bold text-blue-600 hover:text-blue-700">
+                  हेल्पलाइन: +91 99299 92886
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* CORPORATE GOVERNANCE: Avijit Enterprises */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-white border-b border-slate-200/80">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-navy-950 text-white p-8 sm:p-12 shadow-xl border border-slate-800 relative overflow-hidden">
               <div className="relative z-10 max-w-3xl space-y-6">
@@ -177,10 +424,10 @@ export default function AboutPage() {
                   <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
                     Powered By AVIJIT ENTERPRISES
                   </h2>
-                  <p className="text-sm sm:text-base text-slate-300 mt-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
                     {isHindi
-                      ? 'SecurityJob.in का संचालन AVIJIT ENTERPRISES द्वारा किया जाता है, जो भारत सरकार के सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME) एवं GST में पंजीकृत एक अधिकृत उद्यम है।'
-                      : 'SecurityJob.in is proudly operated and managed by AVIJIT ENTERPRISES, an authorized proprietary enterprise registered under MSME & GST, Government of India.'}
+                      ? 'SecurityJob.in का संचालन AVIJIT ENTERPRISES द्वारा किया जाता है, जो भारत सरकार के सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME) एवं GST में पंजीकृत एक अधिकृत उद्यम है। हम राजस्थान में पारदर्शी, डिजिटल और कानूनी रूप से संरक्षित रोजगार प्रणाली बनाने के लिए समर्पित हैं।'
+                      : 'SecurityJob.in is operated and governed by AVIJIT ENTERPRISES, an authorized proprietary enterprise registered under MSME & GST, Government of India. We are dedicated to creating an ethical, digital, and legally compliant workforce infrastructure in Rajasthan.'}
                   </p>
                 </div>
 
@@ -188,13 +435,13 @@ export default function AboutPage() {
                   <div className="flex items-start gap-2.5">
                     <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-slate-400 block text-xs">{isHindi ? 'पंजीकृत कार्यालय पता' : 'Registered Office Address'}</span>
+                      <span className="text-slate-400 block text-xs">{isHindi ? 'पंजीकृत कार्यालय पता (Registered Office)' : 'Registered Office Address'}</span>
                       <p className="text-white font-medium">159, Anand Nagar, Sirsi Road, Vaishali Nagar, Jaipur, Rajasthan – 302021</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-300">
+                <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-300">
                   <a href="tel:+919929992886" className="inline-flex items-center gap-1.5 hover:text-white">
                     <Phone className="w-4 h-4 text-blue-400" />
                     +91 99299 92886
@@ -210,60 +457,35 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* What We Stand For */}
-        <section className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200/80">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                {isHindi ? 'हमारे मुख्य सिद्धांत' : 'Core Principles'}
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
-                {isHindi ? 'हम किन मूल्यों के लिए खड़े हैं' : 'What We Stand For'}
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {values.map((v) => {
-                const Icon = v.icon;
-                return (
-                  <div key={v.title} className="p-6 rounded-2xl bg-white border border-slate-200/80 flex items-start gap-4 shadow-2xs">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-slate-900">{v.title}</h3>
-                      <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">{v.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Bottom CTA */}
-        <section className="py-16 sm:py-20 bg-white text-center">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900">
-              {isHindi ? 'क्या आप सिक्योरिटी जॉब के लिए तैयार हैं?' : 'Ready to Join the SecurityJob Network?'}
+        {/* ========================================================================= */}
+        {/* BOTTOM CALL TO ACTION (Apply Free) */}
+        {/* ========================================================================= */}
+        <section className="py-14 sm:py-20 bg-slate-50 text-center">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 space-y-5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+              {isHindi ? '100% निःशुल्क व सीधी भर्ती' : '100% Free & Direct Deployment'}
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              {isHindi ? 'क्या आप राजस्थान में सिक्योरिटी जॉब ढूंढ रहे हैं?' : 'Looking for a Verified Security Job in Rajasthan?'}
             </h2>
-            <p className="text-slate-600 text-sm mt-3">
+            <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
               {isHindi
-                ? 'अभी अपना फ्री ऑनलाइन फॉर्म भरें या राजस्थान में उपलब्ध जॉब्स देखें।'
-                : 'Whether you are an aspiring candidate or a hiring employer, get started today.'}
+                ? 'दलालों को 1 रुपया भी न दें। अभी अपना 2-मिनट का फ्री मोबाइल फॉर्म भरें और सीधा अपने जिले में जॉइनिंग का कॉल पाएं।'
+                : 'Never pay any commission or broker fees. Fill our 2-minute mobile application now and get connected directly with verified site openings in your district.'}
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 to="/apply/security-guard"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02]"
               >
-                {isHindi ? 'ऑनलाइन फॉर्म भरें (Apply Free)' : 'Apply for a Security Job'}
+                {isHindi ? 'ऑनलाइन फॉर्म भरें (100% फ्री)' : 'Submit Free Application Now'}
               </Link>
               <Link
-                to="/jobs"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-2xs"
+                to="/contact"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-2xs transition-all"
               >
-                {isHindi ? 'सभी जॉब्स देखें (View Roles)' : 'Browse Security Openings'}
+                {isHindi ? 'जयपुर कार्यालय से संपर्क करें' : 'Contact Jaipur Office'}
               </Link>
             </div>
           </div>

@@ -91,7 +91,7 @@ export default function CandidateApplicationPage() {
         </section>
 
         {/* Application Form Container */}
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 pt-6">
+        <div className="mx-auto max-w-3xl px-3 sm:px-6 pt-4 sm:pt-6 pb-8">
           {!pageConfig && !loadError && (
             <Card className="p-6 sm:p-10">
               <LoadingSkeleton rows={8} />

@@ -151,7 +151,7 @@ export default function JobDetailsPage() {
                       {job.salaryDisplay}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {isHindi ? '+ PF, ESIC व ओटी सुविधा' : '+ PF, ESIC & Overtime (as per site rules)'}
+                      {isHindi ? 'PF + ESIC शामिल (ओटी साइट नियमानुसार)' : 'Includes PF + ESIC (Overtime as per site rules)'}
                     </p>
                   </div>
 
@@ -160,7 +160,6 @@ export default function JobDetailsPage() {
                       to={`/apply/${job.slug}`}
                       className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all text-center"
                     >
-                      <Sparkles className="w-4 h-4 text-white" />
                       {isHindi ? 'इस पद के लिए आवेदन करें' : 'Apply for This Job'}
                       <ArrowRight className="w-4 h-4" />
                     </Link>
@@ -222,8 +221,8 @@ export default function JobDetailsPage() {
                 </div>
               </div>
 
-              {/* Key Responsibilities */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
+              {/* Key Responsibilities - HIDDEN TEMPORARILY AS PER USER INSTRUCTION (DO NOT DELETE) */}
+              <div className="hidden" aria-hidden="true">
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                   {isHindi ? 'मुख्य जिम्मेदारियां व कर्तव्य' : 'Key Duties & Responsibilities'}
                 </h2>
@@ -273,8 +272,8 @@ export default function JobDetailsPage() {
                 </div>
               </div>
 
-              {/* Documents Required */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
+              {/* Documents Required / Joining Documents - HIDDEN TEMPORARILY AS PER USER INSTRUCTION (DO NOT DELETE) */}
+              <div className="hidden" aria-hidden="true">
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                   {isHindi ? 'जॉइनिंग के लिए जरूरी दस्तावेज' : 'Documents You Will Need'}
                 </h2>
