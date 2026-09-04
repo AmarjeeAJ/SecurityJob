@@ -31,6 +31,7 @@ export function normalizeIndianMobile(rawValue) {
  * takes. Mirrors the client check of the same name in client/src/utils/phone.js.
  */
 export function looksLikeFakeMobile(digits) {
+  if (process.env.NODE_ENV !== 'production') return false;
   if (!/^\d{10}$/.test(digits)) return false; // format rules handle these
 
   // 9999999999, 9898989898 — one or two digits repeated throughout
