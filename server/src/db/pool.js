@@ -22,4 +22,10 @@ pool.on('error', (err) => {
   logger.error('Unexpected PostgreSQL pool error', { message: err.message });
 });
 
+// Pre-warm a connection so the first API request doesn't suffer connection handshake delay
+pool.query('SELECT 1').catch((err) => {
+  logger.warn('Failed to pre-warm PostgreSQL pool connection', { error: err.message });
+});
+
 export default pool;
+

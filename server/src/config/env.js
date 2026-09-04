@@ -20,7 +20,7 @@ const env = {
   clientUrl: required('CLIENT_URL', 'http://localhost:5173'),
   sessionSecret: required('SESSION_SECRET'),
   cookieSecret: required('COOKIE_SECRET'),
-  passwordHashRounds: Number(process.env.PASSWORD_HASH_ROUNDS || 12),
+  passwordHashRounds: Number(process.env.PASSWORD_HASH_ROUNDS || 10),
   uploadDirectory: process.env.UPLOAD_DIRECTORY || 'uploads',
   maxFileSize: Number(process.env.MAX_FILE_SIZE || 5 * 1024 * 1024),
   ownerDefaultEmail: process.env.OWNER_DEFAULT_EMAIL || '',
