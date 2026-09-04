@@ -38,16 +38,17 @@ export default function Navbar() {
   }, [location.pathname]);
 
   const navLinks = [
-    { label: isHindi ? 'जॉब खोजें' : 'Find Jobs', href: '/jobs', icon: Briefcase },
+    // { label: isHindi ? 'जॉब खोजें' : 'Find Jobs', href: '/jobs', icon: Briefcase }, // Hidden temporarily - uncomment to revive
+    { label: isHindi ? 'सभी पद' : 'Explore Roles', href: '/roles', icon: Briefcase },
     { label: isHindi ? 'कैरियर गाइड' : 'Career Guide', href: '/career-guide', icon: BookOpen },
-    { label: isHindi ? 'हमारे बारे में' : 'About Us', href: '/about', icon: Info },
+    { label: isHindi ? 'हमारा उद्देश्य' : 'Our Purpose', href: '/purpose', icon: Info },
     { label: isHindi ? 'सहायता (FAQ)' : 'Help & FAQs', href: '/help', icon: HelpCircle },
     { label: isHindi ? 'संपर्क करें' : 'Contact', href: '/contact', icon: Phone },
   ];
 
   const isActive = (path) => {
     if (path === '/' && location.pathname === '/') return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    if (path !== '/' && (location.pathname.startsWith(path) || (path === '/purpose' && location.pathname.startsWith('/about')))) return true;
     return false;
   };
 
@@ -93,7 +94,6 @@ export default function Navbar() {
               to="/apply/security-guard"
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
-              <Sparkles className="w-4 h-4 text-white" />
               <span>{isHindi ? 'फ्री आवेदन करें' : 'Apply for Job Free'}</span>
             </Link>
           </div>
@@ -190,7 +190,6 @@ export default function Navbar() {
                   to="/apply/security-guard"
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
                 >
-                  <Sparkles className="w-4 h-4" />
                   <span>{isHindi ? 'फ्री आवेदन करें' : 'Apply for Security Job (Free)'}</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Link>

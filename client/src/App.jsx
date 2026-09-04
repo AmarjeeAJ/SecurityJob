@@ -26,6 +26,8 @@ const OwnerLoginPage = lazy(() => import('./pages/OwnerLoginPage.jsx'));
 const CandidateRecordsPage = lazy(() => import('./pages/CandidateRecordsPage.jsx'));
 const CandidateDetailsPage = lazy(() => import('./pages/CandidateDetailsPage.jsx'));
 
+const ExploreRolesPage = lazy(() => import('./pages/ExploreRolesPage.jsx'));
+
 export default function App() {
   return (
     <LanguageProvider>
@@ -36,8 +38,13 @@ export default function App() {
             {/* 1. Landing Page (Pure Employee / Job Seeker focus) */}
             <Route path="/" element={<HomePage />} />
 
-            {/* 2. Find Security Jobs & Discovery */}
-            <Route path="/jobs" element={<JobsPage />} />
+            {/* 2. Explore All Roles (Dedicated Landing Page) */}
+            <Route path="/roles" element={<ExploreRolesPage />} />
+            <Route path="/explore-roles" element={<ExploreRolesPage />} />
+
+            {/* 3. Find Security Jobs & Discovery (Hidden temporarily; redirects to /roles - revive by swapping with <JobsPage />) */}
+            <Route path="/jobs" element={<Navigate to="/roles" replace />} />
+            {/* <Route path="/jobs" element={<JobsPage />} /> */}
             <Route path="/jobs/:jobSlug" element={<JobDetailsPage />} />
 
             {/* 3. Candidate Application Form */}
@@ -47,6 +54,9 @@ export default function App() {
             <Route path="/career-guide" element={<CandidatesPage />} />
             <Route path="/candidates" element={<CandidatesPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/about-us" element={<AboutPage />} />
+            <Route path="/purpose" element={<AboutPage />} />
+            <Route path="/our-purpose" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/help" element={<HelpPage />} />
 

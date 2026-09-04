@@ -15,35 +15,33 @@ export default function MobileBottomBar({ jobSlug = 'security-guard', title = nu
         {isJobDetail ? (
           <>
             <Link
-              to="/jobs"
+              to="/roles"
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-700 border border-slate-200 bg-slate-50 hover:bg-slate-100"
             >
               <Briefcase className="w-3.5 h-3.5" />
-              All Jobs
+              All Roles
             </Link>
             <Link
               to={`/apply/${jobSlug}`}
               className="flex-[2] inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Apply for {title ? title.split(' ')[0] : 'Role'}
+              <span>Apply for {title ? title.split(' ')[0] : 'Role'}</span>
             </Link>
           </>
         ) : (
           <>
             <Link
-              to="/jobs"
+              to="/roles"
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold text-slate-700 border border-slate-200 bg-slate-50 hover:bg-slate-100"
             >
-              <Search className="w-3.5 h-3.5 text-slate-500" />
-              Find Jobs
+              <Briefcase className="w-3.5 h-3.5 text-slate-500" />
+              Explore Roles
             </Link>
             <Link
               to="/apply/security-guard"
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Apply Now
+              <span>Apply Now</span>
             </Link>
           </>
         )}
