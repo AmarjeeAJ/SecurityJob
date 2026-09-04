@@ -2,7 +2,7 @@ import { z } from 'zod';
 import normalizeIndianMobile, { looksLikeFakeMobile } from '../utils/phone.js';
 
 const MOBILE_PATTERN = /^[6-9]\d{9}$/;
-const NAME_PATTERN = /^[a-zA-Zऀ-ॿ][a-zA-Zऀ-ॿ .'-]{1,149}$/;
+const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s.'\-()]{0,149}$/u;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 

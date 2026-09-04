@@ -30,6 +30,7 @@ export function normalizeIndianMobile(rawValue) {
  * effectively never takes. Mirrors the backend check of the same name.
  */
 export function looksLikeFakeMobile(digits) {
+  if (import.meta.env?.DEV) return false;
   if (!/^\d{10}$/.test(digits)) return false; // format rules handle these
 
   // 9999999999, 9898989898 — one or two digits repeated throughout
