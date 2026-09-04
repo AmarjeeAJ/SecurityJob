@@ -19,3 +19,9 @@ export const exportCandidatesQuerySchema = listCandidatesQuerySchema.omit({ page
 export const candidateIdParamSchema = z.object({
   id: z.preprocess((v) => Number(v), z.number().int().positive('Invalid candidate id')),
 });
+
+export const candidateDocParamSchema = z.object({
+  id: z.preprocess((v) => Number(v), z.number().int().positive('Invalid candidate id')),
+  docId: z.preprocess((v) => Number(v), z.number().int().positive('Invalid document id')),
+});
+

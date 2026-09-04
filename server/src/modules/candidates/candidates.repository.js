@@ -108,14 +108,14 @@ function buildFilterClauses(filters, startIndex = 1) {
     i += 2;
   }
   if (filters.city) {
-    clauses.push(`c.current_city ILIKE $${i}`);
+    clauses.push(`(c.current_city ILIKE $${i} OR c.current_area ILIKE $${i} OR EXISTS (SELECT 1 FROM candidate_preferred_locations cpl WHERE cpl.candidate_id = c.id AND cpl.city_name ILIKE $${i}))`);
     values.push(`%${filters.city}%`);
     i += 1;
   }
   if (filters.area) {
-    clauses.push(`c.current_area ILIKE $${i}`);
-    values.push(`%${filters.area}%`);
-    i += 1;
+    clauses.push(`(c.current_area ILIKE $${i} OR $${i + 1} ILIKE ('%' || c.current_area || '%'))`);
+    values.push(`%${filters.area}%`, filters.area);
+    i += 2;
   }
   if (filters.role) {
     clauses.push(`EXISTS (SELECT 1 FROM candidate_roles cr WHERE cr.candidate_id = c.id AND cr.role_name = $${i})`);
@@ -200,27 +200,59 @@ export async function listCandidatesPaginated(filters) {
 }
 
 export async function getCandidateFullById(id) {
-  const candidateResult = await query('SELECT * FROM candidates WHERE id = $1', [id]);
-  const candidate = candidateResult.rows[0];
-  if (!candidate) return null;
+  const sql = `
+    SELECT
+      c.*,
+      COALESCE((
+        SELECT json_agg(json_build_object('role_name', cr.role_name, 'other_role_text', cr.other_role_text) ORDER BY cr.role_name)
+        FROM candidate_roles cr WHERE cr.candidate_id = c.id
+      ), '[]'::json) AS roles,
+      COALESCE((
+        SELECT json_agg(cpl.city_name ORDER BY cpl.city_name)
+        FROM candidate_preferred_locations cpl WHERE cpl.candidate_id = c.id
+      ), '[]'::json) AS "preferredLocations",
+      COALESCE((
+        SELECT json_agg(json_build_object(
+          'id', cd.id,
+          'document_type', cd.document_type,
+          'original_file_name', cd.original_file_name,
+          'file_url', cd.file_url,
+          'mime_type', cd.mime_type,
+          'file_size', cd.file_size,
+          'created_at', cd.created_at
+        ) ORDER BY cd.created_at DESC)
+        FROM candidate_documents cd WHERE cd.candidate_id = c.id
+      ), '[]'::json) AS documents,
+      COALESCE((
+        SELECT json_agg(json_build_object(
+          'landing_page_slug', cs.landing_page_slug,
+          'source', cs.source,
+          'medium', cs.medium,
+          'campaign', cs.campaign,
+          'submitted_at', cs.submitted_at
+        ) ORDER BY cs.submitted_at DESC)
+        FROM candidate_submissions cs WHERE cs.candidate_id = c.id
+      ), '[]'::json) AS submissions,
+      COALESCE((
+        SELECT json_agg(json_build_object(
+          'source', csrc.source,
+          'medium', csrc.medium,
+          'campaign', csrc.campaign,
+          'landing_page_slug', csrc.landing_page_slug,
+          'first_seen_at', csrc.first_seen_at,
+          'last_seen_at', csrc.last_seen_at,
+          'submission_count', csrc.submission_count
+        ) ORDER BY csrc.last_seen_at DESC)
+        FROM candidate_sources csrc WHERE csrc.candidate_id = c.id
+      ), '[]'::json) AS sources
+    FROM candidates c
+    WHERE c.id = $1
+  `;
 
-  const [roles, locations, documents, submissions, sources] = await Promise.all([
-    query('SELECT role_name, other_role_text FROM candidate_roles WHERE candidate_id = $1 ORDER BY role_name', [id]),
-    query('SELECT city_name FROM candidate_preferred_locations WHERE candidate_id = $1 ORDER BY city_name', [id]),
-    query('SELECT id, document_type, original_file_name, file_url, mime_type, file_size, created_at FROM candidate_documents WHERE candidate_id = $1 ORDER BY created_at DESC', [id]),
-    query('SELECT landing_page_slug, source, medium, campaign, submitted_at FROM candidate_submissions WHERE candidate_id = $1 ORDER BY submitted_at DESC', [id]),
-    query('SELECT source, medium, campaign, landing_page_slug, first_seen_at, last_seen_at, submission_count FROM candidate_sources WHERE candidate_id = $1 ORDER BY last_seen_at DESC', [id]),
-  ]);
-
-  return {
-    ...candidate,
-    roles: roles.rows,
-    preferredLocations: locations.rows.map((r) => r.city_name),
-    documents: documents.rows,
-    submissions: submissions.rows,
-    sources: sources.rows,
-  };
+  const result = await query(sql, [id]);
+  return result.rows[0] || null;
 }
+
 
 export async function* streamCandidatesForExport(filters, batchSize = 500) {
   const { whereSql, values } = buildFilterClauses(filters);
