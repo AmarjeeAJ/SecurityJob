@@ -228,7 +228,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       const payload = buildFormData(data, trackingData, aadhaarFrontFile, aadhaarBackFile);
       const res = await submitCandidateApplication(payload);
 
-      trackEvent('form_submit_success', {
+      trackEvent('ApplicationSubmitSuccess', {
         candidateCode: res.candidateCode,
         isExisting: res.isExistingCandidate,
       });
