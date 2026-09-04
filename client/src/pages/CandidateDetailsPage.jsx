@@ -39,7 +39,243 @@ function formatDateTime(value) {
   return new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-const uploadsOrigin = (apiClient.defaults.baseURL || '').replace(/\/api\/?$/, '');
+function getDocumentUrls(fileUrl) {
+  if (!fileUrl) return [];
+  if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+    return [fileUrl];
+  }
+  const cleanPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+  const apiBase = apiClient.defaults.baseURL || '';
+  const origins = [];
+
+  if (apiBase.startsWith('http')) {
+    origins.push(apiBase.replace(/\/api\/?$/, ''));
+  }
+  if (typeof window !== 'undefined') {
+    origins.push(window.location.origin);
+  }
+  origins.push('http://localhost:4100');
+
+  return [...new Set(origins)].map((orig) => `${orig}${cleanPath}`);
+}
+
+function DocumentPreviewModal({ doc, initialUrl, onClose }) {
+  const [rotation, setRotation] = useState(0);
+  const [zoom, setZoom] = useState(1);
+  const isImage = doc.mime_type?.startsWith('image/');
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-6">
+      <div className="relative flex flex-col max-h-[92vh] max-w-4xl w-full rounded-2xl bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-6 bg-slate-50">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2 3 6v6c0 5 3.8 9.4 9 10 5.2-.6 9-5 9-10V6l-9-4Z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                {DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+              </h3>
+              <p className="text-xs text-slate-500 truncate max-w-[200px] sm:max-w-xs">{doc.original_file_name || 'Document File'}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {isImage && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  title="Zoom Out"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="8" y1="11" x2="14" y2="11" />
+                  </svg>
+                </button>
+                <span className="text-xs text-slate-500 font-mono w-9 text-center">{Math.round(zoom * 100)}%</span>
+                <button
+                  type="button"
+                  onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  title="Zoom In"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRotation((r) => (r + 90) % 360)}
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  title="Rotate"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 1 1-9-9c2.52 0 4.85.83 6.72 2.24L21 8" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 3v5h-5" />
+                  </svg>
+                </button>
+              </>
+            )}
+            <a
+              href={initialUrl}
+              target="_blank"
+              rel="noreferrer"
+              download
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+            >
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              <span className="hidden sm:inline">Download</span>
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto bg-slate-900/95 p-4 sm:p-8 flex items-center justify-center min-h-[350px] max-h-[72vh]">
+          {isImage ? (
+            <img
+              src={initialUrl}
+              alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+              style={{
+                transform: `rotate(${rotation}deg) scale(${zoom})`,
+                transition: 'transform 0.2s ease-out',
+              }}
+              className="max-h-[60vh] max-w-full rounded-lg shadow-2xl object-contain"
+            />
+          ) : (
+            <div className="text-center text-white space-y-3">
+              <svg viewBox="0 0 24 24" className="mx-auto h-16 w-16 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+              <p className="text-sm font-medium">{doc.original_file_name || 'Document'}</p>
+              <a
+                href={initialUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+              >
+                Open File in New Tab
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DocumentCard({ doc, onPreview }) {
+  const candidateUrls = getDocumentUrls(doc.file_url);
+  const [urlIndex, setUrlIndex] = useState(0);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const currentUrl = candidateUrls[urlIndex] || doc.file_url;
+  const isImage = doc.mime_type?.startsWith('image/');
+
+  const handleImageError = () => {
+    if (urlIndex + 1 < candidateUrls.length) {
+      setUrlIndex((prev) => prev + 1);
+    } else {
+      setLoadFailed(true);
+      setLoading(false);
+    }
+  };
+
+  const handleImageLoad = () => {
+    setLoading(false);
+    setLoadFailed(false);
+  };
+
+  return (
+    <div className="group relative w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all hover:border-blue-300 hover:shadow-md">
+      <div
+        onClick={() => onPreview(doc, currentUrl)}
+        className="relative h-28 w-full cursor-pointer overflow-hidden bg-slate-100 flex items-center justify-center"
+      >
+        {isImage && !loadFailed ? (
+          <>
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-400">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+              </div>
+            )}
+            <img
+              src={currentUrl}
+              alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+              className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${
+                loading ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-slate-800 shadow-sm flex items-center gap-1">
+                <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                View
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-3 text-center text-slate-400 space-y-1">
+            <svg viewBox="0 0 24 24" className="h-7 w-7 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            </svg>
+            <span className="text-[10px] font-semibold text-slate-500">
+              {loadFailed ? 'Image file unavailable' : 'Document File'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-2.5">
+        <p className="text-xs font-bold text-slate-900 truncate">
+          {DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+        </p>
+        <div className="mt-1.5 flex items-center justify-between pt-1.5 border-t border-slate-100 text-[10px]">
+          <button
+            type="button"
+            onClick={() => onPreview(doc, currentUrl)}
+            className="font-bold text-blue-600 hover:text-blue-700"
+          >
+            Inspect
+          </button>
+          <a
+            href={currentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-slate-400 hover:text-slate-700"
+          >
+            Direct &nearr;
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ICONS = {
   user: <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path strokeLinecap="round" d="M4 20c0-4 3.5-6 8-6s8 2 8 6" /></svg>,
@@ -54,6 +290,7 @@ export default function CandidateDetailsPage() {
   const [candidate, setCandidate] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +316,14 @@ export default function CandidateDetailsPage() {
   return (
     <div className="bg-mesh-light min-h-screen">
       <OwnerHeader />
+
+      {previewDoc && (
+        <DocumentPreviewModal
+          doc={previewDoc.doc}
+          initialUrl={previewDoc.url}
+          onClose={() => setPreviewDoc(null)}
+        />
+      )}
 
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <Link
@@ -143,41 +388,17 @@ export default function CandidateDetailsPage() {
               </div>
             </SectionCard>
 
-            {/* Legacy fields (documents, older optional profile data) only render when a record
-                actually has them — the current form no longer collects any of this. */}
             {(candidate.documents.length > 0 || candidate.additional_message) && (
               <SectionCard icon={ICONS.shield} title="Documents & Notes">
                 {candidate.documents.length > 0 && (
                   <div className="flex flex-wrap gap-4">
-                    {candidate.documents.map((doc) => {
-                      const isImage = doc.mime_type?.startsWith('image/');
-                      return (
-                        <a
-                          key={doc.id}
-                          href={`${uploadsOrigin}${doc.file_url}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="group w-36 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
-                        >
-                          {isImage ? (
-                            <img
-                              src={`${uploadsOrigin}${doc.file_url}`}
-                              alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
-                              className="h-24 w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-24 w-full items-center justify-center bg-slate-50">
-                              <svg viewBox="0 0 24 24" className="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                              </svg>
-                            </div>
-                          )}
-                          <p className="truncate px-2.5 py-2 text-center text-xs font-semibold text-navy-800 group-hover:text-gold-600">
-                            {DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
-                          </p>
-                        </a>
-                      );
-                    })}
+                    {candidate.documents.map((doc) => (
+                      <DocumentCard
+                        key={doc.id}
+                        doc={doc}
+                        onPreview={(d, url) => setPreviewDoc({ doc: d, url })}
+                      />
+                    ))}
                   </div>
                 )}
 

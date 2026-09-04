@@ -196,8 +196,7 @@ export default function CandidatesPage() {
                   to="/apply/security-guard"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
                 >
-                  <Sparkles className="w-4 h-4 text-white" />
-                  {isHindi ? 'ऑनलाइन फ्री फॉर्म भरें' : 'Start Free Application'}
+                  <span>{isHindi ? 'ऑनलाइन फ्री फॉर्म भरें' : 'Start Free Application'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
@@ -378,8 +377,7 @@ export default function CandidatesPage() {
                 to="/apply/security-guard"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all"
               >
-                <Sparkles className="w-4 h-4 text-white" />
-                {isHindi ? 'ऑनलाइन फ्री फॉर्म भरें' : 'Start Free Candidate Application'}
+                <span>{isHindi ? 'ऑनलाइन फ्री फॉर्म भरें' : 'Start Free Candidate Application'}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
