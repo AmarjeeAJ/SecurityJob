@@ -196,7 +196,6 @@ function DocumentPreviewModal({ doc, initialUrl, candidateId, onClose }) {
             <img
               src={initialUrl}
               alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
-              crossOrigin="anonymous"
               style={{
                 transform: `rotate(${rotation}deg) scale(${zoom})`,
                 transition: 'transform 0.2s ease-out',
@@ -266,7 +265,6 @@ function DocumentCard({ doc, candidateId, onPreview }) {
               alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
               onError={handleImageError}
               onLoad={handleImageLoad}
-              crossOrigin="anonymous"
               className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${
                 loading ? 'opacity-0' : 'opacity-100'
               }`}

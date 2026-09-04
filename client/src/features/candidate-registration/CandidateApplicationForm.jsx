@@ -28,11 +28,13 @@ import {
   Video,
   Target,
   ClipboardCheck,
-  Building2
+  Building2,
+  Loader2
 } from 'lucide-react';
 import { candidateFormSchema } from '../../schemas/candidateSchema.js';
 import { submitCandidateApplication } from '../../api/candidates.js';
 import { trackEvent } from '../../services/tracking.service.js';
+import { compressImage } from '../../utils/compressImage.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import Card from '../../components/common/Card.jsx';
 import SuccessState from '../../components/form/SuccessState.jsx';
@@ -96,6 +98,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const [aadhaarFrontFile, setAadhaarFrontFile] = useState(null);
   const [aadhaarBackPreview, setAadhaarBackPreview] = useState(null);
   const [aadhaarBackFile, setAadhaarBackFile] = useState(null);
+  const [compressingFront, setCompressingFront] = useState(false);
+  const [compressingBack, setCompressingBack] = useState(false);
   const hasTrackedStart = useRef(false);
   const isSubmittingRef = useRef(false);
   const step3EnteredAtRef = useRef(0);
@@ -265,18 +269,26 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     }
   };
 
-  const handleImageChange = (e, side) => {
+  const handleImageChange = async (e, side) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      if (side === 'front') {
-        setAadhaarFrontPreview(url);
-        setAadhaarFrontFile(file);
-      }
-      if (side === 'back') {
-        setAadhaarBackPreview(url);
-        setAadhaarBackFile(file);
-      }
+    if (!file) return;
+
+    // Shrink a 3-5 MB phone photo down to ~300-400 KB now, while the candidate
+    // carries on filling the form, rather than making them wait for a
+    // multi-megabyte upload when they hit submit.
+    const setCompressing = side === 'front' ? setCompressingFront : setCompressingBack;
+    setCompressing(true);
+    const compressed = await compressImage(file);
+    setCompressing(false);
+
+    const url = URL.createObjectURL(compressed);
+    if (side === 'front') {
+      setAadhaarFrontPreview(url);
+      setAadhaarFrontFile(compressed);
+    }
+    if (side === 'back') {
+      setAadhaarBackPreview(url);
+      setAadhaarBackFile(compressed);
     }
   };
 
@@ -1011,6 +1023,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                           </button>
                         </div>
                       </div>
+                    ) : compressingFront ? (
+                      <div className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200">
+                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                        <span>फोटो तैयार हो रही है... (Processing)</span>
+                      </div>
                     ) : (
                       <label className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs cursor-pointer transition-colors border border-blue-200">
                         <Upload className="w-4 h-4 text-blue-600" />
@@ -1055,6 +1072,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                             ✕ हटाएं (Remove)
                           </button>
                         </div>
+                      </div>
+                    ) : compressingBack ? (
+                      <div className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200">
+                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                        <span>फोटो तैयार हो रही है... (Processing)</span>
                       </div>
                     ) : (
                       <label className="flex items-center justify-center gap-1.5 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs cursor-pointer transition-colors border border-blue-200">
@@ -1121,7 +1143,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
               <button
                 type="button"
                 key="step-btn-submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || compressingFront || compressingBack}
                 onClick={handleSubmit(onSubmit)}
                 className="flex-1 py-3.5 sm:py-4 px-4 rounded-xl font-extrabold text-xs sm:text-base text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 active:scale-[0.99]"
               >
