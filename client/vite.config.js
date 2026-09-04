@@ -7,6 +7,16 @@ export default defineConfig({
   server: {
     port: 5180,
     strictPort: true,
+    proxy: {
+      '/uploads': {
+        target: 'http://localhost:4100',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://localhost:4100',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     sourcemap: false,
