@@ -20,7 +20,7 @@ export function errorHandler(err, req, res, next) {
   if (statusCode >= 500) {
     logger.error(err.message, { stack: env.isProduction ? undefined : err.stack, path: req.path });
   } else {
-    logger.warn(err.message, { path: req.path });
+    logger.warn(err.message, { path: req.path, details: err.details });
   }
 
   const response = {

@@ -12,7 +12,18 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-const uploadRoot = path.resolve(env.uploadDirectory);
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const serverDir = path.resolve(__dirname, '../..');
+
+const uploadRoot = path.isAbsolute(env.uploadDirectory)
+  ? env.uploadDirectory
+  : fs.existsSync(path.resolve(serverDir, env.uploadDirectory))
+  ? path.resolve(serverDir, env.uploadDirectory)
+  : path.resolve(process.cwd(), env.uploadDirectory);
+
 ensureDir(path.join(uploadRoot, 'aadhaar'));
 
 const storage = multer.diskStorage({

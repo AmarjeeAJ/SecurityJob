@@ -27,14 +27,14 @@ const jsonArrayFromForm = z.preprocess((val) => {
   return [];
 }, z.array(z.string().trim().min(1)));
 
-const NAME_PATTERN = /^[a-zA-Zऀ-ॿ][a-zA-Zऀ-ॿ .'-]{1,149}$/;
+const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s.'\-()]{0,149}$/u;
 const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 
 export const registerCandidateSchema = z
   .object({
     fullName: z.string().trim().regex(NAME_PATTERN, 'Please enter a valid full name'),
     mobileNumber: z.string().trim(),
-    whatsappNumber: z.string().trim(),
+    whatsappNumber: z.preprocess((val) => (val === undefined || val === null ? '' : String(val).trim()), z.string()),
     alternateMobileNumber: z.string().trim().optional().or(z.literal('')),
     email: z.string().trim().email('Please enter a valid email address').optional().or(z.literal('')),
     dateOfBirth: z.string().trim().optional().or(z.literal('')),
@@ -51,11 +51,20 @@ export const registerCandidateSchema = z
     securityExperienceMonths: optionalIntFromForm.default(0),
     previousCompany: z.string().trim().max(150).optional().or(z.literal('')),
     isExperienced: boolFromForm.optional().default(false),
-    currentEmploymentStatus: z.enum(['employed', 'unemployed', 'student', 'other']).optional(),
-    joiningAvailability: z.enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days']).optional(),
+    currentEmploymentStatus: z.preprocess(
+      (val) => (val === '' || val === null || val === undefined ? undefined : val),
+      z.enum(['employed', 'unemployed', 'student', 'other']).optional()
+    ),
+    joiningAvailability: z.preprocess(
+      (val) => (val === '' || val === null || val === undefined ? undefined : val),
+      z.enum(['immediate', 'within_15_days', 'within_30_days', 'more_than_30_days']).optional()
+    ),
     expectedSalary: optionalIntFromForm,
     shiftPreference: z.string().trim().max(50).optional().or(z.literal('')),
-    dutyHourPreference: z.enum(['8_hours', '12_hours', 'rotational', 'any']).optional(),
+    dutyHourPreference: z.preprocess(
+      (val) => (val === '' || val === null || val === undefined ? undefined : val),
+      z.enum(['8_hours', '12_hours', 'rotational', 'any']).optional()
+    ),
     heightCm: optionalIntFromForm,
     languages: z.string().trim().max(255).optional().or(z.literal('')),
     exServiceman: boolFromForm.optional().default(false),
@@ -88,7 +97,8 @@ export const registerCandidateSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mobileNumber'], message: 'This does not look like a real mobile number' });
     }
 
-    const whatsappDigits = data.whatsappNumber.replace(/\D/g, '').slice(-10);
+    const rawWhatsapp = data.whatsappNumber || data.mobileNumber;
+    const whatsappDigits = (rawWhatsapp || '').replace(/\D/g, '').slice(-10);
     if (!MOBILE_PATTERN.test(whatsappDigits)) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['whatsappNumber'], message: 'Please enter a valid 10-digit WhatsApp number' });
     } else if (looksLikeFakeMobile(whatsappDigits)) {
@@ -99,18 +109,18 @@ export const registerCandidateSchema = z
     }
     if (data.isExperienced) {
       if (!data.currentEmploymentStatus) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['currentEmploymentStatus'], message: 'Please select your current employment status' });
+        data.currentEmploymentStatus = 'unemployed';
       }
       if (!data.joiningAvailability) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
+        data.joiningAvailability = 'immediate';
       }
       if (!data.dutyHourPreference) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
+        data.dutyHourPreference = '12_hours';
       }
     }
     for (const role of data.preferredRoles) {
       if (!JOB_ROLES.includes(role)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['preferredRoles'], message: 'Invalid preferred role selected' });
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['preferredRoles'], message: `Invalid preferred role: ${role}` });
         break;
       }
     }
