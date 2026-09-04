@@ -26,7 +26,7 @@ export default function CandidatesPage() {
           level: 'स्तर 1 (Level 1)',
           title: 'सिक्योरिटी गार्ड / लेडी गार्ड',
           exp: '0 - 1 वर्ष (फ्रेशर्स के लिए उपयुक्त)',
-          salary: '₹15,000 – ₹24,000 / माह',
+          salary: '₹16,000 – ₹24,000 / माह',
           desc: 'मुख्य द्वार सुरक्षा, आगंतुक रजिस्टर मेंटेनेंस, परिसर गश्त और बेसिक एक्सेस कंट्रोल।',
         },
         {
@@ -47,14 +47,14 @@ export default function CandidatesPage() {
           level: 'स्तर 4 (Level 4)',
           title: 'फील्ड ऑफिसर / सिक्योरिटी इंस्पेक्टर',
           exp: '4 - 8 वर्ष का अनुभव',
-          salary: '₹28,000 – ₹45,000 / माह',
+          salary: '₹22,000 – ₹42,000 / माह',
           desc: 'कई साइट्स का औचक निरीक्षण, नाइट ऑडिट, क्लाइंट कोऑर्डिनेशन और गार्ड भर्ती में सहायता।',
         },
         {
           level: 'स्तर 5 (Level 5)',
           title: 'सिक्योरिटी ऑपरेशन्स मैनेजर',
           exp: '6+ वर्ष (पूर्व सैनिक / अनुभवी)',
-          salary: '₹45,000 – ₹80,000+ / माह',
+          salary: '₹35,000 – ₹50,000 / माह',
           desc: 'कंपनी सिक्योरिटी नीतियां बनाना, बड़े प्रोजेक्ट्स का सुरक्षा अनुबंध और टीम का नेतृत्व।',
         },
       ]
@@ -63,7 +63,7 @@ export default function CandidatesPage() {
           level: 'Level 1',
           title: 'Security Guard / Lady Guard',
           exp: '0 - 1 Year (Fresher Friendly)',
-          salary: '₹15,000 – ₹24,000 / mo',
+          salary: '₹16,000 – ₹24,000 / mo',
           desc: 'Access control, visitor log management, perimeter gate duty, and campus patrols.',
         },
         {
@@ -84,14 +84,14 @@ export default function CandidatesPage() {
           level: 'Level 4',
           title: 'Field Officer / Quality Inspector',
           exp: '4 - 8 Years Experience',
-          salary: '₹28,000 – ₹45,000 / mo',
+          salary: '₹22,000 – ₹42,000 / mo',
           desc: 'Multi-site operational audits, night surprise visits, client account checks, and recruitment support.',
         },
         {
           level: 'Level 5',
           title: 'Security Operations Manager',
           exp: '6+ Years (Ex-Defence / Experienced)',
-          salary: '₹45,000 – ₹80,000+ / mo',
+          salary: '₹35,000 – ₹50,000 / mo',
           desc: 'Formulate campus security policies, manage security contracts, disaster response, and team leadership.',
         },
       ];
@@ -105,8 +105,8 @@ export default function CandidatesPage() {
         },
         {
           title: 'बैंक पासबुक / चेक (Bank Passbook)',
-          desc: 'मासिक वेतन सीधे बैंक खाते में जमा कराने के लिए एक्टिव बैंक खाता।',
-          required: true,
+          desc: 'यदि बैंक खाते में वेतन लेना चाहें तो एक्टिव बैंक पासबुक या चेक।',
+          required: false,
         },
         {
           title: 'शैक्षणिक मार्कशीट (10th/12th Marksheet)',
@@ -137,8 +137,8 @@ export default function CandidatesPage() {
         },
         {
           title: 'Bank Account Passbook / Cheque',
-          desc: 'Your active savings bank account details for direct monthly salary deposit.',
-          required: true,
+          desc: 'Active bank account details if receiving salary via bank transfer (or cash as per employer policy).',
+          required: false,
         },
         {
           title: 'Educational Marksheet',
@@ -187,8 +187,8 @@ export default function CandidatesPage() {
 
               <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
                 {isHindi
-                  ? 'राजस्थान में प्रमाणित सुरक्षा कंपनियों से सीधे जुड़ें। ₹0 रजिस्ट्रेशन फीस, समय पर वेतन, सरकारी PF व ESIC सुविधा और करियर में आगे बढ़ने का स्पष्ट मार्ग।'
-                  : 'Connect with verified security job opportunities across Rajasthan. Enjoy zero registration fees, confirmed statutory benefits (PF & ESIC), and a transparent path for long-term career growth.'}
+                  ? 'राजस्थान में प्रमाणित सुरक्षा कंपनियों से सीधे जुड़ें। ₹0 रजिस्ट्रेशन फीस, स्पष्ट वेतन संरचना और करियर में आगे बढ़ने का सुरक्षित मार्ग।'
+                  : 'Connect with verified security job opportunities across Rajasthan. Enjoy zero registration fees, clear role details, and a transparent path for long-term career growth.'}
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -248,10 +248,11 @@ export default function CandidatesPage() {
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   {isHindi
-                    ? 'केवल वही कंपनियाँ लिस्टेड हैं जो समय पर बैंक वेतन और कानूनी PF व ESIC मेडिकल सुरक्षा प्रदान करती हैं।'
-                    : 'We list only verified job openings that offer timely monthly bank salaries and statutory PF/ESIC benefits.'}
+                    ? 'हम प्रमाणित सिक्योरिटी कंपनियों और कॉरपोरेट नियोक्ताओं की जांची-परखी रिक्तियों की जानकारी प्रदान करते हैं।'
+                    : 'We list verified job openings from licensed security agencies and established corporate employers.'}
                 </p>
               </div>
+
 
               <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-100">

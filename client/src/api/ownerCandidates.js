@@ -10,6 +10,11 @@ export async function fetchCandidateDetails(id) {
   return data;
 }
 
+export async function deleteCandidate(id) {
+  const { data } = await apiClient.delete(`/owner/candidates/${id}`);
+  return data;
+}
+
 export function buildExportCsvUrl(params) {
   const query = new URLSearchParams(
     Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== ''))

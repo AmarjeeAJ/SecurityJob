@@ -33,7 +33,7 @@ function CandidateCard({ c }) {
   return (
     <Link
       to={`/owner/candidates/${c.id}`}
-      className="block rounded-xl border border-slate-200 p-4 transition-colors hover:border-gold-400/60 hover:bg-gold-500/5"
+      className="block rounded-xl border border-slate-200 p-4 transition-colors hover:border-gold-400/60 hover:bg-gold-500/5 bg-white"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

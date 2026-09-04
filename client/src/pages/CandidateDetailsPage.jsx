@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { fetchCandidateDetails } from '../api/ownerCandidates.js';
+import { useEffect, useState, useMemo } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { fetchCandidateDetails, deleteCandidate } from '../api/ownerCandidates.js';
 import apiClient from '../api/client.js';
+import { Trash2, AlertTriangle, ArrowLeft } from 'lucide-react';
+
 import OwnerHeader from '../components/owner/OwnerHeader.jsx';
 import Card from '../components/common/Card.jsx';
 import LoadingSkeleton from '../components/common/LoadingSkeleton.jsx';
@@ -39,30 +41,68 @@ function formatDateTime(value) {
   return new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-function getDocumentUrls(fileUrl) {
-  if (!fileUrl) return [];
-  if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
-    return [fileUrl];
-  }
-  const cleanPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+function getDocumentUrls(doc, candidateId) {
+  if (!doc) return [];
+  const urls = [];
   const apiBase = apiClient.defaults.baseURL || '';
-  const origins = [];
+  const isAbsoluteApi = apiBase.startsWith('http://') || apiBase.startsWith('https://');
+  const backendBase = isAbsoluteApi ? apiBase.replace(/\/api\/?$/, '') : '';
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  if (apiBase.startsWith('http')) {
-    origins.push(apiBase.replace(/\/api\/?$/, ''));
+  // 1. Dedicated view_url from backend if available, or constructed authenticated API route
+  const docPath = doc.view_url || (candidateId && doc.id ? `/api/owner/candidates/${candidateId}/documents/${doc.id}` : null);
+  if (docPath) {
+    if (backendBase) {
+      urls.push(`${backendBase}${docPath}`);
+    }
+    urls.push(docPath);
+    if (currentOrigin && !docPath.startsWith('http')) {
+      urls.push(`${currentOrigin}${docPath}`);
+    }
   }
-  if (typeof window !== 'undefined') {
-    origins.push(window.location.origin);
-  }
-  origins.push('http://localhost:4100');
 
-  return [...new Set(origins)].map((orig) => `${orig}${cleanPath}`);
+  // 2. /api/uploads/ relative to backend or current domain (reverse-proxied /api)
+  if (doc.file_url) {
+    const rawFileUrl = doc.file_url.startsWith('/') ? doc.file_url : `/${doc.file_url}`;
+    const apiUploadPath = rawFileUrl.startsWith('/uploads')
+      ? `/api${rawFileUrl}`
+      : `/api/uploads${rawFileUrl}`;
+
+    if (backendBase) {
+      urls.push(`${backendBase}${apiUploadPath}`);
+    }
+    urls.push(apiUploadPath);
+    if (currentOrigin) {
+      urls.push(`${currentOrigin}${apiUploadPath}`);
+    }
+
+    // 3. Direct static /uploads/
+    if (rawFileUrl.startsWith('http://') || rawFileUrl.startsWith('https://')) {
+      urls.push(rawFileUrl);
+    } else {
+      if (backendBase) {
+        urls.push(`${backendBase}${rawFileUrl}`);
+      }
+      urls.push(rawFileUrl);
+      if (currentOrigin) {
+        urls.push(`${currentOrigin}${rawFileUrl}`);
+      }
+    }
+  }
+
+  return [...new Set(urls.filter(Boolean))];
 }
 
-function DocumentPreviewModal({ doc, initialUrl, onClose }) {
+function DocumentPreviewModal({ doc, initialUrl, candidateId, onClose }) {
   const [rotation, setRotation] = useState(0);
   const [zoom, setZoom] = useState(1);
   const isImage = doc.mime_type?.startsWith('image/');
+
+  const apiBase = apiClient.defaults.baseURL || '';
+  const isAbsoluteApi = apiBase.startsWith('http://') || apiBase.startsWith('https://');
+  const backendBase = isAbsoluteApi ? apiBase.replace(/\/api\/?$/, '') : '';
+  const downloadPath = doc.download_url || (candidateId && doc.id ? `/api/owner/candidates/${candidateId}/documents/${doc.id}?download=1` : initialUrl);
+  const downloadUrl = backendBase && !downloadPath.startsWith('http') ? `${backendBase}${downloadPath}` : downloadPath;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -96,7 +136,7 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
                 <button
                   type="button"
                   onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
-                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200 cursor-pointer"
                   title="Zoom Out"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -107,7 +147,7 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
                 <button
                   type="button"
                   onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
-                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200 cursor-pointer"
                   title="Zoom In"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -117,7 +157,7 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
                 <button
                   type="button"
                   onClick={() => setRotation((r) => (r + 90) % 360)}
-                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200"
+                  className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-200 cursor-pointer"
                   title="Rotate"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -128,11 +168,11 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
               </>
             )}
             <a
-              href={initialUrl}
+              href={downloadUrl}
               target="_blank"
               rel="noreferrer"
-              download
-              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+              download={doc.original_file_name || `${doc.document_type || 'document'}.jpg`}
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 cursor-pointer"
             >
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -142,7 +182,7 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 cursor-pointer"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -156,6 +196,7 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
             <img
               src={initialUrl}
               alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
+              crossOrigin="anonymous"
               style={{
                 transform: `rotate(${rotation}deg) scale(${zoom})`,
                 transition: 'transform 0.2s ease-out',
@@ -184,8 +225,8 @@ function DocumentPreviewModal({ doc, initialUrl, onClose }) {
   );
 }
 
-function DocumentCard({ doc, onPreview }) {
-  const candidateUrls = getDocumentUrls(doc.file_url);
+function DocumentCard({ doc, candidateId, onPreview }) {
+  const candidateUrls = useMemo(() => getDocumentUrls(doc, candidateId), [doc, candidateId]);
   const [urlIndex, setUrlIndex] = useState(0);
   const [loadFailed, setLoadFailed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -225,6 +266,7 @@ function DocumentCard({ doc, onPreview }) {
               alt={DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type}
               onError={handleImageError}
               onLoad={handleImageLoad}
+              crossOrigin="anonymous"
               className={`h-full w-full object-cover transition-transform duration-200 group-hover:scale-105 ${
                 loading ? 'opacity-0' : 'opacity-100'
               }`}
@@ -259,7 +301,7 @@ function DocumentCard({ doc, onPreview }) {
           <button
             type="button"
             onClick={() => onPreview(doc, currentUrl)}
-            className="font-bold text-blue-600 hover:text-blue-700"
+            className="font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
           >
             Inspect
           </button>
@@ -267,9 +309,11 @@ function DocumentCard({ doc, onPreview }) {
             href={currentUrl}
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-slate-400 hover:text-slate-700"
+            className="font-medium text-slate-500 hover:text-blue-600 flex items-center gap-0.5"
+            title="Open direct file in new tab"
           >
-            Direct &nearr;
+            <span>Direct</span>
+            <span className="text-xs leading-none">↗</span>
           </a>
         </div>
       </div>
@@ -287,10 +331,35 @@ const ICONS = {
 export default function CandidateDetailsPage() {
   useNoIndex();
   const { id } = useParams();
+  const navigate = useNavigate();
   const [candidate, setCandidate] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [previewDoc, setPreviewDoc] = useState(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  async function handleDeleteCandidate() {
+    if (!candidate) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteCandidate(candidate.id);
+      setShowDeleteModal(false);
+      navigate('/owner/candidates', {
+        replace: true,
+        state: {
+          successMessage: `Candidate ${candidate.full_name} (${candidate.candidate_code || 'ID: ' + candidate.id}) deleted successfully.`
+        }
+      });
+    } catch (err) {
+      setDeleteError(err?.response?.data?.message || 'Failed to delete candidate record. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -321,20 +390,115 @@ export default function CandidateDetailsPage() {
         <DocumentPreviewModal
           doc={previewDoc.doc}
           initialUrl={previewDoc.url}
+          candidateId={candidate?.id}
           onClose={() => setPreviewDoc(null)}
         />
       )}
 
+      {showDeleteModal && candidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border border-slate-200">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-red-600 mb-4 shadow-inner">
+              <Trash2 className="h-7 w-7 text-red-600" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                Delete Candidate Record?
+              </h3>
+              <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Are you sure you want to delete this record? This permanently removes testing or duplicate data.
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5 text-left text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-500">Candidate Name:</span>
+                <span className="font-bold text-slate-900">{candidate.full_name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-500">Candidate Code:</span>
+                <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                  {candidate.candidate_code || `ID: ${candidate.id}`}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-500">Mobile Number:</span>
+                <span className="font-medium text-slate-700">{candidate.mobile_number}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 text-[11px] text-amber-800 bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 leading-relaxed">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <span>This action will permanently delete this record, registration details, and uploaded document files. This action cannot be undone.</span>
+            </div>
+
+            {deleteError && (
+              <div className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5 font-medium">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteError('');
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteCandidate}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-red-600/20 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Yes, Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-        <Link
-          to="/owner/candidates"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-700 hover:text-gold-600"
-        >
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to Candidate Records
-        </Link>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            to="/owner/candidates"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-700 hover:text-gold-600 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Candidate Records
+          </Link>
+
+          {candidate && (
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError('');
+                setShowDeleteModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/90 px-3.5 py-2 text-xs font-bold text-red-600 shadow-2xs hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer"
+              title="Delete this candidate record"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Record</span>
+            </button>
+          )}
+        </div>
 
         {loading && <Card><LoadingSkeleton rows={10} /></Card>}
         {error && <ErrorBanner message={error} />}
@@ -350,13 +514,27 @@ export default function CandidateDetailsPage() {
                   <h1 className="truncate text-xl font-bold text-navy-900">{candidate.full_name}</h1>
                   <p className="mt-0.5 font-mono text-xs text-slate-400">{candidate.candidate_code}</p>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                    candidate.consent_given ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
-                  }`}
-                >
-                  {candidate.consent_given ? 'Consent Given' : 'No Consent'}
-                </span>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      candidate.consent_given ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+                    }`}
+                  >
+                    {candidate.consent_given ? 'Consent Given' : 'No Consent'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteError('');
+                      setShowDeleteModal(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer"
+                    title="Delete this candidate record"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
@@ -396,6 +574,7 @@ export default function CandidateDetailsPage() {
                       <DocumentCard
                         key={doc.id}
                         doc={doc}
+                        candidateId={candidate.id}
                         onPreview={(d, url) => setPreviewDoc({ doc: d, url })}
                       />
                     ))}

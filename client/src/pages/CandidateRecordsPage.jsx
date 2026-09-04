@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Filter, 
   Download, 
@@ -6,7 +7,9 @@ import {
   RotateCcw, 
   ChevronDown,
   Users,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2,
+  X
 } from 'lucide-react';
 import { fetchCandidates, buildExportCsvUrl } from '../api/ownerCandidates.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
@@ -34,12 +37,24 @@ const DEFAULT_FILTERS = {
 
 export default function CandidateRecordsPage() {
   useNoIndex();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [candidates, setCandidates] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(true);
+
+  const [successBanner, setSuccessBanner] = useState(location.state?.successMessage || '');
+
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setSuccessBanner(location.state.successMessage);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const debouncedSearch = useDebouncedValue(filters.search, 350);
   const debouncedCity = useDebouncedValue(filters.city, 350);
@@ -132,6 +147,24 @@ export default function CandidateRecordsPage() {
             </a>
           </div>
         </div>
+
+        {/* Success Toast Banner */}
+        {successBanner && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 flex items-center justify-between text-sm text-emerald-800 shadow-xs">
+            <div className="flex items-center gap-2.5 font-medium">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{successBanner}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccessBanner('')}
+              className="text-emerald-600 hover:text-emerald-900 p-1 rounded-lg transition-colors cursor-pointer"
+              title="Dismiss notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Modern Filter Card */}
         <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm overflow-hidden transition-all">
