@@ -20,7 +20,7 @@ import {
   Users, 
   ArrowRight, 
   Search, 
-  Sparkles, 
+  Ticket, 
   CheckCircle2,
   ChevronRight,
   Filter
@@ -143,7 +143,7 @@ function getRoleVisual(slug) {
       };
     case 'event-security-guard':
       return {
-        Icon: Sparkles,
+        Icon: Ticket,
         bg: 'bg-indigo-50/90',
         border: 'border-indigo-200',
         text: 'text-indigo-600',
@@ -253,7 +253,7 @@ export default function ExploreRolesPage() {
             <p className="text-xs sm:text-base text-slate-600 max-w-2xl mx-auto mt-3 leading-relaxed">
               {isHindi
                 ? 'गार्ड, सुपरवाइजर, लेडी गार्ड, गनमैन या सीसीटीवी ऑपरेटर — सभी पदों का वेतन, ड्यूटी घंटे, पात्रता व जॉइनिंग शर्तें चेक करें।'
-                : 'Compare transparent salary ranges, shift timings, required qualifications, and statutory PF/ESIC benefits for all active security positions.'}
+                : 'Compare estimated salary ranges, shift timings, required qualifications, and duty requirements for all active security positions.'}
             </p>
 
             {/* Quick Stats Bar */}
@@ -264,7 +264,7 @@ export default function ExploreRolesPage() {
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                {isHindi ? 'PF + ESIC सहित वेतन' : 'Salary Includes PF + ESIC'}
+                {isHindi ? 'मानक वेतन श्रेणियां' : 'Standard Wage Tiers'}
               </span>
               <span className="flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -386,18 +386,23 @@ export default function ExploreRolesPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1">
                             <IndianRupee className="w-3 h-3 text-emerald-700" />
-                            {isHindi ? 'मासिक वेतन (Monthly In-Hand + PF)' : 'Transparent Monthly Salary'}
+                            {role.salaryPeriod === 'day'
+                              ? (isHindi ? 'दैनिक भुगतान (Daily Pay)' : 'Estimated Daily Pay')
+                              : (isHindi ? 'अनुमानित मासिक वेतन' : 'Estimated Monthly Salary')}
                           </span>
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                             <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
-                            PF + ESIC
+                            {isHindi ? 'कंपनी नियमानुसार' : 'Site Norms'}
                           </span>
                         </div>
-                        <p className="font-extrabold text-slate-900 text-base sm:text-lg mt-1 tracking-tight">
-                          {role.salaryDisplay.split('/')[0]}
+                        <p className="font-extrabold text-slate-900 text-base sm:text-lg mt-1 tracking-tight flex items-baseline gap-1">
+                          <span>{role.salaryDisplay.split('/')[0]}</span>
+                          <span className="text-xs font-semibold text-slate-500">
+                            {role.salaryPeriod === 'day' ? (isHindi ? '/ दिन' : '/ day') : (isHindi ? '/ महीना' : '/ mo')}
+                          </span>
                         </p>
                         <p className="text-[10px] sm:text-[11px] text-slate-600 mt-0.5 font-medium">
-                          {isHindi ? 'साइट नियमानुसार ओवरटाइम (OT) अतिरिक्त देय' : 'Overtime allowance as per site deployment norms'}
+                          {isHindi ? 'वेतन व भत्ते संबंधित कंपनी व साइट नियमानुसार' : 'Wages and allowances as per employer/site policy'}
                         </p>
                       </div>
 

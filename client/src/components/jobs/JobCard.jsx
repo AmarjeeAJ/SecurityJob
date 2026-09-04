@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ArrowRight,
   Sparkles,
+  Ticket,
   CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
@@ -133,7 +134,7 @@ function getRoleVisual(slug) {
       };
     case 'event-security-guard':
       return {
-        Icon: Sparkles,
+        Icon: Ticket,
         bg: 'bg-indigo-50/90',
         border: 'border-indigo-200',
         text: 'text-indigo-600',
@@ -242,15 +243,18 @@ export default function JobCard({ job }) {
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1">
               <IndianRupee className="w-3 h-3 text-emerald-700" />
-              {isHindi ? 'मासिक वेतन' : 'Monthly Salary'}
+              {job.salaryPeriod === 'day' ? (isHindi ? 'दैनिक भुगतान' : 'Daily Pay') : (isHindi ? 'मासिक वेतन' : 'Monthly Salary')}
             </span>
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
               <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
-              PF + ESIC
+              {isHindi ? 'कंपनी नियमानुसार' : 'Site Norms'}
             </span>
           </div>
-          <p className="font-extrabold text-slate-900 text-base mt-0.5 tracking-tight">
-            {job.salaryDisplay.split('/')[0]}
+          <p className="font-extrabold text-slate-900 text-base mt-0.5 tracking-tight flex items-baseline gap-1">
+            <span>{job.salaryDisplay.split('/')[0]}</span>
+            <span className="text-xs font-semibold text-slate-500">
+              {job.salaryPeriod === 'day' ? (isHindi ? '/ दिन' : '/ day') : (isHindi ? '/ माह' : '/ mo')}
+            </span>
           </p>
         </div>
 

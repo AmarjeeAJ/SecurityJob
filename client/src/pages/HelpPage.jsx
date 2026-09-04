@@ -49,12 +49,12 @@ export default function HelpPage() {
         {
           category: 'दस्तावेज (Documents)',
           question: 'सिक्योरिटी जॉइनिंग के समय कौन से दस्तावेज (Documents) जरूरी हैं?',
-          answer: 'आपको इन दस्तावेजों की आवश्यकता होगी: (1) आधार कार्ड, (2) बैंक पासबुक / कैंसिल चेक (सैलरी के लिए), (3) 10वीं/12वीं की मार्कशीट, (4) 2-4 पासपोर्ट साइज फोटो, और (5) पुलिस सत्यापन (Police Verification) प्रमाण पत्र।',
+          answer: 'आपको इन दस्तावेजों की आवश्यकता होगी: (1) आधार कार्ड, (2) बैंक पासबुक / कैंसिल चेक (बैंक सैलरी के लिए, यदि उपलब्ध हो), (3) 10वीं/12वीं की मार्कशीट, (4) 2-4 पासपोर्ट साइज फोटो, और (5) पुलिस सत्यापन (Police Verification) प्रमाण पत्र।',
         },
         {
           category: 'वेतन (Salary)',
           question: 'सैलरी कब और कैसे मिलती है?',
-          answer: 'सैलरी हर महीने की 7 से 10 तारीख के बीच सीधे आपके बैंक खाते में जमा होती है। साथ ही नियमानुसार PF और ESIC मेडिकल सुविधा का लाभ भी मिलता है।',
+          answer: 'सैलरी बैंक खाते में ट्रांसफर या नकद माध्यम से नियोक्ता कंपनी के मासिक पे-रोल शेड्यूल व व्यवस्था के अनुसार दी जाती है। वेतन चक्र व भत्ते संबंधित कंपनी और कार्यस्थल (साइट) के नियमों के अनुसार लागू होते हैं।',
         },
         {
           category: 'गोपनीयता (Privacy)',
@@ -86,12 +86,12 @@ export default function HelpPage() {
         {
           category: 'Documents',
           question: 'Which documents are required for joining?',
-          answer: 'You will need: (1) Aadhaar Card, (2) Bank account passbook/cheque for salary deposit, (3) Educational marksheet (10th/12th), (4) 2-4 passport size photographs, and (5) Police verification certificate if available.',
+          answer: 'You will need: (1) Aadhaar Card, (2) Bank account passbook/cheque (for bank salary, if available), (3) Educational marksheet (10th/12th), (4) 2-4 passport size photographs, and (5) Police verification certificate if available.',
         },
         {
           category: 'Salary',
           question: 'How and when will my salary be paid?',
-          answer: 'Salaries are paid monthly directly into your bank account between the 7th and 10th of every month, alongside statutory PF and ESIC medical benefits.',
+          answer: 'Salaries are disbursed through bank transfer or in cash according to the hiring employer’s monthly payroll schedule. Payment cycles and benefits depend on the hiring company and deployment site rules.',
         },
         {
           category: 'Privacy',

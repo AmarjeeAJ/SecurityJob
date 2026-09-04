@@ -51,8 +51,8 @@ export default function HomePage() {
         },
         {
           icon: IndianRupee,
-          title: 'बैंक खाते में वेतन + PF व ESIC',
-          desc: 'महीने की 7 से 10 तारीख तक सीधा बैंक खाते में वेतन, साथ में सरकारी PF और ESIC मेडिकल कार्ड सुविधा।',
+          title: 'पारदर्शी वेतन व भत्तों की जानकारी',
+          desc: 'विभिन्न सुरक्षा पदों के लिए वेतन संरचना, बैंक ट्रांसफर या नकद भुगतान और वैधानिक नियमों के तहत मिलने वाले लाभों की स्पष्ट जानकारी।',
         },
         {
           icon: PhoneCall,
@@ -83,8 +83,8 @@ export default function HomePage() {
         },
         {
           icon: IndianRupee,
-          title: 'Direct Bank Salary + PF & ESIC',
-          desc: 'Monthly salary deposited directly into your bank account on time, with full PF and ESIC medical benefits.',
+          title: 'Transparent Wage Structures',
+          desc: 'Clear details on role-specific salary ranges, bank or cash payment options, and statutory benefit provisions as applicable.',
         },
         {
           icon: PhoneCall,
@@ -224,8 +224,8 @@ export default function HomePage() {
               {/* Sub-headline */}
               <p className="text-xs sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
                 {isHindi
-                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में सिक्योरिटी गार्ड, सुपरवाइजर, गनमैन व लेडी गार्ड की भर्ती। ₹0 फीस, सरकारी PF व ESIC सुविधा।'
-                  : 'Apply for verified Security Guard, Supervisor, Lady Guard, and Armed Guard jobs across Jaipur, Jodhpur, Udaipur, Kota, Alwar, and Neemrana. ₹0 fees, statutory PF & ESIC benefits.'}
+                  ? 'जयपुर, जोधपुर, उदयपुर, कोटा, अलवर, नीमराना आदि में सिक्योरिटी गार्ड, सुपरवाइजर, गनमैन व लेडी गार्ड की भर्ती। ₹0 रजिस्ट्रेशन फीस और सीधी जॉब जानकारी।'
+                  : 'Explore verified Security Guard, Supervisor, Lady Guard, and Armed Guard jobs across Jaipur, Jodhpur, Udaipur, Kota, Alwar, and Neemrana with ₹0 registration fee.'}
               </p>
 
               {/* Prominent Apply Now Hero Button */}
@@ -328,16 +328,16 @@ export default function HomePage() {
                     <HeartPulse className="w-6 h-6" />
                   </div>
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
-                    {isHindi ? 'सुरक्षा कर्मियों का सम्मान व अधिकार' : 'Dignity & Statutory Welfare'}
+                    {isHindi ? 'सुरक्षा कर्मियों का सम्मान व कार्य सुरक्षा' : 'Professional Dignity & Fair Working Standards'}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     {isHindi
-                      ? 'सिक्योरिटी गार्ड हमारे समाज की रक्षा करते हैं। उन्हें पूरा मान-सम्मान, समय पर बैंक खाते में सैलरी, PF पेंशन और ESIC फ्री इलाज मिलना उनका कानूनी हक है।'
-                      : 'Security guards safeguard our homes and factories. They deserve utmost professional dignity, timely bank wages, PF pension rights, and ESIC healthcare security.'}
+                      ? 'सिक्योरिटी गार्ड हमारे समाज और प्रतिष्ठानों की रक्षा करते हैं। उन्हें पूरा मान-सम्मान, पारदर्शी कार्य स्थितियां और नियमों के अनुरूप सभी सुविधाएं मिलनी चाहिए।'
+                      : 'Security guards protect our communities and workplaces. They deserve utmost professional dignity, transparent work terms, and compliant working conditions.'}
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-200/60 text-xs font-bold text-emerald-600">
-                  {isHindi ? 'वेतन + PF + ESIC सुरक्षा' : 'Salary + PF + ESIC Welfare'}
+                  {isHindi ? 'पारदर्शी कार्य व वेतन नियम' : 'Transparent Work & Wage Terms'}
                 </div>
               </div>
 
@@ -404,7 +404,7 @@ export default function HomePage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>{isHindi ? 'सीधा बैंक खाते में वेतन, सरकारी PF व ESIC मेडिकल कार्ड सुनिश्चित।' : 'Timely salary direct to bank with official PF and ESIC benefits.'}</span>
+                      <span>{isHindi ? 'पारदर्शी वेतन भुगतान (बैंक या नकद) व नियोक्ता नियमानुसार वैधानिक भत्ते।' : 'Transparent salary payment (Bank or Cash) and statutory benefits as per employer norms.'}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -524,15 +524,15 @@ export default function HomePage() {
             <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold mb-3">
                 <IndianRupee className="w-3.5 h-3.5" />
-                {isHindi ? 'निश्चित मासिक वेतन संरचना' : 'Transparent Salary & Statutory Benefits'}
+                {isHindi ? 'मानक वेतन श्रेणियां' : 'Standard Industry Wage Tiers'}
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                {isHindi ? 'राजस्थान में वेतन व सरकारी सुविधाओं का पूरा ब्योरा' : 'Monthly Salary & Benefits by Security Tier'}
+                {isHindi ? 'राजस्थान में सुरक्षा पदों की अनुमानित वेतन संरचना' : 'Estimated Salary Ranges by Security Role'}
               </h2>
               <p className="text-xs sm:text-base text-slate-600 mt-2 leading-relaxed">
                 {isHindi
-                  ? 'हर महीने की 7 से 10 तारीख को बैंक खाते में सीधा वेतन, साथ में PF रिटायरमेंट फंड व परिवार के लिए ESIC मेडिकल सुविधा।'
-                  : 'Direct, on-time monthly bank salary with statutory PF, ESIC hospital coverage for family, and overtime allowances.'}
+                  ? 'पद, अनुभव और कार्यस्थल की श्रेणी के अनुसार अनुमानित मासिक वेतन। वास्तविक वेतन व भत्ते नियोक्ता कंपनी के नियमानुसार तय होते हैं।'
+                  : 'Estimated monthly salary ranges based on role, experience, and site requirements. Final wages and allowances are governed by employer policies.'}
               </p>
             </div>
 
@@ -556,7 +556,7 @@ export default function HomePage() {
                     </span>
                     <p className="text-2xl font-black text-slate-900 mt-0.5">₹16,000 – ₹24,000</p>
                     <span className="text-xs font-semibold text-emerald-700 block mt-1">
-                      {isHindi ? 'Includes PF + ESIC (ओटी साइट नियमानुसार)' : 'Includes PF + ESIC (Overtime as per site rules)'}
+                      {isHindi ? 'वेतन व भत्ते साइट व कंपनी नियमानुसार' : 'Wages & benefits as per employer/site policy'}
                     </span>
                   </div>
 
@@ -575,7 +575,7 @@ export default function HomePage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{isHindi ? 'सीधा बैंक खाता ट्रांसफर (SBI/PNB/BOB)' : 'Direct Bank Salary by 7th-10th'}</span>
+                      <span>{isHindi ? 'मासिक वेतन (बैंक ट्रांसफर या नकद)' : 'Monthly salary payment (Bank transfer or Cash)'}</span>
                     </li>
                   </ul>
                 </div>
@@ -612,7 +612,7 @@ export default function HomePage() {
                     </span>
                     <p className="text-2xl font-black text-slate-900 mt-0.5">₹18,000 – ₹25,000</p>
                     <span className="text-xs font-semibold text-emerald-700 block mt-1">
-                      {isHindi ? 'Includes PF + ESIC (ओटी साइट नियमानुसार)' : 'Includes PF + ESIC (Overtime as per site rules)'}
+                      {isHindi ? 'वेतन व भत्ते साइट व कंपनी नियमानुसार' : 'Wages & benefits as per employer/site policy'}
                     </span>
                   </div>
 
@@ -665,7 +665,7 @@ export default function HomePage() {
                     </span>
                     <p className="text-2xl font-black text-slate-900 mt-0.5">₹20,000 – ₹35,000</p>
                     <span className="text-xs font-semibold text-emerald-700 block mt-1">
-                      {isHindi ? 'Includes PF + ESIC (ओटी साइट नियमानुसार)' : 'Includes PF + ESIC (Overtime as per site rules)'}
+                      {isHindi ? 'वेतन व भत्ते साइट व कंपनी नियमानुसार' : 'Wages & benefits as per employer/site policy'}
                     </span>
                   </div>
 
@@ -701,23 +701,23 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Bottom Welfare Guarantee Banner */}
+            {/* Platform Highlights Banner */}
             <div className="mt-10 sm:mt-12 p-5 sm:p-7 rounded-3xl bg-slate-900 text-white grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
               <div>
                 <p className="text-xl sm:text-2xl font-black text-emerald-400">₹0 Fee</p>
                 <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'शून्य रजिस्ट्रेशन शुल्क' : '100% Free Registration'}</p>
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-black text-blue-400">7th-10th</p>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'समय पर बैंक वेतन' : 'On-Time Direct Salary'}</p>
+                <p className="text-xl sm:text-2xl font-black text-blue-400">Direct Apply</p>
+                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'सीधा ऑनलाइन आवेदन' : 'Direct Online Application'}</p>
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-black text-amber-400">PF + ESIC</p>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'सरकारी सामाजिक सुरक्षा' : 'Govt PF & ESIC Health'}</p>
+                <p className="text-xl sm:text-2xl font-black text-amber-400">11+ Roles</p>
+                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'विभिन्न सुरक्षा पद' : 'Diverse Security Roles'}</p>
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-black text-purple-400">33 Districts</p>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'पूरे राजस्थान में तैनाती' : 'Jobs Across Rajasthan'}</p>
+                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">{isHindi ? 'पूरे राजस्थान में अवसर' : 'Jobs Across Rajasthan'}</p>
               </div>
             </div>
           </div>
@@ -884,7 +884,7 @@ export default function HomePage() {
                   {isHindi ? 'सावधान: दलालों व फर्जी एजेंटों से बचें' : 'Notice: Beware of Fake Middlemen & Job Fraud'}
                 </span>
                 <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                  {isHindi ? 'SecurityJob.in पर 100% फ्री जॉइनिंग — किसी को ₹1 भी न दें' : 'Direct Employer Hiring Guarantee — Never Pay a Single Rupee'}
+                  {isHindi ? 'SecurityJob.in पर 100% फ्री जॉइनिंग — किसी को ₹1 भी न दें' : 'Direct Employer Hiring — Zero Fees Forever'}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 mt-2">
                   {isHindi
@@ -899,7 +899,7 @@ export default function HomePage() {
                     <span>❌</span> {isHindi ? 'दलाल व अनवेरिफाइड एजेंट (Fraud)' : 'Unverified Middlemen & Fake Agents'}
                   </h3>
                   <ul className="text-xs text-slate-300 space-y-1.5 leading-relaxed">
-                    <li>• ₹2,000 – ₹5,000 रजिस्ट्रेशन या वर्दी के नाम पर लूटते हैं</li>
+                    <li>• ₹2,000 – ₹5,000 रजिस्ट्रेशन या वर्दी के नाम पर मांगते हैं</li>
                     <li>• हर महीने वेतन में से अवैध कमीशन काटते हैं</li>
                     <li>• न कोई PF कटता है, न ही ESIC मेडिकल कार्ड मिलता है</li>
                     <li>• काम के बाद बिना वेतन दिए साइट से निकाल देते हैं</li>
@@ -909,13 +909,13 @@ export default function HomePage() {
                 <div className="p-5 rounded-2xl bg-emerald-950/40 border border-emerald-700/50 space-y-2.5">
                   <h3 className="font-bold text-emerald-300 text-sm sm:text-base flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    {isHindi ? 'SecurityJob.in की पक्की गारंटी (Genuine)' : 'SecurityJob.in Genuine Guarantee'}
+                    {isHindi ? 'SecurityJob.in की पारदर्शी व्यवस्था (Genuine)' : 'SecurityJob.in Verified & Free Standard'}
                   </h3>
                   <ul className="text-xs text-slate-200 space-y-1.5 leading-relaxed">
                     <li>• 100% फ्री रजिस्ट्रेशन — शून्य फीस, शून्य कमीशन हमेशा</li>
-                    <li>• सीधे बैंक खाते में समय पर (7-10 तारीख) पूरा मासिक वेतन</li>
-                    <li>• सरकारी PF रिटायरमेंट फंड व परिवार हेतु ESIC मेडिकल कार्ड</li>
-                    <li>• लाइसेंस प्राप्त (PSARA) कंपनियों में सुरक्षित व पक्की तैनाती</li>
+                    <li>• पारदर्शी वेतन भुगतान व्यवस्था (बैंक या नकद) का समर्थन</li>
+                    <li>• नियोक्ता नियमानुसार वैधानिक भत्तों की स्पष्ट जानकारी</li>
+                    <li>• लाइसेंस प्राप्त (PSARA) कंपनियों में सुरक्षित कार्य अवसर</li>
                   </ul>
                 </div>
               </div>
@@ -974,7 +974,7 @@ export default function HomePage() {
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
                   "{isHindi
-                    ? 'आर्मी से रिटायरमेंट के बाद गनमैन की भर्ती देखी। सीधे बैंक करेंसी चेस्ट में तैनाती मिली। ₹28,000 मासिक वेतन और हथियार भत्ता हर महीने 8 तारीख को सीधा बैंक में आता है।'
+                    ? 'आर्मी से रिटायरमेंट के बाद गनमैन की भर्ती देखी। सीधे बैंक करेंसी चेस्ट में तैनाती मिली। ₹28,000 मासिक वेतन और हथियार भत्ते की पारदर्शी व्यवस्था रही।'
                     : 'After army service, I applied for an armed guard position. Got placed at a bank branch in Jodhpur with ₹28,000 monthly pay + weapon allowance. Smooth and transparent process.'}"
                 </p>
                 <div className="pt-2 border-t border-slate-200/60">

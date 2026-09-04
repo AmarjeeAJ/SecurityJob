@@ -305,14 +305,14 @@ export default function PrivacyPolicyPage() {
                     <li>आपकी योग्यता और जिले के अनुसार उचित सुरक्षा नौकरी में आपका चयन करना।</li>
                     <li>साक्षात्कार, जॉइनिंग और ड्यूटी विवरण के लिए आपको फोन, WhatsApp या SMS द्वारा सूचित करना।</li>
                     <li>यदि आप पुनः फॉर्म भरते हैं, तो नया डुप्लिकेट खाता बनाने के बजाय आपके मौजूदा प्रोफाइल को अपडेट करना।</li>
-                    <li>सुरक्षा एजेंसियों और नियोक्ताओं द्वारा समय पर वेतन, PF और ESIC का अनुपालन सुनिश्चित करना।</li>
+                    <li>सुरक्षा एजेंसियों और नियोक्ताओं के साथ आवश्यक भर्ती समन्वय स्थापित करना।</li>
                   </ul>
                 ) : (
                   <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-600">
                     <li>Matching and considering your profile for verified security job opportunities suited to your location and qualifications.</li>
                     <li>Contacting you via phone call, WhatsApp, or SMS regarding interview schedules, joining dates, and location details.</li>
                     <li>Updating your existing profile when you submit new information rather than creating duplicate accounts.</li>
-                    <li>Ensuring statutory compliance (such as timely wage disbursement, PF, and ESIC benefits) with hiring security employers.</li>
+                    <li>Facilitating necessary recruitment coordination with hiring security agencies and employers.</li>
                   </ul>
                 )}
               </section>

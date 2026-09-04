@@ -37,7 +37,7 @@ export default function TermsOfUsePage() {
   const SECTIONS = [
     { id: 'acceptance', title: isHindi ? '1. नियमों की स्वीकृति' : '1. Acceptance of Terms', icon: FileCheck },
     { id: 'eligibility', title: isHindi ? '2. उम्मीदवार पात्रता' : '2. Candidate Eligibility', icon: UserCheck },
-    { id: 'no-fee', title: isHindi ? '3. ₹0 रजिस्ट्रेशन फीस गारंटी' : '3. Zero Fee Guarantee (₹0 Charge)', icon: Award },
+    { id: 'no-fee', title: isHindi ? '3. ₹0 रजिस्ट्रेशन फीस नीति' : '3. Zero Fee Policy (₹0 Charge)', icon: Award },
     { id: 'accuracy', title: isHindi ? '4. जानकारी की सटीकता' : '4. Accuracy of Information', icon: CheckCircle2 },
     { id: 'no-guarantee', title: isHindi ? '5. भर्ती प्रक्रिया व प्लेसमेंट' : '5. Nature of Recruitment Bridge', icon: AlertCircle },
     { id: 'conduct', title: isHindi ? '6. स्वीकार्य आचरण व सुरक्षा' : '6. Acceptable Platform Conduct', icon: ShieldCheck },
@@ -279,7 +279,7 @@ export default function TermsOfUsePage() {
                     <Award className="w-5 h-5" />
                   </div>
                   <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                    {isHindi ? '3. ₹0 रजिस्ट्रेशन फीस गारंटी (Zero Registration Fee)' : '3. Zero Registration Fee Guarantee'}
+                    {isHindi ? '3. ₹0 रजिस्ट्रेशन फीस नीति (Zero Registration Fee Policy)' : '3. Zero Registration Fee Policy'}
                   </h2>
                 </div>
                 {isHindi ? (
@@ -288,7 +288,7 @@ export default function TermsOfUsePage() {
                   </div>
                 ) : (
                   <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs font-semibold leading-relaxed">
-                    🛡️ <strong>Zero-Fee Guarantee:</strong> SecurityJob.in never charges candidates any application fee, registration cost, or placement commission. If anyone demands money under our name, report it immediately to our helpline.
+                    🛡️ <strong>Zero-Fee Policy:</strong> SecurityJob.in never charges candidates any application fee, registration cost, or placement commission. If anyone demands money under our name, report it immediately to our helpline.
                   </div>
                 )}
               </section>

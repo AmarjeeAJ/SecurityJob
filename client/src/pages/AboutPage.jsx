@@ -44,9 +44,9 @@ export default function AboutPage() {
       sub: isHindi ? 'जयपुर से नीमराना तक' : 'Jaipur to Neemrana' 
     },
     { 
-      value: '100%', 
-      label: isHindi ? 'वैधानिक PF व ESIC समर्थन' : 'Statutory PF & ESIC Advocacy',
-      sub: isHindi ? 'सीधा बैंक खाते में वेतन' : 'Direct Bank Deposits' 
+      value: '19+ Roles', 
+      label: isHindi ? 'विविध सुरक्षा पद विकल्प' : 'Diverse Security Roles',
+      sub: isHindi ? 'गार्ड से सुपरवाइजर तक' : 'From Guard to Supervisor' 
     },
     { 
       value: '< 2 min', 
@@ -60,7 +60,7 @@ export default function AboutPage() {
         {
           icon: Award,
           title: '100% फ्री एवं दलाली-मुक्त भर्ती',
-          subtitle: 'Zero Brokerage & Zero Fee Guarantee',
+          subtitle: 'Zero Brokerage & Zero Fee Policy',
           desc: 'हमारा सबसे पहला और अटल नियम है: नौकरी पाने वाले किसी भी सुरक्षा गार्ड या सुपरवाइजर से कभी भी ₹1 भी नहीं लिया जाएगा। रजिस्ट्रेशन, इंटरव्यू या साइट जॉइनिंग सब कुछ पूरी तरह निःशुल्क है।',
         },
         {
@@ -71,9 +71,9 @@ export default function AboutPage() {
         },
         {
           icon: Scale,
-          title: 'वेतन, PF व ESIC का कानूनी अधिकार',
-          subtitle: 'Statutory Wage & Healthcare Rights',
-          desc: 'हम यह सुनिश्चित करने के लिए प्रतिबद्ध हैं कि सुरक्षा कर्मियों को उनका तय मासिक वेतन महीने की 7 से 10 तारीख तक सीधे बैंक में मिले, साथ ही सरकारी PF पेंशन और पूरे परिवार के लिए ESIC मेडिकल कार्ड की सुविधा मिले।',
+          title: 'पारदर्शी वेतन व मानक कार्य नियम',
+          subtitle: 'Transparent Wages & Standard Norms',
+          desc: 'हमारा मंच सुरक्षा क्षेत्र में पारदर्शी वेतन संरचना, बैंक ट्रांसफर या नकद माध्यम से समय पर भुगतान तथा श्रम नियमों व कंपनी नीतियों के अनुसार लागू होने वाले वैधानिक भत्तों की सही जानकारी प्रस्तुत करने का समर्थन करता है।',
         },
         {
           icon: Building2,
@@ -86,7 +86,7 @@ export default function AboutPage() {
         {
           icon: Award,
           title: '100% Free & Zero Brokerage',
-          subtitle: 'Permanent Zero-Fee Guarantee',
+          subtitle: 'Permanent Zero-Fee Policy',
           desc: 'Our first and unbreakable pledge: No candidate is ever charged a single rupee. Application, document verification, interview scheduling, and site deployment are 100% free forever.',
         },
         {
@@ -97,9 +97,9 @@ export default function AboutPage() {
         },
         {
           icon: Scale,
-          title: 'Statutory Wage & Healthcare Welfare',
-          subtitle: 'Advocating for PF & ESIC Compliance',
-          desc: 'We stand firmly for transparent wage structures: monthly salary credited directly to bank accounts by the 7th–10th, statutory provident fund (PF) retirement accumulation, and comprehensive ESIC medical cover.',
+          title: 'Transparent Wage Structures & Norms',
+          subtitle: 'Promoting Industry Standards',
+          desc: 'Our platform supports clear communication regarding wage structures, salary payments (via bank transfer or cash as per employer policy), and applicable statutory benefits governed by prevailing labor regulations.',
         },
         {
           icon: Building2,
@@ -109,11 +109,12 @@ export default function AboutPage() {
         },
       ];
 
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col justify-between mobile-safe-bottom">
       <SEO
         title={isHindi ? "हमारा परिचय एवं मुख्य उद्देश्य — SecurityJob.in राजस्थान" : "Our Purpose & Mission — SecurityJob.in Rajasthan"}
-        description={isHindi ? "SecurityJob.in का उद्देश्य: राजस्थान में सुरक्षा कर्मियों को दलालों व कमीशन से मुक्त कर सीधे 100% फ्री रोजगार, समय पर वेतन और PF व ESIC का कानूनी अधिकार दिलाना।" : "The mission of SecurityJob.in: Eliminating recruitment middlemen in Rajasthan, providing 100% free security hiring, transparent bank salaries, and statutory PF/ESIC welfare."}
+        description={isHindi ? "SecurityJob.in का उद्देश्य: राजस्थान में सुरक्षा कर्मियों को दलालों व कमीशन से मुक्त कर 100% फ्री रजिस्ट्रेशन, पारदर्शी जॉब जानकारी और प्रमाणित नियोक्ताओं से सीधा जोड़ना।" : "The mission of SecurityJob.in: Eliminating recruitment middlemen in Rajasthan by providing 100% free registration, transparent job information, and direct connection with verified employers."}
       />
 
       <Navbar />
@@ -336,12 +337,12 @@ export default function AboutPage() {
                 <p className="text-slate-400 text-xs">{isHindi ? '8 घंटे या 12 घंटे की स्पष्ट ड्यूटी रोस्टर, बिना किसी जबरन ओवरटाइम के।' : 'Standard 8-hour or 12-hour rosters with voluntary overtime compensation.'}</p>
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                <p className="font-bold text-white mb-1">{isHindi ? 'बैंक खाते में सीधा भुगतान' : 'Direct Bank Credit'}</p>
-                <p className="text-slate-400 text-xs">{isHindi ? 'नकद की जगह सीधा बैंक में सैलरी, जिससे कोई भी बिचौलिया कटौती न कर सके।' : 'Zero cash envelopes. All wages directly deposited into verified bank accounts.'}</p>
+                <p className="font-bold text-white mb-1">{isHindi ? 'पारदर्शी वेतन भुगतान (Bank / Cash)' : 'Transparent Salary Payment'}</p>
+                <p className="text-slate-400 text-xs">{isHindi ? 'बैंक ट्रांसफर या नकद माध्यम से नियोक्ता नियमानुसार समय पर पूरा व स्पष्ट वेतन भुगतान।' : 'Timely and full salary disbursement through bank transfer or cash as per employer terms.'}</p>
               </div>
               <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                <p className="font-bold text-white mb-1">{isHindi ? 'परिवार के लिए ESIC मेडिकल' : 'Family Medical Protection'}</p>
-                <p className="text-slate-400 text-xs">{isHindi ? 'बीमारी या चोट लगने पर ESIC अस्पतालों में मुफ्त जांच, दवाएं और उपचार।' : 'Free consultations, medicines, and hospitalization for worker and dependents.'}</p>
+                <p className="font-bold text-white mb-1">{isHindi ? 'वैधानिक सुरक्षा प्रावधान' : 'Statutory Welfare Standards'}</p>
+                <p className="text-slate-400 text-xs">{isHindi ? 'श्रम नियमों के अनुसार लागू होने वाली सामाजिक सुरक्षा व चिकित्सा सुविधाओं की पारदर्शी जानकारी।' : 'Transparent awareness regarding applicable statutory welfare, social security, and medical norms.'}</p>
               </div>
             </div>
           </div>

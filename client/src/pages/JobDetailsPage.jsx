@@ -145,13 +145,15 @@ export default function JobDetailsPage() {
                 <div className="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-sm space-y-4">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      {isHindi ? 'मासिक वेतन (Estimated Salary)' : 'Estimated Monthly Earnings'}
+                      {job.salaryPeriod === 'day'
+                        ? (isHindi ? 'दैनिक भुगतान (Estimated Daily Pay)' : 'Estimated Daily Pay')
+                        : (isHindi ? 'मासिक वेतन (Estimated Salary)' : 'Estimated Monthly Earnings')}
                     </span>
                     <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-0.5">
                       {job.salaryDisplay}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {isHindi ? 'PF + ESIC शामिल (ओटी साइट नियमानुसार)' : 'Includes PF + ESIC (Overtime as per site rules)'}
+                      {isHindi ? 'वेतन व भत्ते साइट व कंपनी नियमानुसार' : 'Wages & allowances as per employer/site policy'}
                     </p>
                   </div>
 
@@ -298,7 +300,7 @@ export default function JobDetailsPage() {
               {/* Trust Badge Card */}
               <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-2xs space-y-3">
                 <h3 className="text-sm font-bold text-slate-900">
-                  {isHindi ? 'SecurityJob.in उम्मीदवार गारंटी' : 'SecurityJob Candidate Guarantee'}
+                  {isHindi ? 'SecurityJob.in उम्मीदवार नीति व मानक' : 'SecurityJob Candidate Policy & Standards'}
                 </h3>
                 <ul className="space-y-2.5 text-xs text-slate-600">
                   <li className="flex items-center gap-2">
@@ -311,7 +313,7 @@ export default function JobDetailsPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{isHindi ? 'सरकारी PF व ESIC मेडिकल सुविधा' : 'Standard PF & ESIC statutory benefits'}</span>
+                    <span>{isHindi ? 'पारदर्शी वेतन व भत्तों की जानकारी' : 'Transparent wage & allowance details'}</span>
                   </li>
                 </ul>
               </div>
