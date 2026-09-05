@@ -44,7 +44,7 @@ export default function AboutPage() {
       sub: isHindi ? 'जयपुर से नीमराना तक' : 'Jaipur to Neemrana' 
     },
     { 
-      value: '19+ Roles', 
+      value: '12+ Roles',
       label: isHindi ? 'विविध सुरक्षा पद विकल्प' : 'Diverse Security Roles',
       sub: isHindi ? 'गार्ड से सुपरवाइजर तक' : 'From Guard to Supervisor' 
     },

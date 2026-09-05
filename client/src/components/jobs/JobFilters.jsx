@@ -99,7 +99,7 @@ export default function JobFilters({ filters, onChange, onReset, onClose = null 
           onChange={(e) => handleFieldChange('role', e.target.value)}
           className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 cursor-pointer"
         >
-          <option value="">All Security Roles (19+)</option>
+          <option value="">All Security Roles (12+)</option>
           {ROLE_SLUGS.map((r) => (
             <option key={r.slug} value={r.slug}>{r.label}</option>
           ))}
