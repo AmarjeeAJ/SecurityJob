@@ -969,7 +969,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 </select>
               </div>
 
-              {/* ID Proof / Aadhaar Upload Box (Guard-Friendly & Voluntary) */}
+              {/* ID Proof / Aadhaar Upload Box (Guard-Friendly & Voluntary)
+                  Temporarily disabled — re-enable by uncommenting this block
+                  when the feature is ready to come back.
               <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -993,7 +995,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Front Side */}
+                  {/* Front Side }
                   <div className="p-3 rounded-xl bg-white border border-dashed border-slate-300 text-center space-y-2">
                     <p className="text-[11px] font-bold text-slate-700">आगे का भाग (Front Photo)</p>
                     {aadhaarFrontPreview ? (
@@ -1043,7 +1045,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     )}
                   </div>
 
-                  {/* Back Side */}
+                  {/* Back Side }
                   <div className="p-3 rounded-xl bg-white border border-dashed border-slate-300 text-center space-y-2">
                     <p className="text-[11px] font-bold text-slate-700">पीछे का भाग (Back Photo)</p>
                     {aadhaarBackPreview ? (
@@ -1094,6 +1096,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   </div>
                 </div>
               </div>
+              */}
 
               {/* Guard Friendly Consent Checkbox */}
               <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-emerald-50/70 border border-emerald-200/90 space-y-2">

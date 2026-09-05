@@ -564,8 +564,10 @@ export default function CandidateDetailsPage() {
               </div>
             </SectionCard>
 
-            {(candidate.documents.length > 0 || candidate.additional_message) && (
+            {(candidate.additional_message) && (
               <SectionCard icon={ICONS.shield} title="Documents & Notes">
+                {/* Aadhaar document cards temporarily disabled — re-enable by
+                    uncommenting this block when the feature is ready to come back.
                 {candidate.documents.length > 0 && (
                   <div className="flex flex-wrap gap-4">
                     {candidate.documents.map((doc) => (
@@ -578,6 +580,7 @@ export default function CandidateDetailsPage() {
                     ))}
                   </div>
                 )}
+                */}
 
                 {candidate.additional_message && (
                   <div className={candidate.documents.length > 0 ? 'mt-4 border-t border-slate-100 pt-4' : ''}>
