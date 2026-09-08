@@ -19,16 +19,16 @@ function Field({ label, value }) {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-0.5 text-sm text-navy-900">{value || value === 0 ? value : '—'}</p>
+      <p className="mt-0.5 text-sm text-navy-900 break-words">{value || value === 0 ? value : '—'}</p>
     </div>
   );
 }
 
 function SectionCard({ icon, title, children }) {
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <div className="mb-4 flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-500/15 text-gold-600">{icon}</div>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold-500/15 text-gold-600">{icon}</div>
         <h2 className="text-base font-bold text-navy-900">{title}</h2>
       </div>
       {children}
@@ -503,16 +503,23 @@ export default function CandidateDetailsPage() {
 
         {candidate && (
           <div className="flex flex-col gap-5">
-            <Card className="p-6">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xl font-bold text-gold-300">
-                  {candidate.full_name?.[0]?.toUpperCase()}
+            <Card className="p-4 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                  <div className="flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full bg-navy-800 text-lg sm:text-xl font-bold text-gold-300 shadow-xs">
+                    {candidate.full_name?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-lg sm:text-xl font-bold text-navy-900 break-words" title={candidate.full_name}>
+                      {candidate.full_name}
+                    </h1>
+                    <p className="mt-0.5 font-mono text-xs text-slate-500 truncate" title={candidate.candidate_code}>
+                      {candidate.candidate_code}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-xl font-bold text-navy-900">{candidate.full_name}</h1>
-                  <p className="mt-0.5 font-mono text-xs text-slate-400">{candidate.candidate_code}</p>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
+
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       candidate.consent_given ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
@@ -535,7 +542,7 @@ export default function CandidateDetailsPage() {
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
+              <div className="mt-5 sm:mt-6 grid grid-cols-2 gap-3 sm:gap-4 border-t border-slate-100 pt-4 sm:pt-5 sm:grid-cols-3">
                 <Field label="Mobile Number" value={candidate.mobile_number} />
                 <Field label="WhatsApp Number" value={candidate.whatsapp_number} />
                 <Field label="Age" value={candidate.age} />
