@@ -89,7 +89,7 @@ export default function OwnerLiveCandidateStream() {
   }, []);
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2 xl:space-y-2.5">
       {/* Live Stream Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -97,47 +97,47 @@ export default function OwnerLiveCandidateStream() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-[10px] xl:text-[11px] font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
             <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
             Live Rajasthan Candidate Inflow
           </span>
         </div>
-        <span className="text-[10px] font-semibold text-blue-300 bg-blue-500/15 px-2 py-0.5 rounded-md border border-blue-400/20">
+        <span className="text-[9px] xl:text-[10px] font-semibold text-blue-300 bg-blue-500/15 px-2 py-0.5 rounded-md border border-blue-400/20">
           Syncing Live
         </span>
       </div>
 
       {/* Dynamic Animated Candidate Stream Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/[0.04] hover:bg-white/[0.06] border border-white/10 p-4 backdrop-blur-xl transition-all shadow-lg">
+      <div className="relative overflow-hidden rounded-xl xl:rounded-2xl bg-white/[0.04] hover:bg-white/[0.06] border border-white/10 p-2.5 xl:p-3 backdrop-blur-xl transition-all shadow-lg">
         <AnimatePresence mode="wait">
           {SAMPLE_CANDIDATES.map((item, idx) => {
             if (idx !== activeIndex) return null;
             return (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
+                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="space-y-3"
+                className="space-y-2 xl:space-y-2.5"
               >
                 {/* Candidate Meta Info */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-md shadow-blue-600/30 border border-white/10">
+                <div className="flex items-start justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 xl:w-9 xl:h-9 rounded-lg xl:rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-xs xl:text-sm shadow-md shadow-blue-600/30 border border-white/10 shrink-0">
                       {item.name.charAt(0)}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <h4 className="text-sm font-bold text-white tracking-tight">{item.name}</h4>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <h4 className="text-xs xl:text-sm font-bold text-white tracking-tight truncate">{item.name}</h4>
+                        <CheckCircle2 className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-emerald-400 shrink-0" />
                       </div>
-                      <p className="text-xs text-blue-300 font-medium">{item.role}</p>
+                      <p className="text-[10px] xl:text-xs text-blue-300 font-medium truncate">{item.role}</p>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                    <span className="inline-flex items-center gap-1 text-[10px] xl:text-[11px] text-slate-400 font-medium">
                       <Clock className="w-3 h-3 text-slate-500" />
                       {item.time}
                     </span>
@@ -145,19 +145,19 @@ export default function OwnerLiveCandidateStream() {
                 </div>
 
                 {/* Location & Qualifications Chips */}
-                <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-medium text-slate-300">
-                    <MapPin className="w-3 h-3 text-blue-400" />
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md xl:rounded-lg bg-white/5 border border-white/10 text-[10px] xl:text-[11px] font-medium text-slate-300">
+                    <MapPin className="w-2.5 h-2.5 xl:w-3 xl:h-3 text-blue-400" />
                     {item.district}
                   </span>
 
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-medium text-slate-300">
-                    <Award className="w-3 h-3 text-amber-400" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md xl:rounded-lg bg-white/5 border border-white/10 text-[10px] xl:text-[11px] font-medium text-slate-300">
+                    <Award className="w-2.5 h-2.5 xl:w-3 xl:h-3 text-amber-400" />
                     {item.experience}
                   </span>
 
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-semibold ${item.badgeColor}`}>
-                    <ShieldCheck className="w-3 h-3" />
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md xl:rounded-lg border text-[10px] xl:text-[11px] font-semibold ${item.badgeColor}`}>
+                    <ShieldCheck className="w-2.5 h-2.5 xl:w-3 xl:h-3" />
                     {item.badge}
                   </span>
                 </div>
@@ -167,7 +167,7 @@ export default function OwnerLiveCandidateStream() {
         </AnimatePresence>
 
         {/* Carousel Indicators */}
-        <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/10 text-[10px] text-slate-400">
+        <div className="flex items-center justify-between pt-2 mt-2 xl:pt-2.5 xl:mt-2.5 border-t border-white/10 text-[9px] xl:text-[10px] text-slate-400">
           <span className="flex items-center gap-1">
             <UserCheck className="w-3 h-3 text-blue-400" />
             Active Registration Stream
@@ -189,19 +189,19 @@ export default function OwnerLiveCandidateStream() {
       </div>
 
       {/* District Mini Grid */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 px-1 tracking-wider">
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-[9px] xl:text-[10px] uppercase font-bold text-slate-400 px-1 tracking-wider">
           <span>Active Deployment Districts</span>
           <span className="text-emerald-400 font-semibold lowercase">33 districts connected</span>
         </div>
-        <div className="grid grid-cols-6 gap-1.5">
+        <div className="grid grid-cols-6 gap-1">
           {DISTRICT_HUBS.map((hub) => (
             <div
               key={hub.name}
-              className="px-1.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-center"
+              className="px-1 py-1 xl:px-1.5 xl:py-1.5 rounded-md xl:rounded-lg bg-white/[0.03] border border-white/[0.06] text-center"
             >
-              <div className="text-[10px] font-bold text-slate-200 truncate">{hub.name}</div>
-              <div className="text-[9px] text-blue-300 font-semibold">{hub.count}+</div>
+              <div className="text-[9px] xl:text-[10px] font-bold text-slate-200 truncate">{hub.name}</div>
+              <div className="text-[8px] xl:text-[9px] text-blue-300 font-semibold">{hub.count}+</div>
             </div>
           ))}
         </div>
