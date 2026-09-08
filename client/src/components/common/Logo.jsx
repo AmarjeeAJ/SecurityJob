@@ -51,7 +51,7 @@ export default function Logo({
       {/* 2. Official Horizontal Brand Lockup & Tagline */}
       <div className="flex flex-col justify-center min-w-0">
         {/* Main Wordmark: SECURITYJOB.IN */}
-        <div className="flex items-baseline leading-none font-black tracking-tight whitespace-nowrap">
+        <div className="flex items-baseline leading-none font-black tracking-tight whitespace-nowrap shrink-0">
           <span className={`${cfg.text} ${isDark ? 'text-white' : 'text-slate-900'} uppercase font-black tracking-wide`}>
             SECURITY
           </span>
