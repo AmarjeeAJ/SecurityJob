@@ -219,11 +219,13 @@ export default function SearchableLocationInput({
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => handleSelect(query.trim())}
-              className="w-full text-left px-3 py-2 rounded-lg bg-blue-50/80 hover:bg-blue-100 text-xs font-bold text-blue-700 flex items-center justify-between gap-2 mb-1 transition-colors cursor-pointer"
+              className="w-full text-left px-3 py-2.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-between gap-2 mb-1.5 transition-colors cursor-pointer"
             >
-              <span>✍️ "{query.trim()}" दर्ज करें (Custom)</span>
-              <span className="text-[10px] uppercase tracking-wider bg-blue-200/80 px-1.5 py-0.5 rounded text-blue-800">
-                स्वीकार करें
+              <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">
+                <span className="font-bold text-blue-700">"{query.trim()}"</span> जोड़ें
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-blue-700 shrink-0">
+                नया
               </span>
             </button>
           )}
