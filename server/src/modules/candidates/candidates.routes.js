@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import query from '../../db/query.js';
 import { validateBody } from '../../middleware/validation.middleware.js';
 import { registrationRateLimiter } from '../../middleware/rateLimit.middleware.js';
 import { uploadCandidateDocuments, handleUploadErrors } from '../../middleware/upload.middleware.js';
@@ -143,16 +144,72 @@ router.get('/locations/tehsils', async (req, res) => {
   res.json(result);
 });
 
-// 3b. Dedicated Village/Area lookup for specific Tehsil or Block
+// 3b. Dedicated Village/Area lookup for specific Tehsil, Block, or Subdivision
 router.get('/locations/villages', async (req, res) => {
   const district = (req.query.district || '').trim();
   const state = (req.query.state || '').trim();
   const block = (req.query.block || req.query.tehsil || '').trim();
 
-  // 1. Curated authentic villages
+  // 1. Real, exhaustive village data — the `villages` table (676k+ real
+  // villages, seeded from the official LGD directory via seedLgd.js) is the
+  // authoritative source. The UI now selects a Subdivision, not a Block, so
+  // `block` here is usually a subdivision name; resolve it to every LGD
+  // block that belongs to that subdivision (via the curated
+  // SUBDIVISION_BLOCK_MAP) and pull every village under all of them —
+  // not just whichever single block happened to fuzzy-match.
+  let lgdVillages = [];
+  try {
+    const dbBlocks = await query(
+      `SELECT b.block_code, b.block_name FROM blocks b
+       JOIN districts d ON d.district_code = b.district_code
+       JOIN states s ON s.state_code = d.state_code
+       WHERE lower(s.state_name) = lower($1) AND lower(d.district_name) = lower($2)`,
+      [state, district]
+    );
+
+    const matchBlockNames = (names) => {
+      const matched = new Set();
+      for (const name of names) {
+        const cleanName = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!cleanName) continue;
+        for (const row of dbBlocks.rows) {
+          const cleanDb = (row.block_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cleanDb === cleanName || cleanDb.includes(cleanName) || cleanName.includes(cleanDb)) {
+            matched.add(row.block_code);
+          }
+        }
+      }
+      return [...matched];
+    };
+
+    // Try treating `block` as a Subdivision first (the common case now).
+    const blockNamesInSubdivision = block ? getBlocksForSubdivision(state, district, block) : [];
+    let matchedBlockCodes = matchBlockNames(blockNamesInSubdivision);
+
+    // Fall back to matching `block` directly against real block names —
+    // covers a real Block/Tehsil value, or a subdivision with no curated
+    // block list on record.
+    if (matchedBlockCodes.length === 0 && block) {
+      matchedBlockCodes = matchBlockNames([block]);
+    }
+
+    if (matchedBlockCodes.length > 0) {
+      const villagesResult = await query(
+        'SELECT DISTINCT village_name FROM villages WHERE block_code = ANY($1::int[]) ORDER BY village_name',
+        [matchedBlockCodes]
+      );
+      lgdVillages = villagesResult.rows.map((r) => r.village_name).filter(Boolean);
+    }
+  } catch (err) {
+    // DB unreachable/unseeded — degrade to the curated + postal sources below.
+  }
+
+  // 2. Curated authentic villages (small hand-picked sample; kept as an
+  // instant/offline fallback and to fill gaps in the LGD data)
   const curated = getHierarchyVillages(state, district, block);
 
-  // 2. Official postal directory villages
+  // 3. Official postal directory villages (also fills gaps, e.g. named
+  // localities that aren't separate LGD village records)
   const offices = await fetchDistrictPostalOffices(state, district);
   let postalVillages = [];
   if (offices && offices.length > 0) {
@@ -166,21 +223,21 @@ router.get('/locations/villages', async (req, res) => {
       return oName.includes(cleanBlock) || cleanBlock.includes(oName);
     });
 
-    const pool = matching.length > 0 ? matching : offices;
-    postalVillages = pool.map((o) => {
+    const officePool = matching.length > 0 ? matching : offices;
+    postalVillages = officePool.map((o) => {
       return (o.officeName || '')
         .replace(/\s+(BO|SO|HO|B\.O|S\.O|H\.O)\b/gi, '')
         .trim();
     }).filter(Boolean);
   }
 
-  const merged = [...new Set([...curated, ...postalVillages])];
+  const merged = [...new Set([...lgdVillages, ...curated, ...postalVillages])];
   res.json({
     success: true,
     state,
     district,
     block,
-    villages: merged.slice(0, 500)
+    villages: merged.slice(0, 1000)
   });
 });
 

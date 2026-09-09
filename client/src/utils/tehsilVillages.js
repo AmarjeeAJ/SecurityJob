@@ -817,6 +817,36 @@ export function getVillagesForTehsil(state = '', district = '', tehsil = '') {
           return vList;
         }
       }
+
+      // The caller may have passed a Subdivision name rather than a Block/
+      // Tehsil (the UI now selects Subdivision, not Block) — this data has
+      // no direct subdivision-to-villages mapping, only district-to-block-
+      // to-villages, so a subdivision name never matches a block key above.
+      // Without this, we fell straight through to the district-wide 50-item
+      // cap below, showing an arbitrary slice instead of that subdivision's
+      // actual villages. Aggregate across every block that belongs to the
+      // subdivision instead.
+      const blocksInSubdivision = getBlocksForSubdivision(state, cleanDistrict, cleanTehsil);
+      if (blocksInSubdivision && blocksInSubdivision.length > 0) {
+        const aggregated = [];
+        for (const blockName of blocksInSubdivision) {
+          if (dObj[blockName]) {
+            aggregated.push(...dObj[blockName]);
+            continue;
+          }
+          const lowerBlock = blockName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          for (const [tKey, vList] of Object.entries(dObj)) {
+            const lowerKey = tKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (lowerKey === lowerBlock || lowerKey.includes(lowerBlock) || lowerBlock.includes(lowerKey)) {
+              aggregated.push(...vList);
+              break;
+            }
+          }
+        }
+        if (aggregated.length > 0) {
+          return [...new Set(aggregated)];
+        }
+      }
     }
 
     const allVillages = [];
