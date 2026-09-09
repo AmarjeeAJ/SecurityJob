@@ -36,6 +36,30 @@ function setCache(key, data) {
   cache.set(key, { data, time: Date.now() });
 }
 
+// Standard Levenshtein edit distance, used to match curated place names
+// against the official LGD spelling when they're close but not an exact
+// or substring match (e.g. "Isuapur" vs "Ishupur").
+function levenshteinDistance(a, b) {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[m][n];
+}
+
 // 1. All Indian States API
 router.get('/locations/states', (req, res) => {
   res.json({
@@ -172,10 +196,43 @@ router.get('/locations/villages', async (req, res) => {
       for (const name of names) {
         const cleanName = (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         if (!cleanName) continue;
+
+        let foundDirectMatch = false;
         for (const row of dbBlocks.rows) {
           const cleanDb = (row.block_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
           if (cleanDb === cleanName || cleanDb.includes(cleanName) || cleanName.includes(cleanDb)) {
             matched.add(row.block_code);
+            foundDirectMatch = true;
+          }
+        }
+
+        // The curated subdivision map is hand-typed and occasionally spells
+        // a block differently from the official LGD romanization (e.g.
+        // curated "Isuapur" vs the real "Ishupur") — close enough that a
+        // person recognizes it, but not a substring match either way. Left
+        // unmatched, that entire block's villages silently vanish from the
+        // subdivision's results (this is what caused Goha, a real village
+        // under Ishupur, to be missing from Marhaura subdivision). Fall
+        // back to edit-distance matching against this district's block
+        // names, which are few enough (typically under 30) that this stays
+        // fast even as a per-name fallback.
+        if (!foundDirectMatch) {
+          let bestRow = null;
+          let bestDistance = Infinity;
+          for (const row of dbBlocks.rows) {
+            const cleanDb = (row.block_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const distance = levenshteinDistance(cleanName, cleanDb);
+            if (distance < bestDistance) {
+              bestDistance = distance;
+              bestRow = row;
+            }
+          }
+          if (bestRow) {
+            const cleanDb = (bestRow.block_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const threshold = Math.max(2, Math.floor(Math.max(cleanName.length, cleanDb.length) * 0.3));
+            if (bestDistance <= threshold) {
+              matched.add(bestRow.block_code);
+            }
           }
         }
       }
