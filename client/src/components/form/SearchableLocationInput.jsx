@@ -222,7 +222,7 @@ export default function SearchableLocationInput({
             </p>
           ) : (
             <div className="space-y-0.5">
-              {filteredOptions.slice(0, 80).map((option) => {
+              {filteredOptions.map((option) => {
                 const isSelected =
                   value && option.toLowerCase() === value.toLowerCase();
                 return (
