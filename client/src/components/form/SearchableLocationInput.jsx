@@ -131,6 +131,19 @@ export default function SearchableLocationInput({
             onChange(nextVal);
             if (!isOpen) setIsOpen(true);
           }}
+          onKeyDown={(e) => {
+            // Enter here means "pick from the search results", never "submit
+            // the form" — without this, Enter bubbled up to the form's
+            // next-step handler and skipped straight to Step 3 mid-search,
+            // before the candidate had filled in the rest of this step.
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isOpen && filteredOptions.length > 0) {
+                handleSelect(filteredOptions[0]);
+              }
+            }
+          }}
           className={`w-full px-4 py-3 pr-16 rounded-xl border text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50/40 hover:bg-white focus:bg-white transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none ${
             error
               ? 'border-red-400 bg-red-50/20 focus:border-red-500 focus:ring-2 focus:ring-red-100'
