@@ -29,7 +29,12 @@ import {
   Target,
   ClipboardCheck,
   Building2,
-  Loader2
+  Loader2,
+  Navigation,
+  Crosshair,
+  Compass,
+  Home,
+  Copy
 } from 'lucide-react';
 import { candidateFormSchema } from '../../schemas/candidateSchema.js';
 import { submitCandidateApplication } from '../../api/candidates.js';
@@ -39,11 +44,36 @@ import { useLanguage } from '../../i18n/LanguageContext.jsx';
 import Card from '../../components/common/Card.jsx';
 import SuccessState from '../../components/form/SuccessState.jsx';
 import ErrorBanner from '../../components/form/ErrorBanner.jsx';
-import { RAJASTHAN_CITIES, getSmartAreasForDistrict } from '../../utils/locations.js';
+import { 
+  RAJASTHAN_CITIES, 
+  ALL_INDIAN_STATES, 
+  getDistrictsForState, 
+  getTehsilsForDistrict, 
+  getSmartAreasForDistrict 
+} from '../../utils/locations.js';
+import SearchableLocationInput from '../../components/form/SearchableLocationInput.jsx';
+import { 
+  fetchStates, 
+  fetchDistricts, 
+  fetchTehsilsAndVillages, 
+  fetchVillagesForTehsil, 
+  fetchSubdivisions,
+  fetchBlocks,
+  resolvePincode,
+  lookupPincode, 
+  reverseGeocode 
+} from '../../services/location.service.js';
+import { 
+  getVillagesForTehsil,
+  getSubdivisionsForDistrict,
+  getBlocksForSubdivision,
+  getPincodeForLocation
+} from '../../utils/tehsilVillages.js';
 import { OFFICIAL_WHATSAPP_NUMBER } from '../../constants/contact.js';
 import JOB_ROLES from '../../utils/jobRoles.js';
 
 const TOTAL_STEPS = 3;
+const DRAFT_STORAGE_KEY = 'securityjob_candidate_draft_v1';
 
 function buildFormData(data, trackingData, frontFile, backFile) {
   const formData = new FormData();
@@ -59,9 +89,27 @@ function buildFormData(data, trackingData, frontFile, backFile) {
     whatsappNumber: whatsappNumber || data.mobileNumber,
     age: data.age,
     gender: data.gender,
-    currentCity: data.currentCity || 'Jaipur',
+    permanentDistrict: data.permanentDistrict || 'Jaipur',
     currentArea: data.currentArea || 'City Area',
-    state: data.state || 'Rajasthan',
+    permanentState: data.permanentState || 'Rajasthan',
+    permanentSubdivision: data.permanentSubdivision || '',
+    permanentBlock: data.permanentBlock || data.permanentTehsil || '',
+    permanentTehsil: data.permanentBlock || data.permanentTehsil || '',
+    permanentVillage: data.permanentVillage || '',
+    permanentPincode: data.permanentPincode || '',
+    permanentAddressLine: data.permanentAddressLine || '',
+    geoLat: data.geoLat || undefined,
+    geoLng: data.geoLng || undefined,
+    geoAddress: data.geoAddress || '',
+    currentStayAddress: data.currentStayAddress || '',
+    preferredState: data.preferredState || data.permanentState || 'Rajasthan',
+    preferredDistrict: data.preferredDistrict || data.permanentDistrict || 'Jaipur',
+    preferredSubdivision: data.preferredSubdivision || '',
+    preferredBlock: data.preferredBlock || data.preferredTehsil || '',
+    preferredTehsil: data.preferredBlock || data.preferredTehsil || '',
+    preferredVillage: data.preferredVillage || '',
+    preferredPincode: data.preferredPincode || '',
+    preferredAddressLine: data.preferredAddressLine || '',
     highestQualification: data.highestQualification || '10th Pass',
     otherRoleText: data.otherRoleText || '',
     isExperienced: Boolean(data.isExperienced),
@@ -81,7 +129,7 @@ function buildFormData(data, trackingData, frontFile, backFile) {
   });
 
   formData.append('preferredRoles', JSON.stringify(data.preferredRoles || ['Security Guard']));
-  formData.append('preferredLocations', JSON.stringify(data.preferredLocations || [data.currentCity || 'Jaipur']));
+  formData.append('preferredLocations', JSON.stringify(data.preferredLocations || [data.permanentDistrict || 'Jaipur']));
 
   if (actualFront instanceof File) formData.append('aadhaarFront', actualFront);
   if (actualBack instanceof File) formData.append('aadhaarBack', actualBack);
@@ -126,9 +174,27 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       whatsappNumber: '',
       age: 25,
       gender: 'male',
-      currentCity: 'Jaipur',
+      permanentDistrict: 'Jaipur',
       currentArea: '',
-      state: 'Rajasthan',
+      permanentState: 'Rajasthan',
+      permanentSubdivision: '',
+      permanentBlock: '',
+      permanentTehsil: '',
+      permanentVillage: '',
+      permanentPincode: '',
+      permanentAddressLine: '',
+      geoLat: undefined,
+      geoLng: undefined,
+      geoAddress: '',
+      currentStayAddress: '',
+      preferredState: 'Rajasthan',
+      preferredDistrict: 'Jaipur',
+      preferredSubdivision: '',
+      preferredBlock: '',
+      preferredTehsil: '',
+      preferredVillage: '',
+      preferredPincode: '',
+      preferredAddressLine: '',
       highestQualification: '10th Pass',
       preferredRoles: [initialRole],
       otherRoleText: '',
@@ -143,16 +209,279 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     },
   });
 
+  const [isCapturingLocation, setIsCapturingLocation] = useState(false);
+  const [locationStatus, setLocationStatus] = useState(null);
+  const [currentSameAsPermanent, setCurrentSameAsPermanent] = useState(true);
+  const [sameAsPermanentForPreferred, setSameAsPermanentForPreferred] = useState(false);
+
+  // Restore an in-progress draft on mount — a candidate who accidentally
+  // refreshes (or their browser reloads on a flaky connection) should never
+  // have to retype everything. File selections can't survive localStorage,
+  // so only the text/number/array fields are restored; Aadhaar photos (if
+  // re-enabled) would need to be re-picked.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!saved) return;
+      const { step, values } = JSON.parse(saved);
+      if (values) reset(values, { keepDefaultValues: true });
+      if (step) setCurrentStep(step);
+    } catch {
+      // Corrupted or unavailable storage — just start with a blank form.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave the draft (debounced 500ms after the last change) so a refresh
+  // never loses progress. Runs for the lifetime of the form; cleared on
+  // successful submission and when starting a fresh application.
+  useEffect(() => {
+    let timer;
+    const subscription = watch((values) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          const { aadhaarFront, aadhaarBack, ...serializable } = values;
+          localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ step: currentStep, values: serializable }));
+        } catch {
+          // Storage full/unavailable/private-mode — draft save is best-effort only.
+        }
+      }, 500);
+    });
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [watch, currentStep]);
+
+  // Dynamic 5-Tier API location state lists
+  const [statesList, setStatesList] = useState(ALL_INDIAN_STATES);
+  const [currentDistricts, setCurrentDistricts] = useState(() => getDistrictsForState('Rajasthan'));
+  const [permanentSubdivisions, setCurrentSubdivisions] = useState(() => getSubdivisionsForDistrict('Rajasthan', 'Jaipur'));
+  const [permanentBlocks, setCurrentBlocks] = useState(() => getBlocksForSubdivision('Rajasthan', 'Jaipur', ''));
+  const [permanentVillages, setCurrentVillages] = useState(() => getSmartAreasForDistrict('Jaipur'));
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+  const [isLoadingSubdivisions, setIsLoadingSubdivisions] = useState(false);
+  const [isLoadingBlocks, setIsLoadingBlocks] = useState(false);
+
+  const [preferredDistricts, setPreferredDistricts] = useState(() => getDistrictsForState('Rajasthan'));
+  const [preferredSubdivisions, setPreferredSubdivisions] = useState(() => getSubdivisionsForDistrict('Rajasthan', 'Jaipur'));
+  const [preferredBlocks, setPreferredBlocks] = useState(() => getBlocksForSubdivision('Rajasthan', 'Jaipur', ''));
+  const [isLoadingPrefDistricts, setIsLoadingPrefDistricts] = useState(false);
+  const [isLoadingPrefSubdivisions, setIsLoadingPrefSubdivisions] = useState(false);
+  const [isLoadingPrefBlocks, setIsLoadingPrefBlocks] = useState(false);
+
   const watchWhatsappSame = watch('whatsappSameAsMobile');
   const watchGender = watch('gender');
-  const watchCity = watch('currentCity');
+  const watchPermanentState = watch('permanentState') || 'Rajasthan';
+  const watchPermanentDistrict = watch('permanentDistrict') || 'Jaipur';
   const watchArea = watch('currentArea');
+  const watchPermanentSubdivision = watch('permanentSubdivision') || '';
+  const watchPermanentBlock = watch('permanentBlock') || watch('permanentTehsil') || '';
+  const watchPermanentTehsil = watch('permanentTehsil') || watchPermanentBlock || '';
+  const watchPermanentVillage = watch('permanentVillage') || '';
+  const watchPermanentPincode = watch('permanentPincode') || '';
+  const watchPermanentAddressLine = watch('permanentAddressLine') || '';
+  const watchCurrentStayAddress = watch('currentStayAddress') || '';
+
+  // No fallback to watchPermanentState/watchPermanentDistrict here — that
+  // silently mirrored the Permanent Address into these fields (and, via the
+  // effect below, into the real preferredState/preferredDistrict), even
+  // though the candidate never touched the "Same as Permanent" checkbox.
+  // Preferred Location gets its own independent default; explicit copying
+  // only happens through handleToggleSameForPreferred.
+  const watchPreferredState = watch('preferredState') || 'Rajasthan';
+  const watchPreferredDistrict = watch('preferredDistrict') || 'Jaipur';
+  const watchPreferredSubdivision = watch('preferredSubdivision') || '';
+  const watchPreferredBlock = watch('preferredBlock') || watch('preferredTehsil') || '';
+  const watchPreferredTehsil = watch('preferredTehsil') || watchPreferredBlock || '';
+  const watchPreferredPincode = watch('preferredPincode') || '';
+  const watchPreferredAddressLine = watch('preferredAddressLine') || '';
+
   const watchRoles = watch('preferredRoles') || [];
   const watchLocations = watch('preferredLocations') || [];
   const watchExperienced = watch('isExperienced');
   const watchDutyHour = watch('dutyHourPreference');
   const watchJoining = watch('joiningAvailability');
   const watchConsent = watch('consentGiven');
+
+  // 1. Load States list from API
+  useEffect(() => {
+    fetchStates().then((res) => {
+      if (res && res.length > 0) setStatesList(res);
+    });
+  }, []);
+
+  // 2. Fetch districts for current state via API
+  useEffect(() => {
+    let isCancelled = false;
+    setIsLoadingDistricts(true);
+    fetchDistricts(watchPermanentState).then((dists) => {
+      if (isCancelled) return;
+      setCurrentDistricts(dists);
+      setIsLoadingDistricts(false);
+      if (dists.length > 0 && !dists.includes(watchPermanentDistrict)) {
+        setValue('permanentDistrict', dists[0], { shouldValidate: true });
+        setValue('permanentSubdivision', '');
+        setValue('permanentBlock', '');
+        setValue('permanentTehsil', '');
+        setValue('permanentVillage', '');
+        setValue('permanentPincode', '');
+      }
+    });
+    return () => { isCancelled = true; };
+  }, [watchPermanentState]);
+
+  // 3. Fetch subdivisions & blocks for current district
+  useEffect(() => {
+    if (!watchPermanentDistrict) return;
+    let isCancelled = false;
+    setIsLoadingSubdivisions(true);
+    setIsLoadingBlocks(true);
+
+    fetchSubdivisions(watchPermanentState, watchPermanentDistrict).then((subs) => {
+      if (isCancelled) return;
+      setCurrentSubdivisions(subs || []);
+      setIsLoadingSubdivisions(false);
+    });
+
+    fetchBlocks(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision).then((blks) => {
+      if (isCancelled) return;
+      setCurrentBlocks(blks || []);
+      setIsLoadingBlocks(false);
+    });
+
+    fetchTehsilsAndVillages(watchPermanentState, watchPermanentDistrict, watchPermanentBlock).then((data) => {
+      if (isCancelled) return;
+      if (!watchPermanentBlock) {
+        setCurrentVillages(data.villages || []);
+      }
+    });
+
+    return () => { isCancelled = true; };
+  }, [watchPermanentState, watchPermanentDistrict]);
+
+  // 4. Update blocks when subdivision changes
+  useEffect(() => {
+    if (!watchPermanentDistrict) return;
+    let isCancelled = false;
+    fetchBlocks(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision).then((blks) => {
+      if (isCancelled) return;
+      setCurrentBlocks(blks || []);
+    });
+    return () => { isCancelled = true; };
+  }, [watchPermanentSubdivision, watchPermanentDistrict, watchPermanentState]);
+
+  // 5. Update villages and auto-resolve PIN code when block changes (debounced by 350ms to eliminate typing glitch/blinking)
+  useEffect(() => {
+    if (!watchPermanentDistrict) return;
+    let isCancelled = false;
+
+    const timer = setTimeout(() => {
+      if (isCancelled) return;
+
+      if (watchPermanentBlock && watchPermanentBlock.trim().length > 0) {
+        const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentBlock);
+        if (localVills && localVills.length > 0) {
+          setCurrentVillages(localVills);
+        }
+
+        fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentBlock).then((vills) => {
+          if (isCancelled) return;
+          if (vills && vills.length > 0) {
+            setCurrentVillages((prev) => {
+              const merged = [...new Set([...(prev || []), ...vills])];
+              return merged.length === prev.length ? prev : merged;
+            });
+          }
+        });
+
+        // Auto-fetch PIN code based on block
+        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, watchPermanentVillage).then((autoPin) => {
+          if (!isCancelled && autoPin) {
+            setValue('permanentPincode', autoPin);
+          }
+        });
+      } else {
+        const defaultVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, '');
+        if (defaultVills && defaultVills.length > 0) {
+          setCurrentVillages(defaultVills);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [watchPermanentBlock, watchPermanentDistrict, watchPermanentState]);
+
+  // 6. Auto-fetch PIN code when village changes
+  useEffect(() => {
+    if (!watchPermanentDistrict) return;
+    let isCancelled = false;
+    if (watchPermanentVillage && watchPermanentVillage.trim().length > 0) {
+      resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, watchPermanentVillage).then((autoPin) => {
+        if (!isCancelled && autoPin) {
+          setValue('permanentPincode', autoPin);
+        }
+      });
+    }
+    return () => { isCancelled = true; };
+  }, [watchPermanentVillage, watchPermanentBlock, watchPermanentDistrict, watchPermanentState]);
+
+  // 7. Preferred location effects
+  useEffect(() => {
+    let isCancelled = false;
+    setIsLoadingPrefDistricts(true);
+    fetchDistricts(watchPreferredState).then((dists) => {
+      if (isCancelled) return;
+      setPreferredDistricts(dists);
+      setIsLoadingPrefDistricts(false);
+      if (dists.length > 0 && !dists.includes(watchPreferredDistrict)) {
+        setValue('preferredDistrict', dists[0]);
+        setValue('preferredLocations', [dists[0]]);
+        setValue('preferredSubdivision', '');
+        setValue('preferredBlock', '');
+        setValue('preferredTehsil', '');
+        setValue('preferredPincode', '');
+      }
+    });
+    return () => { isCancelled = true; };
+  }, [watchPreferredState]);
+
+  useEffect(() => {
+    if (!watchPreferredDistrict) return;
+    let isCancelled = false;
+    setIsLoadingPrefSubdivisions(true);
+    setIsLoadingPrefBlocks(true);
+
+    fetchSubdivisions(watchPreferredState, watchPreferredDistrict).then((subs) => {
+      if (isCancelled) return;
+      setPreferredSubdivisions(subs || []);
+      setIsLoadingPrefSubdivisions(false);
+    });
+
+    fetchBlocks(watchPreferredState, watchPreferredDistrict, watchPreferredSubdivision).then((blks) => {
+      if (isCancelled) return;
+      setPreferredBlocks(blks || []);
+      setIsLoadingPrefBlocks(false);
+    });
+
+    return () => { isCancelled = true; };
+  }, [watchPreferredState, watchPreferredDistrict, watchPreferredSubdivision]);
+
+  useEffect(() => {
+    if (watchPreferredBlock) {
+      resolvePincode(watchPreferredState, watchPreferredDistrict, watchPreferredBlock, '').then((prefPin) => {
+        if (prefPin) {
+          setValue('preferredPincode', prefPin);
+        }
+      });
+    }
+  }, [watchPreferredBlock, watchPreferredDistrict, watchPreferredState]);
+
+
 
   useEffect(() => {
     if (currentStep === 3) {
@@ -166,20 +495,125 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     }
   }, [preselectedRole, setValue]);
 
-  // Keep preferred locations synced with current city if empty
+  // Keep preferred locations synced with preferred district
   useEffect(() => {
-    if (watchCity && (!watchLocations || watchLocations.length === 0)) {
-      setValue('preferredLocations', [watchCity]);
+    if (watchPreferredDistrict && (!watchLocations || watchLocations.length === 0 || watchLocations[0] !== watchPreferredDistrict)) {
+      setValue('preferredLocations', [watchPreferredDistrict]);
     }
-  }, [watchCity, setValue]);
+  }, [watchPreferredDistrict, setValue]);
+
+  const handleCaptureLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus({
+        success: false,
+        message: 'आपके मोबाइल या ब्राउज़र में GPS लोकेशन सपोर्ट नहीं है। कृपया नीचे हाथ से पता लिखें।'
+      });
+      return;
+    }
+
+    setIsCapturingLocation(true);
+    setLocationStatus({ success: null, message: 'लोकेशन खोजी जा रही है... कृपया मोबाइल स्क्रीन पर "Allow" दबाएं।' });
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = Number(position.coords.latitude.toFixed(6));
+        const lng = Number(position.coords.longitude.toFixed(6));
+        const accuracy = Math.round(position.coords.accuracy);
+
+        setValue('geoLat', lat);
+        setValue('geoLng', lng);
+
+        let capturedAddressText = `Lat: ${lat}, Lng: ${lng} (सटीकता: ±${accuracy}m)`;
+
+        try {
+          // Only the display text feeds the Current Address fields below.
+          // This must never touch state/permanentDistrict/permanentTehsil/permanentVillage/
+          // permanentPincode/permanentAddressLine — those belong to the Permanent
+          // Address section, and a GPS fix here previously overwrote them,
+          // silently corrupting a candidate's native address with wherever
+          // they happened to be standing when they tapped the button.
+          const geoInfo = await reverseGeocode(lat, lng);
+          if (geoInfo?.displayName) {
+            capturedAddressText = geoInfo.displayName;
+          }
+        } catch {
+          // Fallback gracefully to coordinates
+        }
+
+        setValue('geoAddress', capturedAddressText);
+        setValue('currentStayAddress', capturedAddressText);
+        setValue('currentArea', capturedAddressText);
+        setCurrentSameAsPermanent(false);
+        setLocationStatus({
+          success: true,
+          message: 'आपकी वर्तमान लोकेशन मिल गई और नीचे फॉर्म में भर दी गई है!',
+          address: capturedAddressText,
+          coords: { lat, lng, accuracy }
+        });
+        setIsCapturingLocation(false);
+      },
+      (error) => {
+        let errMessage = 'लोकेशन नहीं मिल सकी। कृपया फोन में GPS चालू करें या नीचे हाथ से पता लिखें।';
+        if (error.code === error.PERMISSION_DENIED) {
+          errMessage = 'लोकेशन अनुमति नहीं मिली। कृपया ब्राउज़र में "Allow" करें या नीचे हाथ से पता लिखें।';
+        } else if (error.code === error.TIMEOUT) {
+          errMessage = 'समय समाप्त हुआ। कृपया दोबारा प्रयास करें या नीचे हाथ से पता लिखें।';
+        }
+        setLocationStatus({ success: false, message: errMessage });
+        setIsCapturingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  const handleToggleSameForPreferred = (checked) => {
+    setSameAsPermanentForPreferred(checked);
+    if (checked) {
+      const curState = watch('permanentState') || 'Rajasthan';
+      const curCity = watch('permanentDistrict') || 'Jaipur';
+      const curSub = watch('permanentSubdivision') || '';
+      const curBlk = watch('permanentBlock') || watch('permanentTehsil') || '';
+      const curPin = watch('permanentPincode') || '';
+      const curAddr = watch('permanentAddressLine') || '';
+
+      setValue('preferredState', curState);
+      setValue('preferredDistrict', curCity);
+      setValue('preferredSubdivision', curSub);
+      setValue('preferredBlock', curBlk);
+      setValue('preferredTehsil', curBlk);
+      setValue('preferredPincode', curPin);
+      setValue('preferredAddressLine', curAddr);
+      setValue('preferredLocations', [curCity]);
+
+      setPreferredDistricts(currentDistricts);
+      setPreferredSubdivisions(permanentSubdivisions);
+      setPreferredBlocks(permanentBlocks);
+    }
+  };
 
   const stepFields = {
     1: ['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'],
-    2: ['currentCity', 'currentArea', 'state', 'preferredRoles'],
+    2: ['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles'],
     3: ['highestQualification', 'consentGiven'],
   };
 
   const handleNextStep = async () => {
+    if (currentStep === 2) {
+      const curCity = watch('permanentDistrict') || 'Jaipur';
+      const curSub = watch('permanentSubdivision') || '';
+      const curBlk = watch('permanentBlock') || watch('permanentTehsil') || '';
+      const curVillage = watch('permanentVillage') || '';
+      const curAddr = watch('permanentAddressLine') || '';
+      const stayAddr = watch('currentStayAddress') || '';
+      const geoAddr = watch('geoAddress') || '';
+
+      const combinedArea = stayAddr || geoAddr || [curSub, curBlk, curVillage, curAddr].filter(Boolean).join(', ') || `${curCity} Main Area`;
+      setValue('currentArea', combinedArea);
+
+      const prefDist = watch('preferredDistrict') || curCity;
+      setValue('preferredLocations', [prefDist]);
+    }
+
     const fields = stepFields[currentStep] || [];
     const valid = await trigger(fields);
     if (!valid) return;
@@ -233,6 +667,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
         isExisting: res.isExistingCandidate,
       });
 
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
       setSubmissionResult(res);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -247,7 +682,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
           if (['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 1);
-          } else if (['currentCity', 'currentArea', 'state', 'preferredRoles'].includes(field)) {
+          } else if (['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 2);
           }
         });
@@ -351,6 +786,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           isExistingCandidate={submissionResult.isExistingCandidate}
           whatsappNumber={submissionResult.whatsappNumber || OFFICIAL_WHATSAPP_NUMBER}
           onSubmitAnother={() => {
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
             reset();
             setSubmissionResult(null);
             setCurrentStep(1);
@@ -372,63 +808,153 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   return (
     <div className="w-full space-y-6">
-      {/* Guard Friendly Trust Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border border-blue-200/80 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-            <ShieldCheck className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-slate-900">
-              राजस्थान सिक्योरिटी जॉब आवेदन फॉर्म (100% फ्री)
-            </h2>
-            <p className="text-xs text-slate-600 mt-0.5">
-              बिना किसी फीस के सीधी भर्ती &middot; सरकारी PF व ESIC सुविधा &middot; 2 मिनट में भरें
-            </p>
-          </div>
-        </div>
+      {/* Guard Friendly Trust Header - Responsive & Clean */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-emerald-50/80 border border-blue-200/80 p-4 sm:p-5 shadow-xs transition-all">
+        {/* Subtle decorative background glow */}
+        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-6 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl pointer-events-none" />
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-2xs flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            ₹0 कोई फीस नहीं
-          </span>
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-md shadow-blue-600/25 ring-4 ring-blue-100/90">
+              <ShieldCheck className="w-6 h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight leading-snug">
+                  सिक्योरिटी जॉब आवेदन फॉर्म
+                </h2>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-blue-100/90 text-blue-700 border border-blue-200/70 shrink-0">
+                  100% फ्री
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="font-medium text-slate-700">सीधी भर्ती (No Fees)</span>
+                <span className="text-slate-300 hidden xs:inline">&bull;</span>
+                <span>सरकारी PF व ESIC सुविधा</span>
+                <span className="text-slate-300 hidden xs:inline">&bull;</span>
+                <span className="text-blue-600 font-semibold flex items-center gap-1">
+                  <Clock className="w-3 h-3 inline" /> 2 मिनट में भरें
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-start sm:justify-end shrink-0 pl-14 sm:pl-0">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold shadow-xs hover:shadow-sm transition-all">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              ₹0 कोई फीस नहीं
+            </span>
+          </div>
         </div>
       </div>
 
       <Card className="p-4 sm:p-8 shadow-md border-slate-200/90">
-        {/* Step Indicator Progress Bar */}
-        <div className="mb-8">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3">
+        {/* Step Indicator Progress Bar - Animated & Responsive */}
+        <div className="mb-7 sm:mb-9">
+          {/* Top Status Meta Row */}
+          <div className="flex items-center justify-between gap-2 mb-3.5 px-1">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-extrabold text-xs">
+                {currentStep}
+              </span>
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+                {stepsMeta[currentStep - 1]?.title}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 border border-slate-200/80 text-[11px] font-bold text-slate-700 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{Math.round((currentStep / TOTAL_STEPS) * 100)}% पूर्ण</span>
+            </div>
+          </div>
+
+          {/* Interactive Steps Rail with Connecting Lines */}
+          <div className="relative flex items-center justify-between mb-3 px-3 sm:px-6">
+            {/* Background Rail Line */}
+            <div className="absolute left-7 right-7 sm:left-12 sm:right-12 top-1/2 -translate-y-1/2 h-1 bg-slate-200/80 rounded-full z-0" />
+            
+            {/* Animated Active Rail Fill */}
+            <motion.div
+              className="absolute left-7 sm:left-12 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full z-0 origin-left"
+              initial={false}
+              animate={{
+                width: currentStep === 1 ? '0%' : currentStep === 2 ? '50%' : 'calc(100% - 3.5rem)'
+              }}
+              transition={{ type: "spring", stiffness: 100, damping: 16 }}
+            />
+
+            {/* Step Nodes */}
             {stepsMeta.map((s) => {
               const isPassed = currentStep > s.num;
               const isCurrent = currentStep === s.num;
               return (
-                <div key={s.num} className="text-center">
-                  <div
-                    className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center transition-all ${
+                <div key={s.num} className="relative z-10 flex flex-col items-center">
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: isCurrent ? 1.08 : 1,
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center transition-all ${
                       isPassed
-                        ? 'bg-emerald-600 text-white shadow-2xs'
+                        ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/30 ring-2 ring-emerald-100'
                         : isCurrent
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 ring-4 ring-blue-100'
-                        : 'bg-slate-100 text-slate-400 border border-slate-200'
+                        ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 text-white shadow-md shadow-blue-500/30 ring-4 ring-blue-100'
+                        : 'bg-white text-slate-400 border-2 border-slate-200 shadow-2xs'
                     }`}
                   >
-                    {isPassed ? <Check className="w-4 h-4" /> : s.num}
-                  </div>
-                  <p className={`text-[11px] sm:text-xs font-bold mt-1.5 line-clamp-1 ${isCurrent ? 'text-blue-700' : 'text-slate-500'}`}>
+                    {isPassed ? (
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+                    ) : (
+                      <span>{s.num}</span>
+                    )}
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Step Labels Grid */}
+          <div className="grid grid-cols-3 gap-1 sm:gap-4 text-center">
+            {stepsMeta.map((s) => {
+              const isPassed = currentStep > s.num;
+              const isCurrent = currentStep === s.num;
+              return (
+                <div key={s.num} className="px-1">
+                  <p
+                    className={`text-[11px] sm:text-xs font-bold leading-tight transition-colors ${
+                      isCurrent
+                        ? 'text-blue-700 font-extrabold'
+                        : isPassed
+                        ? 'text-emerald-700 font-semibold'
+                        : 'text-slate-500 font-medium'
+                    }`}
+                  >
                     {s.title}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-normal hidden sm:block mt-0.5">
+                    {s.sub}
                   </p>
                 </div>
               );
             })}
           </div>
 
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-blue-600 to-emerald-500 h-full transition-all duration-300 rounded-full"
-              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-            />
+          {/* Animated Liquid Progress Bar with Gliding Shimmer Light */}
+          <div className="relative w-full bg-slate-100/90 h-2 sm:h-2.5 rounded-full overflow-hidden shadow-inner mt-3.5 border border-slate-200/50">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 relative overflow-hidden"
+              initial={false}
+              animate={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
+              transition={{ type: "spring", stiffness: 90, damping: 15 }}
+            >
+              {/* Continuous glowing shimmer wave */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+              />
+            </motion.div>
           </div>
         </div>
 
@@ -646,139 +1172,626 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                 </h3>
               </div>
 
-              {/* State Field - Fixed to Rajasthan */}
-              <div>
-                <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
-                  राज्य (State)
-                </label>
-                <div className="flex items-center gap-2 p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 font-bold text-sm text-blue-900">
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                  <span>राजस्थान (Rajasthan) &mdash; केवल राजस्थान के लिए सक्रिय</span>
-                </div>
-                <input type="hidden" value="Rajasthan" {...register('state')} />
-              </div>
-
-              {/* City / District Selection */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs sm:text-sm font-bold text-slate-900">
-                    वर्तमान जिला / शहर (Current District in Rajasthan) <span className="text-red-500">*</span>
-                  </label>
-                  <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                    33+ जिले उपलब्ध
+              {/* ------------------------------------------------------------- */}
+              {/* 1. PERMANENT ADDRESS (स्थाई पता) - Full Hierarchy With API   */}
+              {/* ------------------------------------------------------------- */}
+              {/* ------------------------------------------------------------- */}
+              {/* 1. PERMANENT ADDRESS (स्थाई पता) - Full Hierarchy With API   */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3.5 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-xs">
+                      <Home className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        1. स्थाई पता (Permanent Address) <span className="text-red-500">*</span>
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium">
+                        जहाँ आपका मूल / पैतृक निवास है (Your permanent native residence)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200/70 px-3 py-1 rounded-full self-start sm:self-center">
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                    <span>मूल निवास</span>
                   </span>
                 </div>
-                <select
-                  value={watchCity}
-                  onChange={(e) => {
-                    setValue('currentCity', e.target.value, { shouldValidate: true });
-                    setValue('preferredLocations', [e.target.value]);
-                    // Clear custom area to prompt new area selection
-                    setValue('currentArea', '');
+
+                {/* 2-Column Responsive Minimal Breathable Grid: State ➔ District ➔ Subdivision ➔ Block ➔ Village */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {/* Tier 1: State */}
+                  <div>
+                    <SearchableLocationInput
+                      id="current-state"
+                      label="मूल राज्य (State)"
+                      value={watchPermanentState}
+                      onChange={(val) => {
+                        setValue('permanentState', val, { shouldValidate: true });
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('permanentState', val, { shouldValidate: true });
+                        setValue('permanentDistrict', '');
+                        setValue('permanentSubdivision', '');
+                        setValue('permanentBlock', '');
+                        setValue('permanentTehsil', '');
+                        setValue('permanentVillage', '');
+                        setValue('permanentPincode', '');
+                      }}
+                      options={statesList}
+                      placeholder="राज्य टाइप करें या चुनें (उदा. Rajasthan, Bihar)"
+                      required
+                    />
+                  </div>
+
+                  {/* Tier 2: District */}
+                  <div>
+                    <SearchableLocationInput
+                      id="current-city"
+                      label="मूल जिला (District)"
+                      value={watchPermanentDistrict}
+                      onChange={(val) => {
+                        setValue('permanentDistrict', val, { shouldValidate: true });
+                        setValue('preferredLocations', [val]);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('permanentDistrict', val, { shouldValidate: true });
+                        setValue('preferredLocations', [val]);
+                        setValue('permanentSubdivision', '');
+                        setValue('permanentBlock', '');
+                        setValue('permanentTehsil', '');
+                        setValue('permanentVillage', '');
+                        setValue('permanentPincode', '');
+                      }}
+                      options={currentDistricts.length > 0 ? currentDistricts : getDistrictsForState(watchPermanentState)}
+                      placeholder="जिला टाइप करें या चुनें (उदा. Jaipur, Siwan)"
+                      required
+                      error={errors.permanentDistrict?.message}
+                      isLoading={isLoadingDistricts}
+                      badgeText={currentDistricts.length > 0 ? `${currentDistricts.length} जिले` : ''}
+                    />
+                  </div>
+
+                  {/* Tier 3: Subdivision */}
+                  <div>
+                    <SearchableLocationInput
+                      id="current-subdivision"
+                      label="अनुमंडल (Subdivision)"
+                      value={watchPermanentSubdivision}
+                      onChange={(val) => {
+                        setValue('permanentSubdivision', val);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('permanentSubdivision', val);
+                        setValue('permanentBlock', '');
+                        setValue('permanentTehsil', '');
+                        setValue('permanentVillage', '');
+                        setValue('permanentPincode', '');
+                      }}
+                      options={permanentSubdivisions}
+                      placeholder={permanentSubdivisions.length > 0 ? "अनुमंडल टाइप करें या चुनें" : "अनुमंडल का नाम लिखें"}
+                      isLoading={isLoadingSubdivisions}
+                      badgeText={permanentSubdivisions.length > 0 ? `${permanentSubdivisions.length} अनुमंडल` : ''}
+                    />
+                  </div>
+
+                  {/* Tier 4: Block / Tehsil */}
+                  <div>
+                    <SearchableLocationInput
+                      id="current-block"
+                      label="प्रखंड / ब्लॉक / तहसील (Block)"
+                      value={watchPermanentBlock}
+                      onChange={(val) => {
+                        setValue('permanentBlock', val);
+                        setValue('permanentTehsil', val);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('permanentBlock', val);
+                        setValue('permanentTehsil', val);
+                        setValue('permanentVillage', '');
+
+                        // Load authoritative villages immediately to prevent blinking
+                        const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, val);
+                        if (localVills && localVills.length > 0) {
+                          setCurrentVillages(localVills);
+                        }
+                        fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, val).then((vills) => {
+                          if (vills && vills.length > 0) {
+                            setCurrentVillages((prev) => {
+                              const merged = [...new Set([...(prev || []), ...vills])];
+                              return merged.length === prev.length ? prev : merged;
+                            });
+                          }
+                        });
+
+                        resolvePincode(watchPermanentState, watchPermanentDistrict, val, '').then((pin) => {
+                          if (pin) setValue('permanentPincode', pin);
+                        });
+                      }}
+                      options={permanentBlocks}
+                      placeholder={permanentBlocks.length > 0 ? "प्रखंड / ब्लॉक टाइप करें या चुनें" : "प्रखंड / ब्लॉक का नाम लिखें"}
+                      isLoading={isLoadingBlocks}
+                      badgeText={permanentBlocks.length > 0 ? `${permanentBlocks.length} ब्लॉक उपलब्ध` : ''}
+                    />
+                  </div>
+
+                  {/* Tier 5: Village / Ward / Town */}
+                  <div>
+                    <SearchableLocationInput
+                      id="current-village"
+                      label="गाँव / कस्बा / वार्ड (Village / Town)"
+                      value={watchPermanentVillage}
+                      onChange={(val) => {
+                        setValue('permanentVillage', val);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('permanentVillage', val);
+                        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, val).then((pin) => {
+                          if (pin) setValue('permanentPincode', pin);
+                        });
+                      }}
+                      options={permanentVillages}
+                      placeholder={permanentVillages.length > 0 ? "गाँव या कस्बा टाइप करें या चुनें" : "गाँव / वार्ड का नाम लिखें"}
+                      badgeText={permanentVillages.length > 0 ? `${permanentVillages.length} गाँव उपलब्ध` : ''}
+                    />
+                  </div>
+
+                  {/* Tier 6: Pincode (with Auto-fetch pill) */}
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <label htmlFor="current-pincode" className="block text-xs sm:text-sm font-semibold text-slate-800">
+                        पिनकोड (Pincode)
+                      </label>
+                      {watchPermanentPincode && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <Zap className="w-3 h-3 text-emerald-600 fill-emerald-500" /> ऑटो-फ़िल
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      id="current-pincode"
+                      type="text"
+                      maxLength={6}
+                      placeholder="उदा. 302001 या 841238 (ब्लॉक से स्वतः दर्ज)"
+                      value={watchPermanentPincode}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setValue('permanentPincode', val);
+                        if (val.length === 6 && (!watchPermanentState || !watchPermanentDistrict)) {
+                          lookupPincode(val).then((info) => {
+                            if (info) {
+                              if (!watchPermanentState && info.state) setValue('permanentState', info.state, { shouldValidate: true });
+                              if (!watchPermanentDistrict && info.district) setValue('permanentDistrict', info.district, { shouldValidate: true });
+                            }
+                          });
+                        }
+                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/40 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all tracking-wider placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Tier 7: House / Street / Landmark (Spans 2 columns on md) */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="current-address-line" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                      मकान नं., टोला, गली व लैंडमार्क (House / Street / Landmark)
+                    </label>
+                    <input
+                      id="current-address-line"
+                      type="text"
+                      placeholder="उदा. मकान नं. 24, मेन मंदिर के पास, पटेल नगर"
+                      value={watchPermanentAddressLine}
+                      onChange={(e) => setValue('permanentAddressLine', e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/40 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all placeholder:font-normal placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* 2. CURRENT ADDRESS (वर्तमान पता) - Simple & Guard-Friendly */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-emerald-200 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-emerald-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-xs">
+                      <Navigation className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        2. वर्तमान पता (Current Address)
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium">
+                        अभी आप कहाँ रह रहे हैं? (Where do you currently reside?)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full self-start sm:self-center">
+                    <Crosshair className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>वर्तमान लोकेशन</span>
+                  </span>
+                </div>
+
+                {/* Option 1: Live at Native Home / Permanent Address */}
+                <div
+                  onClick={() => {
+                    const newSame = !currentSameAsPermanent;
+                    setCurrentSameAsPermanent(newSame);
+                    if (newSame) {
+                      setValue('currentStayAddress', 'स्थाई पते के अनुसार (Same as Permanent)');
+                      setLocationStatus(null);
+                    } else {
+                      setValue('currentStayAddress', '');
+                    }
                   }}
-                  className={`w-full px-4 py-3.5 rounded-xl border text-sm font-bold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none transition-all cursor-pointer ${
-                    errors.currentCity ? 'border-red-500' : 'border-slate-300 focus:border-blue-600'
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                    currentSameAsPermanent
+                      ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-200/60 shadow-2xs'
+                      : 'bg-slate-50/60 border-slate-200 hover:border-emerald-300 hover:bg-slate-50'
                   }`}
                 >
-                  {RAJASTHAN_CITIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-                {errors.currentCity && (
-                  <p className="text-xs font-semibold text-red-600 mt-1">{errors.currentCity.message}</p>
-                )}
-              </div>
-
-              {/* Quick Popular Rajasthan District Buttons */}
-              <div>
-                <p className="text-xs font-semibold text-slate-500 mb-2">मुख्य जिले (Quick Select):</p>
-                <div className="flex flex-wrap gap-2">
-                  {['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Alwar', 'Bhiwadi', 'Neemrana', 'Bhilwara', 'Sikar'].map((city) => (
-                    <button
-                      key={city}
-                      type="button"
-                      onClick={() => {
-                        setValue('currentCity', city, { shouldValidate: true });
-                        setValue('preferredLocations', [city]);
-                        setValue('currentArea', '');
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={currentSameAsPermanent}
+                      onChange={(e) => {
+                        const isSame = e.target.checked;
+                        setCurrentSameAsPermanent(isSame);
+                        if (isSame) {
+                          setValue('currentStayAddress', 'स्थाई पते के अनुसार (Same as Permanent)');
+                          setLocationStatus(null);
+                        } else {
+                          setValue('currentStayAddress', '');
+                        }
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        watchCity === city
-                          ? 'bg-blue-600 text-white shadow-2xs'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
-                      }`}
-                    >
-                      {city}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* AI-Assisted Smart Area / Tehsil / Industrial Hub Selector */}
-              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/90 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs sm:text-sm font-bold text-slate-900">
-                    तहसील / एरिया / औद्योगिक क्षेत्र (Area / Tehsil / RIICO Hub) <span className="text-red-500">*</span>
+                      className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-xs sm:text-sm font-bold text-slate-900">
+                        मैं अभी अपने स्थाई (गाँव / घर) पते पर ही रहता हूँ (Same as Permanent)
+                      </span>
+                      <span className="block text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                        {currentSameAsPermanent ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            स्थाई पता ही आपका वर्तमान पता मान लिया गया है (अलग से भरने की आवश्यकता नहीं)।
+                          </span>
+                        ) : (
+                          'यदि आप अपने मूल गाँव या घर पर ही रहते हैं, तो इसे टिक करें।'
+                        )}
+                      </span>
+                    </div>
                   </label>
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-700 bg-white px-2.5 py-0.5 rounded-full border border-blue-200 shadow-2xs">
-                    <Zap className="w-3 h-3 text-blue-600" />
-                    <span>Smart Match</span>
-                  </span>
                 </div>
 
-                <div className="relative">
-                  <input
-                    type="text"
-                    list="smart-areas-list"
-                    placeholder={`उदा. ${watchCity || 'Jaipur'} का अपना एरिया या रीको हब टाइप करें या नीचे से चुनें`}
-                    {...register('currentArea')}
-                    className={`w-full px-4 py-3.5 rounded-xl border text-sm font-semibold text-slate-900 bg-white focus:outline-none transition-all ${
-                      errors.currentArea ? 'border-red-500 bg-red-50/50' : 'border-blue-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100'
-                    }`}
-                  />
-                  <datalist id="smart-areas-list">
-                    {getSmartAreasForDistrict(watchCity || 'Jaipur').map((area) => (
-                      <option key={area} value={area} />
-                    ))}
-                  </datalist>
-                </div>
+                {/* Option 2: Living Away / In City / On Duty */}
+                {!currentSameAsPermanent && (
+                  <div className="space-y-4 pt-1">
+                    {/* Auto-fill with 1-click GPS Button */}
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-white border border-emerald-200 space-y-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                            <Crosshair className="w-4 h-4 text-emerald-600" />
+                            <span>मोबाइल से अभी की लोकेशन भरें (Auto-Fill Location)</span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5">
+                            बटन दबाते ही आपकी अभी की लोकेशन अपने आप फॉर्म में आ जाएगी
+                          </p>
+                        </div>
 
-                {errors.currentArea && (
-                  <p className="text-xs font-semibold text-red-600">{errors.currentArea.message}</p>
-                )}
-
-                {/* Smart Suggested Area Pills for the Selected District */}
-                <div>
-                  <p className="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                    <span>{watchCity || 'Jaipur'} के प्रमुख सुरक्षा ड्यूटी व औद्योगिक क्षेत्र (क्लिक करके चुनें):</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto pr-1">
-                    {getSmartAreasForDistrict(watchCity || 'Jaipur').map((area) => {
-                      const isSelected = watchArea === area;
-                      return (
                         <button
-                          key={area}
                           type="button"
-                          onClick={() => setValue('currentArea', area, { shouldValidate: true })}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all text-left cursor-pointer ${
-                            isSelected
-                              ? 'bg-blue-600 text-white font-bold shadow-2xs'
-                              : 'bg-white text-slate-700 hover:bg-blue-100 hover:text-blue-900 border border-slate-200'
+                          onClick={handleCaptureLocation}
+                          disabled={isCapturingLocation}
+                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 transition-all shrink-0"
+                        >
+                          {isCapturingLocation ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>लोकेशन जाँची जा रही है...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Crosshair className="w-4 h-4" />
+                              <span>📍 अभी की लोकेशन लें</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Captured Result Message Card */}
+                      {locationStatus && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`p-3 rounded-xl border text-xs ${
+                            locationStatus.success === true
+                              ? 'bg-white border-emerald-300 text-emerald-950 shadow-2xs'
+                              : locationStatus.success === false
+                              ? 'bg-amber-50 border-amber-300 text-amber-950'
+                              : 'bg-blue-50 border-blue-200 text-blue-900'
                           }`}
                         >
-                          {area}
-                        </button>
-                      );
-                    })}
+                          <div className="flex items-start gap-2.5">
+                            {locationStatus.success === true ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="font-bold block text-xs sm:text-sm">
+                                {locationStatus.message}
+                              </span>
+                              {locationStatus.address && (
+                                <p className="mt-1.5 text-slate-800 text-xs sm:text-sm leading-relaxed bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-200/80 font-semibold">
+                                  {locationStatus.address}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* Manual / Verified Stay Address Input */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                        वर्तमान रहने का पता (Current Stay Address)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="उदा. कमरा नं. 12, शिव कॉलोनी, मानसरोवर, जयपुर (या ऊपर बटन दबाकर लोकेशन लें)"
+                        value={watchCurrentStayAddress}
+                        onChange={(e) => {
+                          setValue('currentStayAddress', e.target.value);
+                          if (currentSameAsPermanent) setCurrentSameAsPermanent(false);
+                        }}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all placeholder:font-normal placeholder:text-slate-400"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        यदि आप किराए पर या किसी अन्य शहर में रहते हैं, तो यहाँ लिखें।
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* 3. PREFERRED JOB LOCATION (पसंदीदा जॉब लोकेशन) - Town/Tehsil Level (No Village) */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-blue-200 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 border-b border-blue-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-xs">
+                      <Briefcase className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        3. पसंदीदा जॉब लोकेशन (Preferred Job Location) <span className="text-red-500">*</span>
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium">
+                        जहाँ आप ड्यूटी करना चाहते हैं
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Same as Permanent Location Toggle */}
+                  <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs font-semibold cursor-pointer hover:bg-blue-100/70 transition-colors shadow-2xs">
+                    <input
+                      type="checkbox"
+                      checked={sameAsPermanentForPreferred}
+                      onChange={(e) => handleToggleSameForPreferred(e.target.checked)}
+                      className="w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                    />
+                    <Copy className="w-3.5 h-3.5 text-blue-600" />
+                    <span>स्थाई जिले व तहसील में ड्यूटी (Same as Permanent)</span>
+                  </label>
+                </div>
+
+                {/* 2-Column Responsive Breathable Grid: State ➔ District ➔ Subdivision ➔ Block / Town (NO VILLAGE LEVEL) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {/* Row 1, Col 1: Preferred State */}
+                  <div>
+                    <SearchableLocationInput
+                      id="pref-state"
+                      label="पसंदीदा राज्य (Duty State)"
+                      value={watchPreferredState}
+                      onChange={(val) => setValue('preferredState', val)}
+                      onSelectOption={(val) => {
+                        setValue('preferredState', val);
+                        setValue('preferredDistrict', '');
+                        setValue('preferredSubdivision', '');
+                        setValue('preferredBlock', '');
+                        setValue('preferredTehsil', '');
+                        setValue('preferredPincode', '');
+                      }}
+                      options={statesList}
+                      placeholder="राज्य टाइप करें या चुनें"
+                      required
+                    />
+                  </div>
+
+                  {/* Row 1, Col 2: Preferred District */}
+                  <div>
+                    <SearchableLocationInput
+                      id="pref-city"
+                      label="पसंदीदा जिला (Duty District)"
+                      value={watchPreferredDistrict}
+                      onChange={(val) => {
+                        setValue('preferredDistrict', val);
+                        setValue('preferredLocations', [val]);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('preferredDistrict', val);
+                        setValue('preferredLocations', [val]);
+                        setValue('preferredSubdivision', '');
+                        setValue('preferredBlock', '');
+                        setValue('preferredTehsil', '');
+                        setValue('preferredPincode', '');
+                      }}
+                      options={preferredDistricts.length > 0 ? preferredDistricts : getDistrictsForState(watchPreferredState)}
+                      placeholder="जिला टाइप करें या चुनें"
+                      required
+                      isLoading={isLoadingPrefDistricts}
+                      badgeText={preferredDistricts.length > 0 ? `${preferredDistricts.length} जिले` : ''}
+                    />
+                  </div>
+
+                  {/* Row 2, Col 1: Preferred Subdivision */}
+                  <div>
+                    <SearchableLocationInput
+                      id="pref-subdivision"
+                      label="पसंदीदा अनुमंडल (Duty Subdivision)"
+                      value={watchPreferredSubdivision}
+                      onChange={(val) => setValue('preferredSubdivision', val)}
+                      onSelectOption={(val) => {
+                        setValue('preferredSubdivision', val);
+                        setValue('preferredBlock', '');
+                        setValue('preferredTehsil', '');
+                        setValue('preferredPincode', '');
+                      }}
+                      options={preferredSubdivisions}
+                      placeholder={preferredSubdivisions.length > 0 ? "अनुमंडल टाइप करें या चुनें" : "अनुमंडल का नाम लिखें"}
+                      isLoading={isLoadingPrefSubdivisions}
+                      badgeText={preferredSubdivisions.length > 0 ? `${preferredSubdivisions.length} अनुमंडल` : ''}
+                    />
+                  </div>
+
+                  {/* Row 2, Col 2: Preferred Block / Town */}
+                  <div>
+                    <SearchableLocationInput
+                      id="pref-block"
+                      label="पसंदीदा ब्लॉक / टाउन / कस्बा (Duty Block / Town)"
+                      value={watchPreferredBlock}
+                      onChange={(val) => {
+                        setValue('preferredBlock', val);
+                        setValue('preferredTehsil', val);
+                      }}
+                      onSelectOption={(val) => {
+                        setValue('preferredBlock', val);
+                        setValue('preferredTehsil', val);
+                        resolvePincode(watchPreferredState, watchPreferredDistrict, val, '').then((pin) => {
+                          if (pin) setValue('preferredPincode', pin);
+                        });
+                      }}
+                      options={preferredBlocks}
+                      placeholder={preferredBlocks.length > 0 ? "ब्लॉक / टाउन टाइप करें या चुनें" : "ब्लॉक / कस्बा लिखें"}
+                      isLoading={isLoadingPrefBlocks}
+                      badgeText={preferredBlocks.length > 0 ? `${preferredBlocks.length} उपलब्ध` : ''}
+                    />
+                  </div>
+
+                  {/* Row 3, Col 1: Preferred Pincode */}
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <label htmlFor="pref-pincode" className="block text-xs sm:text-sm font-semibold text-slate-800">
+                        पसंदीदा पिनकोड (Duty PIN Code)
+                      </label>
+                      {watchPreferredPincode && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <Zap className="w-3 h-3 text-emerald-600 fill-emerald-500" /> ऑटो-फ़िल
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      id="pref-pincode"
+                      type="text"
+                      maxLength={6}
+                      placeholder="उदा. 302001 या 841238"
+                      value={watchPreferredPincode}
+                      onChange={(e) => setValue('preferredPincode', e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/40 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all tracking-wider placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Row 3, Col 2: Preferred Duty Landmark / Area */}
+                  <div>
+                    <label htmlFor="pref-landmark" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                      इच्छित ड्यूटी क्षेत्र / लैंडमार्क (Duty Landmark / Area)
+                    </label>
+                    <input
+                      id="pref-landmark"
+                      type="text"
+                      placeholder="उदा. रीको इंडस्ट्रियल एरिया, मुख्य बस स्टैंड, मॉल, बैंक"
+                      value={watchPreferredAddressLine}
+                      onChange={(e) => setValue('preferredAddressLine', e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/40 hover:bg-white focus:bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all placeholder:font-normal placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Row 4: Job Placement Scope Note (Spans 2 columns on md) */}
+                  <div className="md:col-span-2">
+                    <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200/80 text-blue-900 text-xs flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <p className="leading-relaxed">
+                        आपकी पसंद के नजदीकी क्षेत्र में ड्यूटी दी जाएगी।
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ----------------------------------------------------------------- */}
+              {/* PREVIOUS LOCATION UI (COMMENTED OUT AS REQUESTED - DO NOT REMOVE) */}
+              {/* ----------------------------------------------------------------- */}
+              {/*
+              <div className="opacity-60 pointer-events-none space-y-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-slate-900 mb-1.5">
+                    राज्य (State)
+                  </label>
+                  <div className="flex items-center gap-2 p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 font-bold text-sm text-blue-900">
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                    <span>राजस्थान (Rajasthan) &mdash; केवल राजस्थान के लिए सक्रिय</span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-500 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>आपके नजदीकी 15-20 किमी के दायरे में डायरेक्ट ड्यूटी अलॉटमेंट के लिए सटीक एरिया चुनें।</span>
-                </p>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-900">
+                      वर्तमान जिला / शहर (Current District in Rajasthan) *
+                    </label>
+                  </div>
+                  <select
+                    value={watchPermanentDistrict}
+                    className="w-full px-4 py-3.5 rounded-xl border text-sm font-bold text-slate-900 bg-slate-50"
+                  >
+                    {RAJASTHAN_CITIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 mb-2">मुख्य जिले (Quick Select):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Alwar', 'Bhiwadi', 'Neemrana', 'Bhilwara', 'Sikar'].map((city) => (
+                      <button
+                        key={city}
+                        type="button"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700"
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/90 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-900">
+                      तहसील / एरिया / औद्योगिक क्षेत्र (Area / Tehsil / RIICO Hub) *
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={`उदा. ${watchPermanentDistrict || 'Jaipur'} का अपना एरिया या रीको हब`}
+                    className="w-full px-4 py-3.5 rounded-xl border text-sm font-semibold text-slate-900 bg-white"
+                  />
+                </div>
               </div>
+              */}
 
               {/* Preferred Job Role Selection Cards */}
               <div className="pt-2 border-t border-slate-100 space-y-2.5">

@@ -547,10 +547,29 @@ export default function CandidateDetailsPage() {
                 <Field label="WhatsApp Number" value={candidate.whatsapp_number} />
                 <Field label="Age" value={candidate.age} />
                 <Field label="Gender" value={candidate.gender} />
-                <Field label="Current City" value={candidate.current_city} />
-                <Field label="Current Area" value={candidate.current_area} />
-                <Field label="State" value={candidate.state} />
                 <Field label="Qualification" value={candidate.highest_qualification} />
+              </div>
+
+              <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Permanent Address</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
+                  <Field label="State" value={candidate.permanent_state} />
+                  <Field label="District" value={candidate.permanent_district} />
+                  <Field label="Subdivision" value={candidate.permanent_subdivision} />
+                  <Field label="Block / Tehsil" value={candidate.permanent_tehsil} />
+                  <Field label="Village" value={candidate.permanent_village} />
+                  <Field label="Pincode" value={candidate.permanent_pincode} />
+                  <Field label="Address Line" value={candidate.permanent_address_line} />
+                </div>
+              </div>
+
+              <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Current Address</p>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
+                  <Field label="Current Area" value={candidate.current_area} />
+                  <Field label="Current Stay Address" value={candidate.current_stay_address} />
+                  <Field label="GPS-Captured Address" value={candidate.geo_address} />
+                </div>
               </div>
             </Card>
 

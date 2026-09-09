@@ -22,10 +22,10 @@ test('owner can paginate, search by name, and filter by city', async () => {
 
   await request(app)
     .post('/api/public/candidates/register')
-    .field({ ...baseRegistrationFields(mobileA), fullName: `PaginationTest${uniqueTag}`, currentCity: 'Udaipur' });
+    .field({ ...baseRegistrationFields(mobileA), fullName: `PaginationTest${uniqueTag}`, permanentDistrict: 'Udaipur' });
   await request(app)
     .post('/api/public/candidates/register')
-    .field({ ...baseRegistrationFields(mobileB), fullName: `OtherCandidate${uniqueTag}`, currentCity: 'Jodhpur' });
+    .field({ ...baseRegistrationFields(mobileB), fullName: `OtherCandidate${uniqueTag}`, permanentDistrict: 'Jodhpur' });
 
   const agent = await loggedInAgent();
 
@@ -37,7 +37,7 @@ test('owner can paginate, search by name, and filter by city', async () => {
   const byCity = await agent.get('/api/owner/candidates?city=Udaipur&pageSize=1&page=1');
   assert.equal(byCity.status, 200);
   assert.ok(byCity.body.pagination.pageSize === 1);
-  assert.ok(byCity.body.data.every((c) => c.currentCity === 'Udaipur'));
+  assert.ok(byCity.body.data.every((c) => c.permanentDistrict === 'Udaipur'));
 
   const byMobile = await agent.get(`/api/owner/candidates?search=${mobileB}`);
   assert.equal(byMobile.body.data.length, 1);

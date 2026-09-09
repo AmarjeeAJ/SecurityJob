@@ -10,7 +10,10 @@ export async function findCandidateByNormalizedMobile(client, normalizedMobile) 
 
 const CANDIDATE_COLUMNS = [
   'full_name', 'mobile_number', 'normalized_mobile_number', 'whatsapp_number', 'normalized_whatsapp_number',
-  'alternate_mobile_number', 'email', 'date_of_birth', 'age', 'gender', 'current_city', 'current_area', 'state',
+  'alternate_mobile_number', 'email', 'date_of_birth', 'age', 'gender',
+  'permanent_district', 'permanent_state', 'permanent_subdivision', 'permanent_block', 'permanent_tehsil',
+  'permanent_village', 'permanent_pincode', 'permanent_address_line',
+  'current_area', 'current_stay_address', 'geo_lat', 'geo_lng', 'geo_address',
   'highest_qualification', 'total_experience_months', 'security_experience_months', 'previous_company',
   'current_employment_status', 'joining_availability', 'expected_salary', 'shift_preference', 'duty_hour_preference',
   'height_cm', 'languages', 'ex_serviceman', 'is_experienced', 'aadhaar_available', 'police_verification_available',
@@ -108,7 +111,7 @@ function buildFilterClauses(filters, startIndex = 1) {
     i += 2;
   }
   if (filters.city) {
-    clauses.push(`(c.current_city ILIKE $${i} OR c.current_area ILIKE $${i} OR EXISTS (SELECT 1 FROM candidate_preferred_locations cpl WHERE cpl.candidate_id = c.id AND cpl.city_name ILIKE $${i}))`);
+    clauses.push(`(c.permanent_district ILIKE $${i} OR c.current_area ILIKE $${i} OR EXISTS (SELECT 1 FROM candidate_preferred_locations cpl WHERE cpl.candidate_id = c.id AND cpl.city_name ILIKE $${i}))`);
     values.push(`%${filters.city}%`);
     i += 1;
   }
@@ -168,7 +171,7 @@ export async function listCandidatesPaginated(filters) {
       LIMIT $${nextIndex} OFFSET $${nextIndex + 1}
     )
     SELECT
-      c.id, c.candidate_code, c.full_name, c.mobile_number, c.whatsapp_number, c.current_city,
+      c.id, c.candidate_code, c.full_name, c.mobile_number, c.whatsapp_number, c.permanent_district,
       c.security_experience_months, c.joining_availability, c.first_registered_at, c.last_submitted_at,
       COALESCE(roles.role_names, '') AS role_names,
       COALESCE(locations.city_names, '') AS preferred_city_names,
@@ -262,7 +265,10 @@ export async function* streamCandidatesForExport(filters, batchSize = 500) {
     const sql = `
       SELECT
         c.id, c.candidate_code, c.full_name, c.mobile_number, c.whatsapp_number, c.alternate_mobile_number,
-        c.email, c.age, c.gender, c.current_city, c.current_area, c.state, c.highest_qualification,
+        c.email, c.age, c.gender,
+        c.permanent_state, c.permanent_district, c.permanent_subdivision, c.permanent_block, c.permanent_tehsil,
+        c.permanent_village, c.permanent_pincode, c.permanent_address_line,
+        c.current_area, c.current_stay_address, c.highest_qualification,
         c.total_experience_months, c.security_experience_months, c.previous_company, c.is_experienced,
         c.current_employment_status, c.joining_availability, c.expected_salary, c.shift_preference,
         c.duty_hour_preference, c.ex_serviceman, c.aadhaar_available, c.police_verification_available,

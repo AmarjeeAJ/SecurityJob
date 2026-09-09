@@ -17,7 +17,7 @@ export const listCandidates = asyncHandler(async (req, res) => {
       fullName: row.full_name,
       mobileNumber: row.mobile_number,
       whatsappNumber: row.whatsapp_number,
-      currentCity: row.current_city,
+      permanentDistrict: row.permanent_district,
       preferredRoles: row.role_names ? row.role_names.split(' | ') : [],
       preferredLocations: row.preferred_city_names ? row.preferred_city_names.split(' | ') : [],
       securityExperienceMonths: row.security_experience_months,

@@ -84,7 +84,7 @@ async function reverifyAll() {
       const cRes = await client.query(
         `INSERT INTO candidates (
           candidate_code, full_name, mobile_number, normalized_mobile_number,
-          whatsapp_number, normalized_whatsapp_number, age, gender, current_city, current_area, state,
+          whatsapp_number, normalized_whatsapp_number, age, gender, permanent_district, current_area, permanent_state,
           current_employment_status, joining_availability, duty_hour_preference,
           consent_given, consent_timestamp, consent_text_version, last_submitted_at, first_registered_at
         ) VALUES ($1, $2, $3, $4, $5, $6, 28, 'male', $7, $8, 'Rajasthan', 'unemployed', 'immediate', '12_hours', true, now(), 'v1', now() - ($9 || ' days')::INTERVAL, now() - ($9 || ' days')::INTERVAL)
@@ -137,7 +137,7 @@ async function reverifyAll() {
         id: 'T-06',
         title: 'Filter by City ("Jaipur")',
         filters: { city: 'Jaipur', page: 1, pageSize: 25, sortBy: 'latest_submission', sortDir: 'desc' },
-        assert: (res) => res.total === 2 && res.rows.every((r) => r.current_city === 'Jaipur'),
+        assert: (res) => res.total === 2 && res.rows.every((r) => r.permanent_district === 'Jaipur'),
       },
       {
         id: 'T-07',

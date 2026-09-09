@@ -50,7 +50,7 @@ async function main() {
         const candidateResult = await client.query(
           `INSERT INTO candidates (
             candidate_code, full_name, mobile_number, normalized_mobile_number,
-            whatsapp_number, normalized_whatsapp_number, age, gender, current_city, state,
+            whatsapp_number, normalized_whatsapp_number, age, gender, permanent_district, permanent_state,
             current_employment_status, joining_availability, duty_hour_preference,
             consent_given, consent_timestamp, consent_text_version
           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,now(),'v1')

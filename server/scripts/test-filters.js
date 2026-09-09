@@ -24,7 +24,7 @@ async function testAllFilters() {
     const c1 = await client.query(
       `INSERT INTO candidates (
         candidate_code, full_name, mobile_number, normalized_mobile_number,
-        whatsapp_number, normalized_whatsapp_number, age, gender, current_city, current_area, state,
+        whatsapp_number, normalized_whatsapp_number, age, gender, permanent_district, current_area, permanent_state,
         current_employment_status, joining_availability, duty_hour_preference,
         consent_given, consent_timestamp, consent_text_version, last_submitted_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, true, now(), 'v1', now() - INTERVAL '2 days')
@@ -40,7 +40,7 @@ async function testAllFilters() {
     const c2 = await client.query(
       `INSERT INTO candidates (
         candidate_code, full_name, mobile_number, normalized_mobile_number,
-        whatsapp_number, normalized_whatsapp_number, age, gender, current_city, current_area, state,
+        whatsapp_number, normalized_whatsapp_number, age, gender, permanent_district, current_area, permanent_state,
         current_employment_status, joining_availability, duty_hour_preference,
         consent_given, consent_timestamp, consent_text_version, last_submitted_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, true, now(), 'v1', now() - INTERVAL '1 day')
@@ -56,7 +56,7 @@ async function testAllFilters() {
     const c3 = await client.query(
       `INSERT INTO candidates (
         candidate_code, full_name, mobile_number, normalized_mobile_number,
-        whatsapp_number, normalized_whatsapp_number, age, gender, current_city, current_area, state,
+        whatsapp_number, normalized_whatsapp_number, age, gender, permanent_district, current_area, permanent_state,
         current_employment_status, joining_availability, duty_hour_preference,
         consent_given, consent_timestamp, consent_text_version, last_submitted_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, true, now(), 'v1', now())
@@ -100,7 +100,7 @@ async function testAllFilters() {
         name: 'Filter 5: Filter by City ("Jaipur")',
         filters: { city: 'Jaipur', page: 1, pageSize: 25, sortBy: 'latest_submission', sortDir: 'desc' },
         expectedCount: 1,
-        validate: (rows) => rows[0].current_city === 'Jaipur',
+        validate: (rows) => rows[0].permanent_district === 'Jaipur',
       },
       {
         name: 'Filter 6: Filter by Area / Locality ("RIICO")',

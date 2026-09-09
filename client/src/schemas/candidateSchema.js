@@ -39,15 +39,35 @@ export const candidateFormSchema = z
     whatsappNumber: z.string().trim().optional().or(z.literal('')),
     age: z.coerce.number({ invalid_type_error: 'Age is required' }).int().min(18, 'Minimum age is 18').max(65, 'Maximum age is 65'),
     gender: z.enum(['male', 'female', 'other'], { errorMap: () => ({ message: 'Please select a gender' }) }),
-    currentCity: z
-      .string({ required_error: 'Current city is required' })
+    permanentDistrict: z
+      .string({ required_error: 'Permanent district is required' })
       .trim()
-      .min(1, 'Current city is required'),
+      .min(1, 'Permanent district is required'),
     currentArea: z
       .string({ required_error: 'Current area / locality is required' })
       .trim()
       .min(1, 'Current area / locality is required'),
-    state: z.string({ required_error: 'State is required' }).trim().min(1, 'State is required'),
+    permanentState: z.string({ required_error: 'Permanent state is required' }).trim().min(1, 'Permanent state is required'),
+    permanentSubdivision: z.string().trim().optional().or(z.literal('')),
+    permanentBlock: z.string().trim().optional().or(z.literal('')),
+    permanentTehsil: z.string().trim().optional().or(z.literal('')),
+    permanentVillage: z.string().trim().optional().or(z.literal('')),
+    permanentPincode: z.string().trim().optional().or(z.literal('')),
+    permanentAddressLine: z.string().trim().optional().or(z.literal('')),
+    geoLat: z.coerce.number().optional(),
+    geoLng: z.coerce.number().optional(),
+    geoAddress: z.string().trim().optional().or(z.literal('')),
+    currentStayAddress: z.string().trim().optional().or(z.literal('')),
+
+    preferredState: z.string().trim().optional().or(z.literal('')),
+    preferredDistrict: z.string().trim().optional().or(z.literal('')),
+    preferredSubdivision: z.string().trim().optional().or(z.literal('')),
+    preferredBlock: z.string().trim().optional().or(z.literal('')),
+    preferredTehsil: z.string().trim().optional().or(z.literal('')),
+    preferredVillage: z.string().trim().optional().or(z.literal('')),
+    preferredPincode: z.string().trim().optional().or(z.literal('')),
+    preferredAddressLine: z.string().trim().optional().or(z.literal('')),
+
     highestQualification: z.string().trim().optional().or(z.literal('')),
 
     preferredRoles: z.array(z.string()).min(1, 'Please select at least one preferred job role'),

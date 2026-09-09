@@ -52,7 +52,7 @@ function CandidateCard({ c }) {
         </span>
         <span className="flex items-center gap-1">
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
-          {c.currentCity}
+          {c.permanentDistrict}
         </span>
       </div>
 
@@ -131,7 +131,7 @@ export default function CandidateTable({ candidates, loading }) {
                   </div>
                 </td>
                 <td className="px-4 py-3.5 text-slate-600">{c.mobileNumber}</td>
-                <td className="px-4 py-3.5 text-slate-600">{c.currentCity}</td>
+                <td className="px-4 py-3.5 text-slate-600">{c.permanentDistrict}</td>
                 <td className="px-4 py-3.5">
                   <div className="flex flex-wrap gap-1">
                     {c.preferredRoles.length > 0
