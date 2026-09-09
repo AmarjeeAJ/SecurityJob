@@ -261,12 +261,13 @@ router.get('/locations/villages', async (req, res) => {
     // DB unreachable/unseeded — degrade to the curated + postal sources below.
   }
 
-  // 2. Curated authentic villages (small hand-picked sample; kept as an
-  // instant/offline fallback and to fill gaps in the LGD data)
-  const curated = getHierarchyVillages(state, district, block);
-
-  // 3. Official postal directory villages (also fills gaps, e.g. named
-  // localities that aren't separate LGD village records)
+  // 2. Official postal directory villages — real supplementary data (named
+  // localities that aren't separate LGD village records) when an office
+  // name actually matches the block. When nothing matches, this used to
+  // fall back to dumping every office in the whole district in as
+  // "villages" regardless of block — harmless padding when lgdVillages was
+  // empty, but noise once real, properly-scoped LGD data is already found,
+  // so that unscoped dump is now only used as a last resort.
   const offices = await fetchDistrictPostalOffices(state, district);
   let postalVillages = [];
   if (offices && offices.length > 0) {
@@ -280,7 +281,7 @@ router.get('/locations/villages', async (req, res) => {
       return oName.includes(cleanBlock) || cleanBlock.includes(oName);
     });
 
-    const officePool = matching.length > 0 ? matching : offices;
+    const officePool = matching.length > 0 ? matching : (lgdVillages.length === 0 ? offices : []);
     postalVillages = officePool.map((o) => {
       return (o.officeName || '')
         .replace(/\s+(BO|SO|HO|B\.O|S\.O|H\.O)\b/gi, '')
@@ -288,7 +289,14 @@ router.get('/locations/villages', async (req, res) => {
     }).filter(Boolean);
   }
 
-  const merged = [...new Set([...lgdVillages, ...curated, ...postalVillages])];
+  // 3. Small hand-curated sample — including its last-resort branch that
+  // fabricates placeholder text like "X मुख्य कस्बा / टाउन" when it has no
+  // real data either. Only used when the real LGD data above found
+  // nothing at all, so a candidate never sees fake entries mixed in
+  // alongside a properly-scoped real village list.
+  const curated = lgdVillages.length === 0 ? getHierarchyVillages(state, district, block) : [];
+
+  const merged = [...new Set([...lgdVillages, ...postalVillages, ...curated])];
   res.json({
     success: true,
     state,
@@ -302,7 +310,42 @@ router.get('/locations/villages', async (req, res) => {
 router.get('/locations/subdivisions', async (req, res) => {
   const district = (req.query.district || '').trim();
   const state = (req.query.state || '').trim();
-  const subdivisions = getSubdivisionsForDistrict(state, district);
+  let subdivisions = getSubdivisionsForDistrict(state, district);
+
+  // SUBDIVISION_BLOCK_MAP is hand-curated for only 23 districts (Bihar's and
+  // Rajasthan's major ones, plus 3 in UP). Every other district — 97% of
+  // India — fell back to a generic "District सदर / District ग्रामीण"
+  // placeholder that doesn't correspond to any real administrative unit, so
+  // picking either one returned the exact same unscoped, district-wide
+  // village list (verified: Ludhiana Sadar vs Ludhiana Rural, 382/387
+  // identical villages). For those districts, use the real LGD blocks —
+  // already loaded for all 784 districts via seedLgd.js — as the
+  // selectable list instead, so each option actually scopes the village
+  // list to its own real area.
+  const isPlaceholder =
+    subdivisions.length > 0 &&
+    subdivisions.length <= 2 &&
+    subdivisions.every((s) => s.includes('सदर') || s.includes('ग्रामीण'));
+
+  if (isPlaceholder) {
+    try {
+      const realBlocks = await query(
+        `SELECT b.block_name FROM blocks b
+         JOIN districts d ON d.district_code = b.district_code
+         JOIN states s ON s.state_code = d.state_code
+         WHERE lower(s.state_name) = lower($1) AND lower(d.district_name) = lower($2)
+         ORDER BY b.block_name`,
+        [state, district]
+      );
+      if (realBlocks.rows.length > 0) {
+        subdivisions = realBlocks.rows.map((r) => r.block_name).filter(Boolean);
+      }
+    } catch {
+      // DB unavailable — keep the placeholder as a last resort so the
+      // dropdown isn't left empty.
+    }
+  }
+
   res.json({
     success: true,
     state,
