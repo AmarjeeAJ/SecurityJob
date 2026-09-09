@@ -11,18 +11,10 @@ import {
   ShieldCheck, 
   ArrowRight, 
   ArrowLeft,
-  KeyRound,
   AlertCircle,
-  Users,
-  FileSpreadsheet,
-  CheckCircle2,
   Cpu,
   Shield,
-  HelpCircle,
-  Fingerprint,
-  Radio,
-  ExternalLink,
-  BadgeCheck
+  HelpCircle
 } from 'lucide-react';
 import { ownerLoginSchema } from '../schemas/ownerLoginSchema.js';
 import { useOwnerAuth } from '../features/owner-auth/OwnerAuthContext.jsx';
@@ -87,7 +79,7 @@ export default function OwnerLoginPage() {
         <Link to="/" className="inline-flex items-center gap-2 group min-w-0 shrink-0">
           <Logo size="sm" variant="dark" showTagline={false} className="sm:hidden" />
           <Logo size="md" variant="dark" showTagline={false} className="hidden sm:flex" />
-          <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-blue-500/15 border border-blue-400/30 text-blue-300 text-[11px] font-bold tracking-wide">
+          <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-500/15 border border-blue-400/30 text-blue-300 text-[11px] font-bold tracking-wide">
             <Lock className="w-3 h-3 text-blue-400" />
             Executive Console
           </span>
@@ -148,83 +140,60 @@ export default function OwnerLoginPage() {
           </div>
 
           {/* Top Section */}
-          <div className="relative z-10 space-y-2 xl:space-y-3.5 max-w-xl">
+          <div className="relative z-10 space-y-2 xl:space-y-3 max-w-xl my-auto">
             {/* Executive Badge */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-200 text-[10px] xl:text-[11px] font-bold shadow-md shadow-blue-950/40 backdrop-blur-md">
-              <Cpu className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-blue-400" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold shadow-md shadow-blue-950/40 backdrop-blur-md">
+              <Cpu className="w-3 h-3 text-blue-400" />
               <span>Administrative Operations & Security Console</span>
             </div>
 
             {/* Headline */}
-            <div className="space-y-1 xl:space-y-1.5">
-              <h1 className="text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight leading-[1.15] text-white">
-                Executive Candidate <br />
+            <div className="space-y-1">
+              <h1 className="text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight leading-tight text-white">
+                Executive Candidate <br className="hidden xl:inline" />
                 <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
-                  Supervision & Dispatch
+                  {' '}Supervision & Dispatch
                 </span>
               </h1>
-              <p className="text-[11px] xl:text-xs text-slate-300 leading-relaxed max-w-lg">
+              <p className="text-xs text-slate-300 leading-relaxed max-w-lg">
                 Centralized management for security guard recruitment across Rajasthan. Review verified candidate submissions, audit dual-sided Aadhaar cards, and export deployment batches.
               </p>
             </div>
 
             {/* Live Operational Metrics HUD */}
-            <div className="grid grid-cols-3 gap-2 xl:gap-2.5 pt-0.5">
-              <div className="p-2 xl:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
-                <div className="text-lg xl:text-xl font-black text-white">1,420+</div>
-                <div className="text-[9px] xl:text-[10px] font-semibold text-blue-300 mt-0.5">Verified Candidates</div>
+            <div className="grid grid-cols-3 gap-2 pt-0.5">
+              <div className="px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+                <div className="text-base xl:text-lg font-black text-white">1,420+</div>
+                <div className="text-[9px] xl:text-[10px] font-semibold text-blue-300">Verified Candidates</div>
               </div>
-              <div className="p-2 xl:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
-                <div className="text-lg xl:text-xl font-black text-emerald-400">33 / 33</div>
-                <div className="text-[9px] xl:text-[10px] font-semibold text-emerald-300 mt-0.5">Rajasthan Districts</div>
+              <div className="px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+                <div className="text-base xl:text-lg font-black text-emerald-400">33 / 33</div>
+                <div className="text-[9px] xl:text-[10px] font-semibold text-emerald-300">Rajasthan Districts</div>
               </div>
-              <div className="p-2 xl:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
-                <div className="text-lg xl:text-xl font-black text-amber-300">100%</div>
-                <div className="text-[9px] xl:text-[10px] font-semibold text-amber-300 mt-0.5">Aadhaar Audited</div>
+              <div className="px-2.5 py-1.5 xl:px-3 xl:py-2 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+                <div className="text-base xl:text-lg font-black text-amber-300">100%</div>
+                <div className="text-[9px] xl:text-[10px] font-semibold text-amber-300">Aadhaar Audited</div>
               </div>
             </div>
 
             {/* Interactive Candidate Stream */}
-            <div className="pt-0.5">
+            <div className="pt-1">
               <OwnerLiveCandidateStream />
-            </div>
-
-            {/* Core Capability Cards */}
-            <div className="grid grid-cols-2 gap-2 xl:gap-2.5 pt-0.5">
-              <div className="p-2 xl:p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.07] flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-300 shrink-0">
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-white truncate">1-Click Excel Export</div>
-                  <div className="text-[10px] text-slate-400 truncate">Filtered batch download</div>
-                </div>
-              </div>
-
-              <div className="p-2 xl:p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.07] flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 shrink-0">
-                  <Fingerprint className="w-3.5 h-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-white truncate">Aadhaar Inspector</div>
-                  <div className="text-[10px] text-slate-400 truncate">High-res front & back</div>
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Left Panel Compliance Footer */}
-          <div className="relative z-10 pt-2 mt-2 xl:pt-3 xl:mt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+          <div className="relative z-10 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] xl:text-[11px] text-slate-400">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] xl:text-[11px]">Strict 256-Bit TLS 1.3 Encryption</span>
+              <span>Strict 256-Bit TLS 1.3 Encryption</span>
             </div>
-            <span className="text-[10px] xl:text-[11px]">Origin IP & Session Audited</span>
+            <span>Origin IP & Session Audited</span>
           </div>
         </div>
 
         {/* RIGHT PANEL: Crisp, High-Trust Executive Login Console (Centered & Optimized) */}
-        <div className="w-full lg:w-5/12 flex items-center justify-center p-3.5 sm:p-6 lg:p-4 xl:p-6 bg-[#f8fafc] relative overflow-y-auto lg:overflow-hidden">
+        <div className="w-full lg:w-5/12 flex items-center justify-center p-3.5 sm:p-6 lg:p-4 xl:p-6 bg-[#f8fafc] relative overflow-y-auto">
           
           {/* Subtle Clean Pattern Background */}
           <div 
@@ -255,23 +224,18 @@ export default function OwnerLoginPage() {
             </div>
 
             {/* Pristine Executive Login Card */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 xl:p-6 shadow-[0_15px_45px_-12px_rgba(15,23,42,0.08)] border border-slate-200/90 relative">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 xl:p-8 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.09)] border border-slate-200/90 relative">
               
               {/* Header Icon & Title */}
-              <div className="text-center mb-2.5 sm:mb-3 xl:mb-4">
-                <div className="mx-auto w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-blue-600/25 mb-1.5 sm:mb-2">
-                  <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="text-center mb-5 sm:mb-6">
+                <div className="mx-auto w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-blue-700 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-600/25 mb-3">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200/80 text-blue-700 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mb-1">
-                  <KeyRound className="w-3 h-3 text-blue-600" />
-                  Owner Portal Authentication
-                </div>
-
-                <h2 className="text-lg sm:text-xl xl:text-2xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                   Welcome Back
                 </h2>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 max-w-xs mx-auto">
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xs mx-auto">
                   Sign in with your verified administrator credentials to access records.
                 </p>
               </div>
@@ -283,7 +247,7 @@ export default function OwnerLoginPage() {
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="mb-3 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2 shadow-sm"
+                    className="mb-3.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2 shadow-sm"
                   >
                     <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                     <div>
@@ -298,7 +262,7 @@ export default function OwnerLoginPage() {
               <form 
                 onSubmit={handleSubmit(onSubmit)} 
                 noValidate 
-                className="space-y-2.5 sm:space-y-3"
+                className="space-y-3.5 sm:space-y-4"
                 onKeyDown={handleKeyModifier}
                 onKeyUp={handleKeyModifier}
               >
@@ -321,7 +285,7 @@ export default function OwnerLoginPage() {
                       type="email"
                       autoComplete="username"
                       placeholder="admin@securityjob.in"
-                      className={`w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 transition-all ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 transition-all ${
                         errors.email
                           ? 'border-rose-400 focus:border-rose-500'
                           : 'border-slate-300 focus:border-blue-600'
@@ -362,7 +326,7 @@ export default function OwnerLoginPage() {
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
                       placeholder="••••••••••••"
-                      className={`w-full pl-9 sm:pl-10 pr-10 py-2 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 transition-all ${
+                      className={`w-full pl-9 sm:pl-10 pr-10 py-2.5 sm:py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 transition-all ${
                         errors.password
                           ? 'border-rose-400 focus:border-rose-500'
                           : 'border-slate-300 focus:border-blue-600'
@@ -391,7 +355,7 @@ export default function OwnerLoginPage() {
                 </div>
 
                 {/* Session Checkbox & Emergency Support Link */}
-                <div className="flex items-center justify-between text-xs pt-0.5">
+                <div className="flex items-center justify-between text-xs pt-0.5 pb-0.5">
                   <label className="flex items-center gap-2 text-slate-600 hover:text-slate-900 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -415,7 +379,7 @@ export default function OwnerLoginPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full mt-1 relative overflow-hidden inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-md shadow-blue-600/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full mt-1.5 relative overflow-hidden inline-flex items-center justify-center gap-2 py-3 sm:py-3 px-5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-md shadow-blue-600/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
@@ -433,10 +397,10 @@ export default function OwnerLoginPage() {
               </form>
 
               {/* Bottom Security Compliance Notice */}
-              <div className="pt-2.5 sm:pt-3 mt-2.5 sm:mt-3 border-t border-slate-100 text-center space-y-1">
-                <div className="flex items-center justify-center gap-2.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="pt-4 sm:pt-5 mt-5 sm:mt-6 border-t border-slate-100 text-center">
+                <div className="flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <span className="flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     AES-256 GCM
                   </span>
                   <span>•</span>
@@ -444,9 +408,6 @@ export default function OwnerLoginPage() {
                   <span>•</span>
                   <span>Audited</span>
                 </div>
-                <p className="text-[9px] sm:text-[10px] text-slate-400 leading-snug">
-                  Confidential administrative system. Unauthorized access attempts will be prosecuted.
-                </p>
               </div>
             </div>
           </div>

@@ -31,7 +31,8 @@ export const loginRateLimiter = rateLimit({
 // General API rate limit as a baseline safety net.
 export const apiRateLimiter = rateLimit({
   windowMs: 60 * 1000,
-  limit: 120,
+  limit: env.isProduction ? 300 : 1000,
+  skip: (req) => req.originalUrl?.includes('/locations/'),
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests. Please slow down.' },

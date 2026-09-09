@@ -420,7 +420,231 @@ export const RAJASTHAN_LOCATIONS_DATA = {
 export const RAJASTHAN_CITIES = Object.keys(RAJASTHAN_LOCATIONS_DATA);
 export const RAJASTHAN_DISTRICTS = RAJASTHAN_CITIES;
 export const INDIAN_CITIES = RAJASTHAN_CITIES;
-export const INDIAN_STATES = ['Rajasthan'];
+
+export const ALL_INDIAN_STATES = [
+  'Rajasthan',
+  'Haryana',
+  'Delhi NCR',
+  'Uttar Pradesh',
+  'Punjab',
+  'Gujarat',
+  'Madhya Pradesh',
+  'Bihar',
+  'Uttarakhand',
+  'Himachal Pradesh',
+  'Maharashtra',
+  'Other State'
+];
+
+export const INDIAN_STATES = ALL_INDIAN_STATES;
+
+export const STATE_DISTRICTS_DATA = {
+  'Rajasthan': RAJASTHAN_CITIES,
+  'Haryana': [
+    'Gurugram',
+    'Faridabad',
+    'Rewari',
+    'Manesar',
+    'Rohtak',
+    'Panipat',
+    'Sonipat',
+    'Karnal',
+    'Hisar',
+    'Ambala',
+    'Bhiwani',
+    'Panchkula',
+    'Yamunanagar',
+    'Jhajjar',
+    'Palwal',
+    'Sirsa'
+  ],
+  'Delhi NCR': [
+    'New Delhi',
+    'South Delhi',
+    'Central Delhi',
+    'North Delhi',
+    'West Delhi',
+    'East Delhi',
+    'Dwarka',
+    'Rohini',
+    'Okhla',
+    'Connaught Place'
+  ],
+  'Uttar Pradesh': [
+    'Noida',
+    'Greater Noida',
+    'Ghaziabad',
+    'Agra',
+    'Mathura',
+    'Aligarh',
+    'Meerut',
+    'Lucknow',
+    'Kanpur',
+    'Varanasi',
+    'Prayagraj',
+    'Bareilly',
+    'Moradabad',
+    'Saharanpur'
+  ],
+  'Punjab': [
+    'Mohali',
+    'Ludhiana',
+    'Amritsar',
+    'Jalandhar',
+    'Patiala',
+    'Bathinda',
+    'Hoshiarpur',
+    'Pathankot',
+    'Moga'
+  ],
+  'Gujarat': [
+    'Ahmedabad',
+    'Surat',
+    'Vadodara',
+    'Rajkot',
+    'Gandhinagar',
+    'Vapi',
+    'Bhavnagar',
+    'Jamnagar',
+    'Sanand',
+    'Bharuch',
+    'Anand'
+  ],
+  'Madhya Pradesh': [
+    'Indore',
+    'Bhopal',
+    'Gwalior',
+    'Ujjain',
+    'Jabalpur',
+    'Neemuch',
+    'Mandsaur',
+    'Ratlam',
+    'Sagar',
+    'Satna',
+    'Rewa'
+  ],
+  'Bihar': [
+    'Patna',
+    'Gaya',
+    'Bhagalpur',
+    'Muzaffarpur',
+    'Purnia',
+    'Darbhanga',
+    'Bihar Sharif',
+    'Arrah',
+    'Begusarai'
+  ],
+  'Uttarakhand': [
+    'Dehradun',
+    'Haridwar',
+    'Roorkee',
+    'Haldwani',
+    'Rudrapur',
+    'Rishikesh',
+    'Kashipur',
+    'Nainital'
+  ],
+  'Himachal Pradesh': [
+    'Shimla',
+    'Solan',
+    'Dharamshala',
+    'Mandi',
+    'Baddi',
+    'Kullu',
+    'Hamirpur',
+    'Una',
+    'Bilaspur'
+  ],
+  'Maharashtra': [
+    'Mumbai',
+    'Pune',
+    'Nagpur',
+    'Thane',
+    'Nashik',
+    'Aurangabad',
+    'Navi Mumbai',
+    'Solapur',
+    'Kolhapur'
+  ],
+  'Other State': [
+    'Main District / Headquarter',
+    'Industrial Belt',
+    'Other City / Area'
+  ]
+};
+
+export const DISTRICT_TEHSILS_DATA = {
+  'Jaipur': ['Sanganer', 'Amer', 'Bassi', 'Chaksu', 'Chomu', 'Jamwa Ramgarh', 'Kotputli', 'Mauzamabad', 'Phagi', 'Phulera (Sambhar)', 'Shahpura', 'Viratnagar', 'Jaipur City', 'VKI Area', 'Mansarovar', 'Malviya Nagar', 'Jhotwara', 'Bagru'],
+  'Bhiwadi': ['Bhiwadi Industrial Area', 'Chopanki RIICO', 'Khushkhera', 'Tapukara', 'Karoli', 'Salarpur', 'UIT Sector Area', 'Alwar Bypass', 'Dharuhera Border'],
+  'Neemrana': ['Neemrana Japanese Zone', 'Hero MotoCorp Cluster', 'Majrakath RIICO', 'Behror', 'Ghiloth Ceramics Zone', 'Shahjahanpur Border', 'Keshwana'],
+  'Alwar': ['Alwar City', 'Behror', 'Bansur', 'Thanagazi', 'Rajgarh', 'Ramgarh', 'Kishangarh Bas', 'Tijara', 'Mandawar', 'Kotkasim', 'Laxmangarh', 'Malakhera', 'Kathumar'],
+  'Jodhpur': ['Jodhpur City', 'Luni', 'Bilara', 'Bhopalgarh', 'Pipar City', 'Osian', 'Balesar', 'Baori', 'Shergarh', 'Phalodi', 'Bap', 'Tinwari', 'Sekhala', 'Lohawat'],
+  'Udaipur': ['Girwa (Udaipur City)', 'Mavli', 'Vallabhnagar', 'Salumbar', 'Kherwara', 'Rishabhdeo', 'Sarada', 'Gogunda', 'Kotra', 'Jhadol', 'Badgaon', 'Bhinder', 'Lasadiya'],
+  'Kota': ['Ladpura (Kota City)', 'Digod', 'Pipalda', 'Ramganj Mandi', 'Sangod', 'Kanwas', 'Chechat', 'Ranpur RIICO', 'Indraprastha Area'],
+  'Ajmer': ['Ajmer City', 'Kishangarh', 'Beawar', 'Kekri', 'Nasirabad', 'Masuda', 'Sarwar', 'Bhinay', 'Pisangan'],
+  'Bikaner': ['Bikaner City', 'Nokha', 'Kolayat', 'Lunkaransar', 'Khajuwala', 'Poogal', 'Chhattargarh', 'Sri Dungargarh'],
+  'Sikar': ['Sikar City', 'Fatehpur', 'Laxmangarh', 'Dantaramgarh', 'Sri Madhopur', 'Neem Ka Thana', 'Khandela', 'Dhod', 'Patan', 'Reengus'],
+  'Bhilwara': ['Bhilwara City', 'Mandal', 'Banera', 'Shahpura', 'Asind', 'Hurda', 'Jahazpur', 'Kotri', 'Raipur', 'Sahada', 'Bijolia', 'Badnor', 'Hamirgarh'],
+  'Bharatpur': ['Bharatpur City', 'Kumher', 'Deeg', 'Bayana', 'Kaman', 'Pahari', 'Nadbai', 'Rupwas', 'Weir', 'Nagar'],
+  'Pali': ['Pali City', 'Sojat', 'Rohat', 'Marwar Junction', 'Desuri', 'Bali', 'Sumerpur', 'Rani', 'Jaitaran'],
+  'Sri Ganganagar': ['Ganganagar City', 'Suratgarh', 'Raisinghnagar', 'Padampur', 'Sadulshahar', 'Karanpur', 'Anupgarh', 'Gharsana'],
+  'Chittorgarh': ['Chittorgarh City', 'Nimbahera', 'Bari Sadri', 'Begun', 'Kapasan', 'Gangrar', 'Rashmi', 'Rawatbhata', 'Bhadesar'],
+  'Nagaur': ['Nagaur City', 'Merta', 'Degana', 'Didwana', 'Ladnun', 'Makrana', 'Parbatsar', 'Kuchaman City', 'Nawa', 'Jayal', 'Riyan Badi'],
+  'Dausa': ['Dausa City', 'Bandikui', 'Lalsot', 'Mahwa', 'Sikrai', 'Ramgarh Pachwara', 'Baijupada'],
+  'Barmer': ['Barmer City', 'Balotra', 'Pachpadra', 'Baytu', 'Gudamalani', 'Siwana', 'Sindhari', 'Chohtan', 'Sheo', 'Ramsar'],
+  'Jaisalmer': ['Jaisalmer City', 'Pokhran', 'Fatehgarh', 'Bhadariya', 'Sam', 'Mohangarh'],
+  'Tonk': ['Tonk City', 'Niwai', 'Deoli', 'Malpura', 'Uniara', 'Todaraisingh', 'Peeplu'],
+  'Sawai Madhopur': ['Sawai Madhopur City', 'Gangapur City', 'Bonli', 'Bamanwas', 'Khandar', 'Chauth Ka Barwada', 'Vazirpur'],
+  'Hanumangarh': ['Hanumangarh City', 'Nohar', 'Bhadra', 'Pilibanga', 'Rawatsar', 'Sangaria', 'Tibbi'],
+  'Jhunjhunu': ['Jhunjhunu City', 'Chirawa', 'Khetri', 'Nawalgarh', 'Buhana', 'Surajgarh', 'Udaipurwati', 'Malsisar'],
+  'Bundi': ['Bundi City', 'Keshoraipatan', 'Nainwa', 'Hindoli', 'Indergarh', 'Talera'],
+  'Baran': ['Baran City', 'Antah', 'Atru', 'Chhabra', 'Chhipabarod', 'Kishanganj', 'Mangrol', 'Shahbad'],
+  'Jhalawar': ['Jhalrapatan', 'Khanpur', 'Manohar Thana', 'Aklera', 'Pirawa', 'Bakani', 'Gangdhar', 'Sunel'],
+  'Churu': ['Churu City', 'Ratangarh', 'Sujangarh', 'Sardarshahar', 'Rajgarh (Sadulpur)', 'Taranagar', 'Bidasar'],
+  'Rajsamand': ['Rajsamand (Kankroli)', 'Nathdwara', 'Amet', 'Kumbhalgarh', 'Bhim', 'Deogarh', 'Railmagra'],
+  'Dungarpur': ['Dungarpur City', 'Sagwara', 'Aspur', 'Similwara', 'Bichiwara', 'Dhob'],
+  'Banswara': ['Banswara City', 'Garhi', 'Ghatol', 'Kushalgarh', 'Bagidora', 'Anandpuri', 'Sajjangarh'],
+  'Pratapgarh': ['Pratapgarh City', 'Arnod', 'Chhoti Sadri', 'Dhariawad', 'Peepalkhoont'],
+  'Jalore': ['Jalore City', 'Ahore', 'Bhinmal', 'Sanchore', 'Sayla', 'Bagoda', 'Chitalwana'],
+  'Sirohi': ['Sirohi City', 'Abu Road', 'Mount Abu', 'Sheoganj', 'Pindwara', 'Reodar'],
+  'Balotra': ['Balotra City', 'Pachpadra', 'Siwana', 'Samdari', 'Kalyanpur', 'Gida', 'Sindhari'],
+  'Beawar': ['Beawar City', 'Todgarh', 'Jawaja', 'Masuda', 'Badnor', 'Raipur', 'Jaitaran'],
+  'Khairthal-Tijara': ['Khairthal', 'Tijara', 'Kishangarh Bas', 'Kotkasim', 'Mundawar', 'Tapukara'],
+  'Didwana-Kuchaman': ['Didwana', 'Kuchaman City', 'Makrana', 'Nawa', 'Ladnun', 'Parbatsar', 'Moulana'],
+  'Phalodi': ['Phalodi City', 'Bap', 'Lohawat', 'Dechu', 'Badi Sid', 'Ghantiyali'],
+  'Kotputli-Behror': ['Kotputli', 'Behror', 'Neemrana', 'Bansur', 'Paota', 'Viratnagar', 'Mandhan']
+};
+
+/**
+ * Get districts for any selected state
+ */
+export function getDistrictsForState(state) {
+  if (!state) return RAJASTHAN_CITIES;
+  return STATE_DISTRICTS_DATA[state] || STATE_DISTRICTS_DATA['Rajasthan'] || RAJASTHAN_CITIES;
+}
+
+/**
+ * Get tehsils or sub-districts for a given district
+ */
+export function getTehsilsForDistrict(district) {
+  if (!district) return DISTRICT_TEHSILS_DATA['Jaipur'];
+  if (DISTRICT_TEHSILS_DATA[district]) return DISTRICT_TEHSILS_DATA[district];
+
+  // Try matching clean name
+  const clean = district.trim().toLowerCase();
+  const matchedKey = Object.keys(DISTRICT_TEHSILS_DATA).find(
+    (k) => k.toLowerCase() === clean || clean.includes(k.toLowerCase())
+  );
+  if (matchedKey) return DISTRICT_TEHSILS_DATA[matchedKey];
+
+  // Fallback: extract from smart areas
+  const smartAreas = getSmartAreasForDistrict(district);
+  if (smartAreas && smartAreas.length > 0) {
+    return smartAreas.map((a) => a.split(' ')[0].replace(/[,()&]/g, '')).filter(Boolean).slice(0, 12);
+  }
+
+  return ['Central / City Tehsil', 'North / Industrial Tehsil', 'South / Rural Tehsil', 'Sub-District Area'];
+}
 
 /**
  * Intelligent helper to get top smart areas for any selected Rajasthan district or industrial hub
