@@ -257,11 +257,22 @@ router.get('/locations/resolve-pincode', async (req, res) => {
     }
   }
 
-  // 5. Safe fallback to District Head Office ONLY if specifically found
-  if (block && offices.length > 0) {
-    const ho = offices.find((o) => o.officeType === 'HO');
-    if (ho?.pincode) {
-      return res.json({ success: true, pincode: ho.pincode, source: 'district_ho' });
+  // 5. Fall back to the district's most common pincode. Many districts (seen
+  // with Champhai, Mizoram, among others) have no office explicitly typed
+  // "HO" in this dataset at all — only Branch Offices — so requiring an HO
+  // match left the field blank even though 40+ real, pincode-bearing offices
+  // were right there. The most frequent pincode across the district's
+  // offices is a reasonable district-level default; it's real postal data,
+  // not a guess.
+  if (offices.length > 0) {
+    const counts = new Map();
+    for (const office of offices) {
+      if (!office.pincode) continue;
+      counts.set(office.pincode, (counts.get(office.pincode) || 0) + 1);
+    }
+    if (counts.size > 0) {
+      const [commonPincode] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+      return res.json({ success: true, pincode: commonPincode, source: 'district_common' });
     }
   }
 
