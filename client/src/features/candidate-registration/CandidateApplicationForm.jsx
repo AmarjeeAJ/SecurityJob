@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -351,9 +352,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       setIsLoadingBlocks(false);
     });
 
-    fetchTehsilsAndVillages(watchPermanentState, watchPermanentDistrict, watchPermanentBlock).then((data) => {
+    fetchTehsilsAndVillages(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision).then((data) => {
       if (isCancelled) return;
-      if (!watchPermanentBlock) {
+      if (!watchPermanentSubdivision) {
         setCurrentVillages(data.villages || []);
       }
     });
@@ -372,7 +373,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     return () => { isCancelled = true; };
   }, [watchPermanentSubdivision, watchPermanentDistrict, watchPermanentState]);
 
-  // 5. Update villages and auto-resolve PIN code when block changes (debounced by 350ms to eliminate typing glitch/blinking)
+  // 5. Update villages and auto-resolve PIN code when subdivision/tehsil changes
+  // (debounced by 350ms to eliminate typing glitch/blinking). Keyed off
+  // Subdivision rather than Block — Block (Tier 4) is hidden for now.
   useEffect(() => {
     if (!watchPermanentDistrict) return;
     let isCancelled = false;
@@ -380,13 +383,13 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     const timer = setTimeout(() => {
       if (isCancelled) return;
 
-      if (watchPermanentBlock && watchPermanentBlock.trim().length > 0) {
-        const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentBlock);
+      if (watchPermanentSubdivision && watchPermanentSubdivision.trim().length > 0) {
+        const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision);
         if (localVills && localVills.length > 0) {
           setCurrentVillages(localVills);
         }
 
-        fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentBlock).then((vills) => {
+        fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision).then((vills) => {
           if (isCancelled) return;
           if (vills && vills.length > 0) {
             setCurrentVillages((prev) => {
@@ -396,8 +399,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           }
         });
 
-        // Auto-fetch PIN code based on block
-        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, watchPermanentVillage).then((autoPin) => {
+        // Auto-fetch PIN code based on subdivision/tehsil
+        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision, watchPermanentVillage).then((autoPin) => {
           if (!isCancelled && autoPin) {
             setValue('permanentPincode', autoPin);
           }
@@ -414,21 +417,21 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       isCancelled = true;
       clearTimeout(timer);
     };
-  }, [watchPermanentBlock, watchPermanentDistrict, watchPermanentState]);
+  }, [watchPermanentSubdivision, watchPermanentDistrict, watchPermanentState]);
 
   // 6. Auto-fetch PIN code when village changes
   useEffect(() => {
     if (!watchPermanentDistrict) return;
     let isCancelled = false;
     if (watchPermanentVillage && watchPermanentVillage.trim().length > 0) {
-      resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, watchPermanentVillage).then((autoPin) => {
+      resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision, watchPermanentVillage).then((autoPin) => {
         if (!isCancelled && autoPin) {
           setValue('permanentPincode', autoPin);
         }
       });
     }
     return () => { isCancelled = true; };
-  }, [watchPermanentVillage, watchPermanentBlock, watchPermanentDistrict, watchPermanentState]);
+  }, [watchPermanentVillage, watchPermanentSubdivision, watchPermanentDistrict, watchPermanentState]);
 
   // 7. Preferred location effects
   useEffect(() => {
@@ -471,15 +474,17 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     return () => { isCancelled = true; };
   }, [watchPreferredState, watchPreferredDistrict, watchPreferredSubdivision]);
 
+  // Auto-resolve PIN code when the preferred subdivision/tehsil changes.
+  // Keyed off Subdivision rather than Block — Block is hidden for now.
   useEffect(() => {
-    if (watchPreferredBlock) {
-      resolvePincode(watchPreferredState, watchPreferredDistrict, watchPreferredBlock, '').then((prefPin) => {
+    if (watchPreferredSubdivision) {
+      resolvePincode(watchPreferredState, watchPreferredDistrict, watchPreferredSubdivision, '').then((prefPin) => {
         if (prefPin) {
           setValue('preferredPincode', prefPin);
         }
       });
     }
-  }, [watchPreferredBlock, watchPreferredDistrict, watchPreferredState]);
+  }, [watchPreferredSubdivision, watchPreferredDistrict, watchPreferredState]);
 
 
 
@@ -1253,11 +1258,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     />
                   </div>
 
-                  {/* Tier 3: Subdivision */}
+                  {/* Tier 3: Subdivision (labeled as Tehsil per candidate-facing convention) */}
                   <div>
                     <SearchableLocationInput
                       id="current-subdivision"
-                      label="अनुमंडल (Subdivision)"
+                      label="तहसील (Tehsil / Subdivision)"
                       value={watchPermanentSubdivision}
                       onChange={(val) => {
                         setValue('permanentSubdivision', val);
@@ -1268,15 +1273,36 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         setValue('permanentTehsil', '');
                         setValue('permanentVillage', '');
                         setValue('permanentPincode', '');
+
+                        // Load authoritative villages immediately to prevent blinking
+                        // (village now keys off subdivision/tehsil, not block — see Tier 4 below)
+                        const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, val);
+                        if (localVills && localVills.length > 0) {
+                          setCurrentVillages(localVills);
+                        }
+                        fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, val).then((vills) => {
+                          if (vills && vills.length > 0) {
+                            setCurrentVillages((prev) => {
+                              const merged = [...new Set([...(prev || []), ...vills])];
+                              return merged.length === prev.length ? prev : merged;
+                            });
+                          }
+                        });
+
+                        resolvePincode(watchPermanentState, watchPermanentDistrict, val, '').then((pin) => {
+                          if (pin) setValue('permanentPincode', pin);
+                        });
                       }}
                       options={permanentSubdivisions}
-                      placeholder={permanentSubdivisions.length > 0 ? "अनुमंडल टाइप करें या चुनें" : "अनुमंडल का नाम लिखें"}
+                      placeholder={permanentSubdivisions.length > 0 ? "तहसील टाइप करें या चुनें" : "तहसील का नाम लिखें"}
                       isLoading={isLoadingSubdivisions}
-                      badgeText={permanentSubdivisions.length > 0 ? `${permanentSubdivisions.length} अनुमंडल` : ''}
+                      badgeText={permanentSubdivisions.length > 0 ? `${permanentSubdivisions.length} तहसील` : ''}
                     />
                   </div>
 
-                  {/* Tier 4: Block / Tehsil */}
+                  {/* Tier 4: Block / Tehsil — hidden for now (kept, not deleted, so it
+                      can come back later). Village/pincode lookups below now key off
+                      Subdivision (Tier 3) instead of this field.
                   <div>
                     <SearchableLocationInput
                       id="current-block"
@@ -1315,6 +1341,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       badgeText={permanentBlocks.length > 0 ? `${permanentBlocks.length} ब्लॉक उपलब्ध` : ''}
                     />
                   </div>
+                  */}
 
                   {/* Tier 5: Village / Ward / Town */}
                   <div>
@@ -1327,7 +1354,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       }}
                       onSelectOption={(val) => {
                         setValue('permanentVillage', val);
-                        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentBlock, val).then((pin) => {
+                        resolvePincode(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision, val).then((pin) => {
                           if (pin) setValue('permanentPincode', pin);
                         });
                       }}
@@ -1353,7 +1380,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       id="current-pincode"
                       type="text"
                       maxLength={6}
-                      placeholder="उदा. 302001 या 841238 (ब्लॉक से स्वतः दर्ज)"
+                      placeholder="उदा. 302001 या 841238 (तहसील से स्वतः दर्ज)"
                       value={watchPermanentPincode}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '');
@@ -1638,11 +1665,11 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     />
                   </div>
 
-                  {/* Row 2, Col 1: Preferred Subdivision */}
+                  {/* Row 2, Col 1: Preferred Subdivision (labeled as Tehsil per candidate-facing convention) */}
                   <div>
                     <SearchableLocationInput
                       id="pref-subdivision"
-                      label="पसंदीदा अनुमंडल (Duty Subdivision)"
+                      label="पसंदीदा तहसील (Duty Tehsil / Subdivision)"
                       value={watchPreferredSubdivision}
                       onChange={(val) => setValue('preferredSubdivision', val)}
                       onSelectOption={(val) => {
@@ -1650,15 +1677,20 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         setValue('preferredBlock', '');
                         setValue('preferredTehsil', '');
                         setValue('preferredPincode', '');
+                        resolvePincode(watchPreferredState, watchPreferredDistrict, val, '').then((pin) => {
+                          if (pin) setValue('preferredPincode', pin);
+                        });
                       }}
                       options={preferredSubdivisions}
-                      placeholder={preferredSubdivisions.length > 0 ? "अनुमंडल टाइप करें या चुनें" : "अनुमंडल का नाम लिखें"}
+                      placeholder={preferredSubdivisions.length > 0 ? "तहसील टाइप करें या चुनें" : "तहसील का नाम लिखें"}
                       isLoading={isLoadingPrefSubdivisions}
-                      badgeText={preferredSubdivisions.length > 0 ? `${preferredSubdivisions.length} अनुमंडल` : ''}
+                      badgeText={preferredSubdivisions.length > 0 ? `${preferredSubdivisions.length} तहसील` : ''}
                     />
                   </div>
 
-                  {/* Row 2, Col 2: Preferred Block / Town */}
+                  {/* Row 2, Col 2: Preferred Block / Town — hidden for now (kept, not
+                      deleted, so it can come back later). Pincode lookup above now keys
+                      off Subdivision/Tehsil instead of this field.
                   <div>
                     <SearchableLocationInput
                       id="pref-block"
@@ -1681,6 +1713,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       badgeText={preferredBlocks.length > 0 ? `${preferredBlocks.length} उपलब्ध` : ''}
                     />
                   </div>
+                  */}
 
                   {/* Row 3, Col 1: Preferred Pincode */}
                   <div>
