@@ -36,44 +36,6 @@ function setCache(key, data) {
   cache.set(key, { data, time: Date.now() });
 }
 
-// Official India Post lookup for a single pincode, with the government's own
-// Block attribution per office — cached, since the same pincode gets checked
-// repeatedly across nearby villages/blocks.
-async function fetchOfficialPincodeOffices(pincode) {
-  const cacheKey = `official-pincode:${pincode}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    const resp = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!resp.ok) return null;
-
-    const data = await resp.json();
-    const first = data?.[0];
-    if (first?.Status !== 'Success' || !(first.PostOffice?.length > 0)) {
-      const empty = { success: false, offices: [] };
-      setCache(cacheKey, empty);
-      return empty;
-    }
-
-    const result = {
-      success: true,
-      offices: first.PostOffice.map((po) => ({
-        name: po.Name,
-        block: po.Block && po.Block !== 'NA' ? po.Block : '',
-        division: po.Division,
-      })),
-    };
-    setCache(cacheKey, result);
-    return result;
-  } catch {
-    return null;
-  }
-}
-
 // Standard Levenshtein edit distance, used to match curated place names
 // against the official LGD spelling when they're close but not an exact
 // or substring match (e.g. "Isuapur" vs "Ishupur").
@@ -376,38 +338,11 @@ router.get('/locations/resolve-pincode', async (req, res) => {
     return res.json({ success: false, pincode: '' });
   }
 
+  // 1. Try local exact map (0ms)
+  const localPin = getPincodeForLocation(district, block, village);
+
+  // 2. If village is specified, check dynamic postal offices
   const offices = await fetchDistrictPostalOffices(state, district);
-
-  // 1. If a specific village was picked, find the REAL block it belongs to
-  // via the authoritative LGD database, rather than treating the whole
-  // Subdivision (which can span several blocks with different pincodes) as
-  // one block. This is what "Gangoi" needed: it's a real village under the
-  // "Ishupur" block, not the "Marhaura" block that the Subdivision's name
-  // resembles, and those two blocks have different pincodes (841411 vs
-  // 841418).
-  let resolvedBlockName = '';
-  try {
-    if (village) {
-      const villageBlockResult = await query(
-        `SELECT b.block_name FROM villages v
-         JOIN blocks b ON b.block_code = v.block_code
-         JOIN districts d ON d.district_code = v.district_code
-         JOIN states s ON s.state_code = v.state_code
-         WHERE lower(s.state_name) = lower($1) AND lower(d.district_name) = lower($2)
-           AND lower(v.village_name) = lower($3)
-         LIMIT 1`,
-        [state, district, village]
-      );
-      if (villageBlockResult.rows.length > 0) {
-        resolvedBlockName = villageBlockResult.rows[0].block_name;
-      }
-    }
-  } catch {
-    // DB unreachable — fall through to the other resolution strategies.
-  }
-
-  // 2. If village is specified, check dynamic postal offices for a village-
-  // named office directly (e.g. the village itself has its own post office).
   if (village && offices.length > 0) {
     const cleanV = village.toLowerCase().replace(/[^a-z0-9]/g, '');
     const match = offices.find((o) => {
@@ -419,80 +354,12 @@ router.get('/locations/resolve-pincode', async (req, res) => {
     }
   }
 
-  // 3. Block-verified pincode. Name-matching (steps 2 and 5) only catches a
-  // village/block whose name happens to closely match a post office name —
-  // but pincode boundaries in India routinely group several small villages
-  // under one office named after neither of them. Instead of guessing, take
-  // this district's candidate pincodes and ask the official India Post API
-  // which Block each one actually belongs to, then pick the one whose
-  // government-attributed Block matches the village's real block (from step
-  // 1) or, failing that, any block in the selected Subdivision. Driven
-  // entirely by live official data, not a hardcoded list, so it applies the
-  // same way in every state and district.
-  const targetBlockNames = resolvedBlockName
-    ? [resolvedBlockName]
-    : block
-    ? [...new Set([...(getBlocksForSubdivision(state, district, block) || []), block])]
-    : [];
-  const cleanTargets = targetBlockNames
-    .map((n) => (n || '').toLowerCase().replace(/[^a-z0-9]/g, ''))
-    .filter(Boolean);
-
-  if (cleanTargets.length > 0 && offices.length > 0) {
-    // Check every distinct pincode in the district, not just the most
-    // common ones district-wide — a block can have a real pincode that's
-    // uncommon district-wide (this is exactly why Gangoi's correct 841411
-    // was missed: it ranked #12 by district frequency, outside an earlier
-    // top-8 cutoff, while an unrelated but more numerous pincode elsewhere
-    // in the block matched first). District pincode counts are small
-    // enough (well under 100 in practice) that checking them all in
-    // parallel, cached, stays fast.
-    const uniquePincodes = [...new Set(offices.map((o) => o.pincode).filter(Boolean))].slice(0, 60);
-    const verifications = await Promise.all(uniquePincodes.map((pin) => fetchOfficialPincodeOffices(pin)));
-
-    const isBlockMatch = (officeBlock) => {
-      const cleanOfficeBlock = (officeBlock || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (!cleanOfficeBlock) return false;
-      return cleanTargets.some(
-        (t) => cleanOfficeBlock === t || cleanOfficeBlock.includes(t) || t.includes(cleanOfficeBlock)
-      );
-    };
-
-    // Rank by how many offices *within the matched block itself* share each
-    // pincode, not by district-wide popularity — the most representative
-    // pincode for that specific block, not the busiest pincode in the
-    // district that happens to also touch the block once.
-    let bestPincode = null;
-    let bestScore = 0;
-    for (let i = 0; i < uniquePincodes.length; i++) {
-      const result = verifications[i];
-      if (!result?.success) continue;
-      const score = result.offices.filter((o) => isBlockMatch(o.block)).length;
-      if (score > bestScore) {
-        bestScore = score;
-        bestPincode = uniquePincodes[i];
-      }
-    }
-
-    if (bestPincode) {
-      return res.json({
-        success: true,
-        pincode: bestPincode,
-        source: resolvedBlockName ? 'village_block_verified' : 'block_verified',
-      });
-    }
-  }
-
-  // 4. Small hand-curated district/block/village → pincode map. Kept as a
-  // fallback below the precise checks above, since it only has block-level
-  // (not village-level) granularity and can't tell apart two blocks within
-  // the same Subdivision — which is exactly the gap step 1 and 3 close.
-  const localPin = getPincodeForLocation(district, resolvedBlockName || block, village);
+  // 3. Return localPin if found
   if (localPin) {
     return res.json({ success: true, pincode: localPin, source: 'block_exact' });
   }
 
-  // 5. Try matching block in dynamic postal offices by name
+  // 4. Try matching block in dynamic postal offices
   if (block && offices.length > 0) {
     const cleanB = block.toLowerCase().replace(/[^a-z0-9]/g, '');
     const match = offices.find((o) => {
@@ -504,7 +371,7 @@ router.get('/locations/resolve-pincode', async (req, res) => {
     }
   }
 
-  // 6. Fall back to the district's most common pincode. Many districts (seen
+  // 5. Fall back to the district's most common pincode. Many districts (seen
   // with Champhai, Mizoram, among others) have no office explicitly typed
   // "HO" in this dataset at all — only Branch Offices — so requiring an HO
   // match left the field blank even though 40+ real, pincode-bearing offices
