@@ -263,11 +263,18 @@ router.get('/locations/villages', async (req, res) => {
 
   // 2. Official postal directory villages — real supplementary data (named
   // localities that aren't separate LGD village records) when an office
-  // name actually matches the block. When nothing matches, this used to
-  // fall back to dumping every office in the whole district in as
-  // "villages" regardless of block — harmless padding when lgdVillages was
-  // empty, but noise once real, properly-scoped LGD data is already found,
-  // so that unscoped dump is now only used as a last resort.
+  // name actually matches the block.
+  //
+  // Fully-urban blocks (New Delhi, Chandigarh, "X City" blocks, etc.) have
+  // no LGD villages at all — cities use municipal wards, a different LGD
+  // dataset this project hasn't loaded — so lgdVillages is legitimately
+  // empty for them. Name-matching alone badly under-serves this case: a
+  // city's post offices are named after their own locality ("Chanakya
+  // Puri SO", "Bengali Market SO"), not the district/block name, so
+  // matching against "new delhi" caught 1 of New Delhi's 84 real offices.
+  // When lgdVillages is empty, use every real office for the district
+  // instead of only the name-matched ones — still genuine postal data,
+  // just not filtered down to a handful of coincidental name matches.
   const offices = await fetchDistrictPostalOffices(state, district);
   let postalVillages = [];
   if (offices && offices.length > 0) {
@@ -281,7 +288,7 @@ router.get('/locations/villages', async (req, res) => {
       return oName.includes(cleanBlock) || cleanBlock.includes(oName);
     });
 
-    const officePool = matching.length > 0 ? matching : (lgdVillages.length === 0 ? offices : []);
+    const officePool = lgdVillages.length === 0 ? offices : matching;
     postalVillages = officePool.map((o) => {
       return (o.officeName || '')
         .replace(/\s+(BO|SO|HO|B\.O|S\.O|H\.O)\b/gi, '')
@@ -289,12 +296,13 @@ router.get('/locations/villages', async (req, res) => {
     }).filter(Boolean);
   }
 
-  // 3. Small hand-curated sample — including its last-resort branch that
-  // fabricates placeholder text like "X मुख्य कस्बा / टाउन" when it has no
-  // real data either. Only used when the real LGD data above found
-  // nothing at all, so a candidate never sees fake entries mixed in
-  // alongside a properly-scoped real village list.
-  const curated = lgdVillages.length === 0 ? getHierarchyVillages(state, district, block) : [];
+  // 3. Small hand-curated sample. Only used as the absolute last resort —
+  // when there's no real LGD village data AND no real postal data either
+  // — since its own last-resort branch fabricates placeholder text like
+  // "X मुख्य कस्बा / टाउन" rather than a real place name.
+  const curated = (lgdVillages.length === 0 && postalVillages.length === 0)
+    ? getHierarchyVillages(state, district, block)
+    : [];
 
   const merged = [...new Set([...lgdVillages, ...postalVillages, ...curated])];
   res.json({
