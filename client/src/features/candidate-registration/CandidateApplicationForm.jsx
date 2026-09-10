@@ -115,12 +115,19 @@ function buildFormData(data, trackingData, frontFile, backFile) {
     highestQualification: data.highestQualification || '10th Pass',
     otherRoleText: data.otherRoleText || '',
     isExperienced: Boolean(data.isExperienced),
-    securityExperienceMonths: data.isExperienced ? (data.securityExperienceMonths || 12) : 0,
-    currentEmploymentStatus: data.isExperienced ? (data.currentEmploymentStatus || 'unemployed') : undefined,
-    joiningAvailability: data.isExperienced ? (data.joiningAvailability || 'immediate') : undefined,
-    dutyHourPreference: data.isExperienced ? (data.dutyHourPreference || '12_hours') : undefined,
+    // No more silent "|| 12 months" / "|| 'unemployed'" style fallbacks —
+    // the schema now requires the candidate to genuinely fill these in
+    // when isExperienced is true, so whatever reaches here is real input,
+    // not a fabricated plausible-looking default.
+    securityExperienceMonths: data.isExperienced ? data.securityExperienceMonths : 0,
+    currentEmploymentStatus: data.isExperienced ? data.currentEmploymentStatus : undefined,
+    joiningAvailability: data.isExperienced ? data.joiningAvailability : undefined,
+    dutyHourPreference: data.isExperienced ? data.dutyHourPreference : undefined,
     aadhaarAvailable: hasAadhaar,
-    consentGiven: true,
+    // Was hard-coded `true` here regardless of the checkbox's actual state
+    // -- the consent checkbox was functionally meaningless, since
+    // submission always claimed consent was given either way.
+    consentGiven: Boolean(data.consentGiven),
     ...trackingData,
   };
 
@@ -202,12 +209,28 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       otherRoleText: '',
       preferredLocations: ['Jaipur'],
       isExperienced: false,
-      securityExperienceMonths: 0,
-      currentEmploymentStatus: 'unemployed',
-      joiningAvailability: 'immediate',
-      dutyHourPreference: '12_hours',
-      aadhaarAvailable: true,
-      consentGiven: true,
+      // undefined (not 0) so the Months input starts genuinely empty,
+      // showing its placeholder ("उदा. 12") instead of a literal "0" that
+      // reads like the system already decided the candidate has zero
+      // experience right after they picked "Experienced".
+      securityExperienceMonths: undefined,
+      // These three, plus consentGiven below, previously defaulted to a
+      // plausible-looking value ('unemployed' / 'immediate' / '12_hours')
+      // from page load. A candidate could tap "Experienced" and submit
+      // without ever touching the fields underneath — the UI showed them
+      // as already selected — and the recruiter would see fabricated
+      // "12 months experience, 12-hour shift, immediate joining" data the
+      // candidate never actually provided. Left blank now so nothing is
+      // pre-selected; the candidate must make a real choice, and
+      // submission is blocked (see the schema) until they do.
+      currentEmploymentStatus: '',
+      joiningAvailability: '',
+      dutyHourPreference: '',
+      aadhaarAvailable: false,
+      // Consent must be an affirmative act, not a pre-ticked default —
+      // this previously let a candidate submit without ever having agreed
+      // to anything.
+      consentGiven: false,
     },
   });
 
@@ -670,8 +693,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const stepFields = {
     1: ['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'],
-    2: ['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'],
-    3: ['highestQualification', 'consentGiven'],
+    2: ['permanentDistrict', 'permanentSubdivision', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'],
+    3: ['highestQualification', 'consentGiven', 'securityExperienceMonths', 'joiningAvailability', 'dutyHourPreference'],
   };
 
   const handleNextStep = async () => {
@@ -780,7 +803,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
           if (['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 1);
-          } else if (['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'].includes(field)) {
+          } else if (['permanentDistrict', 'permanentSubdivision', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 2);
           }
         });
@@ -1401,6 +1424,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       }}
                       options={permanentSubdivisions}
                       placeholder={permanentSubdivisions.length > 0 ? "तहसील टाइप करें या चुनें" : "तहसील का नाम लिखें"}
+                      required
+                      error={errors.permanentSubdivision?.message}
                       isLoading={isLoadingSubdivisions}
                       badgeText={permanentSubdivisions.length > 0 ? `${permanentSubdivisions.length} तहसील` : ''}
                     />
@@ -2003,12 +2028,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setValue('isExperienced', true);
-                      if (!watch('securityExperienceMonths') || watch('securityExperienceMonths') === 0) {
-                        setValue('securityExperienceMonths', 12);
-                      }
-                    }}
+                    onClick={() => setValue('isExperienced', true)}
                     className={`p-3 sm:py-3.5 sm:px-4 rounded-xl border text-center transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 ${
                       watchExperienced
                         ? 'bg-blue-50 border-blue-600 text-blue-900 ring-2 ring-blue-200'
@@ -2042,6 +2062,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       />
                       <span className="text-xs font-semibold text-slate-600">महीने (Months)</span>
                     </div>
+                    {errors.securityExperienceMonths && (
+                      <p className="text-xs font-semibold text-red-600 mt-1">{errors.securityExperienceMonths.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -2064,6 +2087,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         </button>
                       ))}
                     </div>
+                    {errors.dutyHourPreference && (
+                      <p className="text-xs font-semibold text-red-600 mt-1">{errors.dutyHourPreference.message}</p>
+                    )}
                   </div>
 
                   <div>
@@ -2086,6 +2112,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         </button>
                       ))}
                     </div>
+                    {errors.joiningAvailability && (
+                      <p className="text-xs font-semibold text-red-600 mt-1">{errors.joiningAvailability.message}</p>
+                    )}
                   </div>
                 </div>
               )}

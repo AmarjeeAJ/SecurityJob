@@ -28,6 +28,7 @@ export function baseRegistrationFields(mobile) {
     age: '27',
     gender: 'male',
     permanentDistrict: 'Jaipur',
+    permanentSubdivision: 'Jaipur Sadar',
     currentArea: 'Vaishali Nagar',
     permanentState: 'Rajasthan',
     preferredState: 'Rajasthan',

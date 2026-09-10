@@ -43,7 +43,7 @@ export const registerCandidateSchema = z
     permanentDistrict: z.string().trim().min(1, 'Permanent district is required').max(100),
     currentArea: z.string().trim().min(1, 'Current area / locality is required').max(300),
     permanentState: z.string().trim().min(1, 'Permanent state is required').max(100),
-    permanentSubdivision: z.string().trim().max(100).optional().or(z.literal('')),
+    permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required').max(100),
     permanentBlock: z.string().trim().max(100).optional().or(z.literal('')),
     permanentTehsil: z.string().trim().max(100).optional().or(z.literal('')),
     permanentVillage: z.string().trim().max(150).optional().or(z.literal('')),
@@ -124,15 +124,24 @@ export const registerCandidateSchema = z
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
     }
+    // Was silently substituting plausible-looking defaults ('unemployed',
+    // 'immediate', '12_hours') for anything left blank here, which meant a
+    // client-side bug (or a direct API call) could submit "Experienced"
+    // with none of the actual experience detail ever provided, and the
+    // server would fabricate it instead of rejecting the submission. Now
+    // genuinely required, mirroring the client schema.
     if (data.isExperienced) {
-      if (!data.currentEmploymentStatus) {
-        data.currentEmploymentStatus = 'unemployed';
+      if (!data.securityExperienceMonths || data.securityExperienceMonths <= 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['securityExperienceMonths'], message: 'Please enter your security experience in months' });
       }
+      // currentEmploymentStatus has no UI control on the client form at
+      // all -- never required here, since there'd be no way for a
+      // candidate to satisfy that validation.
       if (!data.joiningAvailability) {
-        data.joiningAvailability = 'immediate';
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
       }
       if (!data.dutyHourPreference) {
-        data.dutyHourPreference = '12_hours';
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
       }
     }
     for (const role of data.preferredRoles) {

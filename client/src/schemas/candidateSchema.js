@@ -48,7 +48,7 @@ export const candidateFormSchema = z
       .trim()
       .min(1, 'Current area / locality is required'),
     permanentState: z.string({ required_error: 'Permanent state is required' }).trim().min(1, 'Permanent state is required'),
-    permanentSubdivision: z.string().trim().optional().or(z.literal('')),
+    permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required'),
     permanentBlock: z.string().trim().optional().or(z.literal('')),
     permanentTehsil: z.string().trim().optional().or(z.literal('')),
     permanentVillage: z.string().trim().optional().or(z.literal('')),
@@ -100,9 +100,12 @@ export const candidateFormSchema = z
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
     }
     if (data.isExperienced) {
-      if (!data.currentEmploymentStatus) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['currentEmploymentStatus'], message: 'Please select your current employment status' });
+      if (!data.securityExperienceMonths || data.securityExperienceMonths <= 0) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['securityExperienceMonths'], message: 'Please enter your security experience in months' });
       }
+      // currentEmploymentStatus has no UI control anywhere in this form
+      // (no input/dropdown/buttons for it) — never required here, since
+      // there'd be no way for a candidate to satisfy that validation.
       if (!data.joiningAvailability) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
       }
