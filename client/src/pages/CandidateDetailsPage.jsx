@@ -635,7 +635,12 @@ export default function CandidateDetailsPage() {
                     <Field label="Duty State" value={candidate.preferred_state} />
                     <Field label="Duty District" value={candidate.preferred_district} />
                     <Field label="Duty Subdivision" value={candidate.preferred_subdivision} />
+                    {/* Duty Tehsil / Block hidden — Subdivision and Tehsil
+                        are the same thing here (the Block field itself is
+                        hidden on the form), so this always duplicated or
+                        blanked next to Duty Subdivision above.
                     <Field label="Duty Tehsil / Block" value={candidate.preferred_tehsil || candidate.preferred_block} />
+                    */}
                     <Field label="Duty Pincode" value={candidate.preferred_pincode} />
                     <Field label="Duty Landmark / Area" value={candidate.preferred_address_line} />
                   </div>

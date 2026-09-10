@@ -226,6 +226,7 @@ router.get('/locations/villages', async (req, res) => {
   // SUBDIVISION_BLOCK_MAP) and pull every village under all of them —
   // not just whichever single block happened to fuzzy-match.
   let lgdVillages = [];
+  let lgdPincodes = new Set();
   try {
     const dbBlocks = await query(
       `SELECT b.block_code, b.block_name FROM blocks b
@@ -248,10 +249,11 @@ router.get('/locations/villages', async (req, res) => {
 
     if (matchedBlocks.length > 0) {
       const villagesResult = await query(
-        'SELECT DISTINCT village_name FROM villages WHERE block_code = ANY($1::int[]) ORDER BY village_name',
+        'SELECT DISTINCT village_name, pincode FROM villages WHERE block_code = ANY($1::int[]) ORDER BY village_name',
         [matchedBlocks.map((r) => r.block_code)]
       );
       lgdVillages = villagesResult.rows.map((r) => r.village_name).filter(Boolean);
+      lgdPincodes = new Set(villagesResult.rows.map((r) => r.pincode).filter(Boolean));
     }
   } catch (err) {
     // DB unreachable/unseeded — degrade to the curated + postal sources below.
@@ -301,6 +303,16 @@ router.get('/locations/villages', async (req, res) => {
   // every real office for the district instead of only the name-matched
   // ones — still genuine postal data, just not filtered down to a handful
   // of coincidental name matches.
+  //
+  // A block can ALSO be a real rural block (has genuine LGD villages) while
+  // still having its own urban core -- e.g. Kota district's "Ladpura" block
+  // has 219 real revenue villages, but a candidate living in an actual city
+  // colony like "Shrinath Puram" won't find it among any of them (it's
+  // neither a revenue village nor does an official ward carry that name),
+  // so they were left typing it in as a raw custom value. Matching postal
+  // offices by shared pincode (not just name-similarity to the block) with
+  // the villages already found catches these colonies too, since they sit
+  // in the same postal area as the surrounding real villages.
   const hasRealData = lgdVillages.length > 0 || wardVillages.length > 0;
   const offices = await fetchDistrictPostalOffices(state, district);
   let postalVillages = [];
@@ -311,6 +323,7 @@ router.get('/locations/villages', async (req, res) => {
     const matching = offices.filter((o) => {
       if (!cleanBlock) return true;
       if (targetPin && o.pincode === targetPin) return true;
+      if (o.pincode && lgdPincodes.has(o.pincode)) return true;
       const oName = (o.officeName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       return oName.includes(cleanBlock) || cleanBlock.includes(oName);
     });
