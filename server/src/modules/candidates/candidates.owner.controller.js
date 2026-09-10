@@ -26,6 +26,11 @@ export const listCandidates = asyncHandler(async (req, res) => {
       campaign: row.campaign,
       firstRegisteredAt: row.first_registered_at,
       lastSubmittedAt: row.last_submitted_at,
+      isDuplicate: Boolean(
+        row.first_registered_at &&
+        row.last_submitted_at &&
+        new Date(row.first_registered_at).getTime() !== new Date(row.last_submitted_at).getTime()
+      ),
     })),
     pagination: {
       page: req.query.page,

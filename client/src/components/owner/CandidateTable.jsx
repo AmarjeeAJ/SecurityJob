@@ -37,7 +37,12 @@ function CandidateCard({ c }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-navy-900">{c.fullName}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate font-semibold text-navy-900">{c.fullName}</p>
+            {c.isDuplicate && (
+              <span className="shrink-0 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">Duplicate</span>
+            )}
+          </div>
           <p className="font-mono text-xs text-slate-400">{c.candidateCode}</p>
         </div>
         <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" strokeWidth="2">
@@ -125,7 +130,12 @@ export default function CandidateTable({ candidates, loading }) {
                       {c.fullName?.[0]?.toUpperCase()}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-navy-900">{c.fullName}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="truncate font-semibold text-navy-900">{c.fullName}</p>
+                        {c.isDuplicate && (
+                          <span className="shrink-0 rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700">Duplicate</span>
+                        )}
+                      </div>
                       <p className="font-mono text-[11px] text-slate-400">{c.candidateCode}</p>
                     </div>
                   </div>

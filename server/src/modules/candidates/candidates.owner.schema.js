@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 export const listCandidatesQuerySchema = z.object({
   search: z.string().trim().max(150).optional(),
+  state: z.string().trim().max(100).optional(),
   city: z.string().trim().max(100).optional(),
-  area: z.string().trim().max(150).optional(),
+  subdivision: z.string().trim().max(100).optional(),
   role: z.string().trim().max(80).optional(),
   source: z.string().trim().max(100).optional(),
   dateFrom: z.string().trim().optional(),
   dateTo: z.string().trim().optional(),
+  duplicateOnly: z.preprocess((v) => v === 'true' || v === true, z.boolean()).optional().default(false),
   sortBy: z.enum(['latest_submission', 'first_registered', 'name']).optional().default('latest_submission'),
   sortDir: z.enum(['asc', 'desc']).optional().default('desc'),
   page: z.preprocess((v) => Number(v) || 1, z.number().int().min(1)).optional().default(1),

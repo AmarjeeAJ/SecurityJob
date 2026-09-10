@@ -1,185 +1,113 @@
 import { useMemo } from 'react';
-import { 
-  Search, 
-  MapPin, 
-  Building, 
-  Shield, 
-  Tag, 
-  Calendar, 
-  ArrowUpDown, 
-  X, 
+import {
+  Search,
+  Shield,
+  Tag,
+  Calendar,
+  ArrowUpDown,
+  X,
   RotateCcw,
-  Sparkles,
-  ChevronDown
+  ChevronDown,
+  Copy
 } from 'lucide-react';
 import JOB_ROLES from '../../utils/jobRoles.js';
-import { RAJASTHAN_CITIES, getSmartAreasForDistrict } from '../../utils/locations.js';
-
-const QUICK_ROLES = [
-  'All',
-  'Security Guard',
-  'Security Supervisor',
-  'CCTV Operator',
-  'Armed Guard',
-  'Gunman',
-  'Bouncer',
-];
-
-const QUICK_CITIES = [
-  'Jaipur',
-  'Bhiwadi',
-  'Neemrana',
-  'Jodhpur',
-  'Kota',
-  'Udaipur',
-  'Alwar',
-  'Ajmer',
-  'Bhilwara',
-  'Sikar',
-];
+import { RAJASTHAN_CITIES } from '../../utils/locations.js';
+import { ALL_INDIAN_STATES, INDIA_STATES_DISTRICTS } from '../../utils/india-locations.js';
+import { getSubdivisionsForDistrict } from '../../utils/tehsilVillages.js';
+import SearchableLocationInput from '../form/SearchableLocationInput.jsx';
 
 export default function CandidateFiltersBar({ filters, onChange, onReset }) {
   function update(key, value) {
     onChange({ ...filters, [key]: value, page: 1 });
   }
 
-  // Dynamically resolve the related areas & RIICO hubs for the selected district (or default to Jaipur)
-  const currentDistrictAreas = useMemo(() => {
-    return getSmartAreasForDistrict(filters.city || 'Jaipur');
-  }, [filters.city]);
+  // District options follow the selected State (like the candidate form) —
+  // falls back to the Rajasthan-only list when no state is chosen, so the
+  // existing default behaviour (and the Quick District Hubs below) stays
+  // unchanged for owners who never touch the new State filter.
+  const districtOptions = useMemo(() => {
+    if (!filters.state) return RAJASTHAN_CITIES;
+    return INDIA_STATES_DISTRICTS[filters.state] || RAJASTHAN_CITIES;
+  }, [filters.state]);
+
+  const subdivisionOptions = useMemo(() => {
+    if (!filters.city) return [];
+    return getSubdivisionsForDistrict(filters.state || 'Rajasthan', filters.city);
+  }, [filters.state, filters.city]);
+
+  function handleStateChange(newState) {
+    // Changing state invalidates whatever district/subdivision was picked
+    // for the old state.
+    onChange({
+      ...filters,
+      state: newState,
+      city: '',
+      subdivision: '',
+      page: 1,
+    });
+  }
 
   function handleCityChange(newCity) {
-    // When changing district, reset any previously filtered sub-area
+    // When changing district, reset any previously filtered subdivision
     onChange({
       ...filters,
       city: newCity,
-      area: '',
+      subdivision: '',
       page: 1,
     });
   }
 
   const activeFilters = [];
   if (filters.search) activeFilters.push({ key: 'search', label: `Search: "${filters.search}"`, clear: () => update('search', '') });
+  if (filters.state) activeFilters.push({ key: 'state', label: `State: ${filters.state}`, clear: () => handleStateChange('') });
   if (filters.city) activeFilters.push({ key: 'city', label: `District: ${filters.city}`, clear: () => handleCityChange('') });
-  if (filters.area) activeFilters.push({ key: 'area', label: `Area: ${filters.area}`, clear: () => update('area', '') });
+  if (filters.subdivision) activeFilters.push({ key: 'subdivision', label: `Tehsil: ${filters.subdivision}`, clear: () => update('subdivision', '') });
   if (filters.role) activeFilters.push({ key: 'role', label: `Role: ${filters.role}`, clear: () => update('role', '') });
   if (filters.source) activeFilters.push({ key: 'source', label: `Source: ${filters.source}`, clear: () => update('source', '') });
   if (filters.dateFrom) activeFilters.push({ key: 'dateFrom', label: `From: ${filters.dateFrom}`, clear: () => update('dateFrom', '') });
   if (filters.dateTo) activeFilters.push({ key: 'dateTo', label: `To: ${filters.dateTo}`, clear: () => update('dateTo', '') });
+  if (filters.duplicateOnly) activeFilters.push({ key: 'duplicateOnly', label: 'Duplicate Register only', clear: () => update('duplicateOnly', false) });
 
   return (
     <div className="space-y-4">
-      {/* Quick Filter Chips (Top Bar) */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-blue-500" />
-            Quick Roles:
-          </span>
-          {QUICK_ROLES.map((roleName) => {
-            const isSelected = roleName === 'All' ? !filters.role : filters.role === roleName;
-            return (
-              <button
-                key={roleName}
-                type="button"
-                onClick={() => update('role', roleName === 'All' ? '' : roleName)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200/60'
-                }`}
-              >
-                {roleName}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Quick District Hubs */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-emerald-500" />
-            Hubs:
-          </span>
-          <button
-            type="button"
-            onClick={() => handleCityChange('')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              !filters.city
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200/60'
-            }`}
+      {/* Top Bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2.5 pb-3 border-b border-slate-100">
+        {/* Sort Order — a compact chip-style select, not a full input field */}
+        <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 border border-slate-200/60 text-slate-600 cursor-pointer">
+          <ArrowUpDown className="w-3 h-3 text-blue-600 shrink-0" />
+          <select
+            value={`${filters.sortBy}:${filters.sortDir}`}
+            onChange={(e) => {
+              const [sortBy, sortDir] = e.target.value.split(':');
+              onChange({ ...filters, sortBy, sortDir, page: 1 });
+            }}
+            className="bg-transparent focus:outline-none cursor-pointer"
           >
-            All
-          </button>
-          {QUICK_CITIES.map((cityName) => {
-            const isSelected = filters.city.toLowerCase() === cityName.toLowerCase();
-            return (
-              <button
-                key={cityName}
-                type="button"
-                onClick={() => handleCityChange(isSelected ? '' : cityName)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200/60'
-                }`}
-              >
-                {cityName}
-              </button>
-            );
-          })}
-        </div>
+            <option value="latest_submission:desc">Latest Submission (Newest)</option>
+            <option value="latest_submission:asc">Latest Submission (Oldest)</option>
+            <option value="first_registered:desc">First Registered (Newest)</option>
+            <option value="name:asc">Candidate Name (A – Z)</option>
+          </select>
+        </label>
+
+        {/* Duplicate Register Toggle */}
+        <button
+          type="button"
+          onClick={() => update('duplicateOnly', !filters.duplicateOnly)}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            filters.duplicateOnly
+              ? 'bg-rose-600 text-white shadow-xs'
+              : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600 border border-slate-200/60'
+          }`}
+          title="केवल वे उम्मीदवार दिखाएं जिन्होंने एक से अधिक बार फॉर्म भरा है (same mobile number resubmitted)"
+        >
+          <Copy className="w-3 h-3" />
+          Duplicate Register
+        </button>
       </div>
 
-      {/* Quick Related Areas Bar (Dynamic for the selected District like in the application form) */}
-      {filters.city && currentDistrictAreas.length > 0 && (
-        <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
-              <Building className="w-3.5 h-3.5 text-amber-700" />
-              <span>{filters.city} के प्रमुख क्षेत्र व रीको हब (Quick Area Select):</span>
-            </span>
-            <span className="text-[10.5px] font-bold text-amber-700">
-              {currentDistrictAreas.length} क्षेत्र उपलब्ध
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5 max-h-24 overflow-y-auto pr-1">
-            <button
-              type="button"
-              onClick={() => update('area', '')}
-              className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                !filters.area
-                  ? 'bg-amber-700 text-white shadow-xs'
-                  : 'bg-white hover:bg-amber-100 text-amber-900 border border-amber-300'
-              }`}
-            >
-              All {filters.city}
-            </button>
-            {currentDistrictAreas.map((areaName) => {
-              const isSelected = filters.area.toLowerCase() === areaName.toLowerCase();
-              return (
-                <button
-                  key={areaName}
-                  type="button"
-                  onClick={() => update('area', isSelected ? '' : areaName)}
-                  className={`px-2 py-0.5 rounded-md text-xs transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-amber-700 text-white font-bold shadow-xs'
-                      : 'bg-white hover:bg-amber-100 text-slate-700 border border-amber-200/80'
-                  }`}
-                  title={areaName}
-                >
-                  {areaName}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Main Form Fields Grid */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 items-end">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 items-start">
         
         {/* 1. Global Search Field (Span 3 cols on desktop) */}
         <div className="sm:col-span-2 lg:col-span-3 space-y-1">
@@ -228,72 +156,46 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
           </div>
         </div>
 
-        {/* 3. City / District Dropdown (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              City / District (जिला)
-            </label>
-            {filters.city && (
-              <button
-                type="button"
-                onClick={() => handleCityChange('')}
-                className="text-[10px] font-bold text-slate-400 hover:text-red-500 cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <div className="relative flex items-center bg-slate-50/90 hover:bg-slate-100/70 focus-within:bg-white rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
-            <MapPin className="w-4 h-4 text-emerald-600 absolute left-3 pointer-events-none" />
-            <select
-              value={filters.city}
-              onChange={(e) => handleCityChange(e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
-            >
-              <option value="">All Rajasthan Districts (सभी 33+ जिले)</option>
-              {RAJASTHAN_CITIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 pointer-events-none" />
-          </div>
+        {/* 3. State — searchable, matching the candidate registration form (Span 3 cols) */}
+        <div className="sm:col-span-1 lg:col-span-3">
+          <SearchableLocationInput
+            id="filter-state"
+            label="State (राज्य)"
+            value={filters.state}
+            onChange={(val) => update('state', val)}
+            onSelectOption={(val) => handleStateChange(val)}
+            options={ALL_INDIAN_STATES}
+            placeholder="All States"
+          />
         </div>
 
-        {/* 4. Area / Locality Dropdown (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              Area / Locality (एरिया / रीको)
-            </label>
-            {filters.area && (
-              <button
-                type="button"
-                onClick={() => update('area', '')}
-                className="text-[10px] font-bold text-slate-400 hover:text-red-500 cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <div className="relative flex items-center bg-slate-50/90 hover:bg-slate-100/70 focus-within:bg-white rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
-            <Building className="w-4 h-4 text-amber-600 absolute left-3 pointer-events-none" />
-            <select
-              value={filters.area}
-              onChange={(e) => update('area', e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
-            >
-              <option value="">
-                {filters.city
-                  ? `All Areas in ${filters.city} (${currentDistrictAreas.length} क्षेत्र)`
-                  : 'All Areas (Select District First)'}
-              </option>
-              {currentDistrictAreas.map((areaName) => (
-                <option key={areaName} value={areaName}>{areaName}</option>
-              ))}
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 pointer-events-none" />
-          </div>
+        {/* 4. District — searchable, options follow the selected State (Span 3 cols) */}
+        <div className="sm:col-span-1 lg:col-span-3">
+          <SearchableLocationInput
+            id="filter-district"
+            label="District (जिला)"
+            value={filters.city}
+            onChange={(val) => update('city', val)}
+            onSelectOption={(val) => handleCityChange(val)}
+            options={districtOptions}
+            placeholder="All Districts"
+            badgeText={districtOptions.length > 0 ? `${districtOptions.length} जिले` : ''}
+          />
+        </div>
+
+        {/* 4b. Tehsil / Subdivision — searchable, scoped to the selected District (Span 3 cols) */}
+        <div className="sm:col-span-1 lg:col-span-3">
+          <SearchableLocationInput
+            id="filter-subdivision"
+            label="Tehsil (तहसील)"
+            value={filters.subdivision}
+            onChange={(val) => update('subdivision', val)}
+            onSelectOption={(val) => update('subdivision', val)}
+            options={subdivisionOptions}
+            placeholder={filters.city ? 'All Tehsils' : 'Select a district first'}
+            disabled={!filters.city}
+            badgeText={subdivisionOptions.length > 0 ? `${subdivisionOptions.length} तहसील` : ''}
+          />
         </div>
 
         {/* 5. Marketing Source (Span 3 cols) */}
@@ -356,29 +258,6 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
           </div>
         </div>
 
-        {/* 8. Sort By (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
-            Sort Order
-          </label>
-          <div className="relative flex items-center bg-slate-50/90 hover:bg-slate-100/70 focus-within:bg-white rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
-            <ArrowUpDown className="w-4 h-4 text-blue-600 absolute left-3 pointer-events-none" />
-            <select
-              value={`${filters.sortBy}:${filters.sortDir}`}
-              onChange={(e) => {
-                const [sortBy, sortDir] = e.target.value.split(':');
-                onChange({ ...filters, sortBy, sortDir, page: 1 });
-              }}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
-            >
-              <option value="latest_submission:desc">Latest Submission (Newest)</option>
-              <option value="latest_submission:asc">Latest Submission (Oldest)</option>
-              <option value="first_registered:desc">First Registered (Newest)</option>
-              <option value="name:asc">Candidate Name (A – Z)</option>
-            </select>
-            <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 pointer-events-none" />
-          </div>
-        </div>
       </div>
 
       {/* Active Filter Chips Bar (Shown when any filter is active) */}
