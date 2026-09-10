@@ -12,12 +12,6 @@ export const JOB_ROLES = [
   'Event Security Guard',
   'Bodyguard',
   'Facility Supervisor',
-  'Housekeeping Staff',
-  'Cash Van Driver',
-  'ATM Custodian',
-  'Control Room Operator',
-  'Fire Marshal',
-  'Dog Handler',
   'Other',
 ];
 

@@ -12,12 +12,6 @@ export const JOB_ROLES = [
   'Event Security Guard',
   'Bodyguard',
   'Facility Supervisor',
-  'Housekeeping Staff',
-  'Cash Van Driver',
-  'ATM Custodian',
-  'Control Room Operator',
-  'Fire Marshal',
-  'Dog Handler',
   'Other',
 ];
 
@@ -36,13 +30,12 @@ export const SLUG_TO_ROLE = {
   bodyguard: 'Bodyguard',
   // Backward compatibility fallbacks
   'cctv-operator': 'CCTV Operator',
-  'control-room-operator': 'Control Room Operator',
-  'fire-marshal': 'Fire Marshal',
-  'dog-handler': 'Dog Handler',
   'facility-supervisor': 'Facility Supervisor',
-  'housekeeping-staff': 'Housekeeping Staff',
-  'cash-van-driver': 'Cash Van Driver',
-  'atm-custodian': 'ATM Custodian',
+  // Removed: control-room-operator, fire-marshal, dog-handler,
+  // housekeeping-staff, cash-van-driver, atm-custodian — no longer
+  // offered roles, dropped from JOB_ROLES above. A candidate landing on
+  // one of these old slugs now just gets no role preselected (roleForSlug
+  // returns null) instead of a role that would fail validation.
 };
 
 export function roleForSlug(slug) {
