@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Search,
   Shield,
@@ -14,6 +14,7 @@ import JOB_ROLES from '../../utils/jobRoles.js';
 import { RAJASTHAN_CITIES } from '../../utils/locations.js';
 import { ALL_INDIAN_STATES, INDIA_STATES_DISTRICTS } from '../../utils/india-locations.js';
 import { getSubdivisionsForDistrict } from '../../utils/tehsilVillages.js';
+import { fetchDistricts } from '../../services/location.service.js';
 import SearchableLocationInput from '../form/SearchableLocationInput.jsx';
 
 export default function CandidateFiltersBar({ filters, onChange, onReset }) {
@@ -21,13 +22,28 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
     onChange({ ...filters, [key]: value, page: 1 });
   }
 
-  // District options follow the selected State (like the candidate form) —
-  // falls back to the Rajasthan-only list when no state is chosen, so the
-  // existing default behaviour (and the Quick District Hubs below) stays
-  // unchanged for owners who never touch the new State filter.
-  const districtOptions = useMemo(() => {
-    if (!filters.state) return RAJASTHAN_CITIES;
-    return INDIA_STATES_DISTRICTS[filters.state] || RAJASTHAN_CITIES;
+  // District options follow the selected State (like the candidate form),
+  // fetched from the real districts table (fetchDistricts) rather than the
+  // hand-curated INDIA_STATES_DISTRICTS list — that list drifts out of sync
+  // with real administrative changes (e.g. it never picked up Rajasthan's
+  // "Deeg" district, carved out of Bharatpur in 2023), so an owner
+  // filtering for a candidate registered in a newer district would find no
+  // match at all. Falls back to the curated Rajasthan-only list on load or
+  // if the fetch fails, so the existing default behaviour (and the Quick
+  // District Hubs below) stays unchanged for owners who never touch the
+  // State filter.
+  const [districtOptions, setDistrictOptions] = useState(() => (
+    filters.state ? (INDIA_STATES_DISTRICTS[filters.state] || RAJASTHAN_CITIES) : RAJASTHAN_CITIES
+  ));
+
+  useEffect(() => {
+    let isCancelled = false;
+    fetchDistricts(filters.state || 'Rajasthan').then((dists) => {
+      if (!isCancelled && dists && dists.length > 0) {
+        setDistrictOptions(dists);
+      }
+    });
+    return () => { isCancelled = true; };
   }, [filters.state]);
 
   const subdivisionOptions = useMemo(() => {

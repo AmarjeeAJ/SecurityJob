@@ -71,10 +71,34 @@ router.get('/locations/states', (req, res) => {
 });
 
 // 2. State-specific Districts API
-router.get('/locations/districts', (req, res) => {
+router.get('/locations/districts', async (req, res) => {
   const state = req.query.state || 'Rajasthan';
-  const districts = INDIA_STATES_DISTRICTS[state] || INDIA_STATES_DISTRICTS['Rajasthan'] || RAJASTHAN_DISTRICTS;
 
+  // The curated INDIA_STATES_DISTRICTS list is hand-maintained and drifts
+  // out of sync with real administrative changes — e.g. Rajasthan's "Deeg"
+  // district (carved out of Bharatpur in 2023) was never added to it, so
+  // it silently offered no match for a real, current district. The real
+  // `districts` table (seeded from the official LGD directory) is kept
+  // current and is what Tehsil/Village already resolve against — use it
+  // here too, falling back to the curated list only if the DB has nothing
+  // for this state.
+  try {
+    const dbDistricts = await query(
+      `SELECT d.district_name FROM districts d
+       JOIN states s ON s.state_code = d.state_code
+       WHERE lower(s.state_name) = lower($1)
+       ORDER BY d.district_name`,
+      [state]
+    );
+    if (dbDistricts.rows.length > 0) {
+      const districts = dbDistricts.rows.map((r) => r.district_name).filter(Boolean);
+      return res.json({ success: true, state, districts, total: districts.length });
+    }
+  } catch (err) {
+    // DB unreachable/unseeded — degrade to the curated list below.
+  }
+
+  const districts = INDIA_STATES_DISTRICTS[state] || INDIA_STATES_DISTRICTS['Rajasthan'] || RAJASTHAN_DISTRICTS;
   res.json({
     success: true,
     state,
@@ -387,6 +411,22 @@ router.get('/locations/subdivisions', async (req, res) => {
       );
       if (realBlocks.rows.length > 0) {
         subdivisions = realBlocks.rows.map((r) => r.block_name).filter(Boolean);
+      } else {
+        // A fully urban district (Kolkata, Chennai's core, etc.) genuinely
+        // has zero rural blocks — the district itself is a single Urban
+        // Local Body rather than a set of revenue blocks. Offer that real
+        // ULB name (and any other ULBs matching the district) instead of
+        // falling through to the fake "Sadar/Rural" placeholder.
+        const realUlbs = await query(
+          `SELECT ulb.local_body_name FROM urban_local_bodies ulb
+           JOIN states s ON s.state_code = ulb.state_code
+           WHERE lower(s.state_name) = lower($1) AND lower(ulb.local_body_name) LIKE '%' || lower($2) || '%'
+           ORDER BY ulb.local_body_name`,
+          [state, district]
+        );
+        if (realUlbs.rows.length > 0) {
+          subdivisions = realUlbs.rows.map((r) => r.local_body_name).filter(Boolean);
+        }
       }
     } catch {
       // DB unavailable — keep the placeholder as a last resort so the
