@@ -95,16 +95,19 @@ export default function SearchableLocationInput({
 
   return (
     <div ref={wrapperRef} className="relative w-full">
-      {/* Label and Badge Header */}
-      <div className="flex items-center justify-between gap-1 mb-1.5">
+      {/* Label and Badge Header — a smaller label size keeps most labels on
+          one line at this column width, so the input below starts at the
+          same Y position across a row without needing a reserved-but-empty
+          gap for the rare longer label. */}
+      <div className="flex items-center justify-between gap-1.5 mb-1.5">
         <label
           htmlFor={id}
-          className="block text-xs sm:text-sm font-semibold text-slate-800"
+          className="block text-[11px] sm:text-xs font-semibold text-slate-800 truncate"
         >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
         {badgeText ? (
-          <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 transition-all duration-150 inline-block">
+          <span className="shrink-0 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 transition-all duration-150 inline-block">
             {badgeText}
           </span>
         ) : (

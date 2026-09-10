@@ -35,10 +35,11 @@ import {
   Crosshair,
   Compass,
   Home,
-  Copy
+  Copy,
+  Info
 } from 'lucide-react';
 import { candidateFormSchema } from '../../schemas/candidateSchema.js';
-import { submitCandidateApplication } from '../../api/candidates.js';
+import { submitCandidateApplication, checkMobileRegistered } from '../../api/candidates.js';
 import { trackEvent } from '../../services/tracking.service.js';
 import { compressImage } from '../../utils/compressImage.js';
 import { useLanguage } from '../../i18n/LanguageContext.jsx';
@@ -212,7 +213,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const [isCapturingLocation, setIsCapturingLocation] = useState(false);
   const [locationStatus, setLocationStatus] = useState(null);
-  const [currentSameAsPermanent, setCurrentSameAsPermanent] = useState(true);
+  // Defaults to unchecked — the candidate must actively confirm their
+  // current address (either "same as permanent" or their own stay
+  // address) rather than have it silently assumed on page load.
+  const [currentSameAsPermanent, setCurrentSameAsPermanent] = useState(false);
   const [sameAsPermanentForPreferred, setSameAsPermanentForPreferred] = useState(false);
 
   // Restore an in-progress draft on mount — a candidate who accidentally
@@ -225,7 +229,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (!saved) return;
       const { step, values } = JSON.parse(saved);
-      if (values) reset(values, { keepDefaultValues: true });
+      if (values) {
+        reset(values, { keepDefaultValues: true });
+        setCurrentSameAsPermanent(values.currentStayAddress === 'स्थाई पते के अनुसार (Same as Permanent)');
+      }
       if (step) setCurrentStep(step);
     } catch {
       // Corrupted or unavailable storage — just start with a blank form.
@@ -274,6 +281,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const watchWhatsappSame = watch('whatsappSameAsMobile');
   const watchGender = watch('gender');
+  const watchMobileNumber = watch('mobileNumber') || '';
+  const [duplicateMobileInfo, setDuplicateMobileInfo] = useState(null);
+  const [isCheckingMobile, setIsCheckingMobile] = useState(false);
   const watchPermanentState = watch('permanentState') || 'Rajasthan';
   const watchPermanentDistrict = watch('permanentDistrict') || 'Jaipur';
   const watchArea = watch('currentArea');
@@ -284,6 +294,37 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const watchPermanentPincode = watch('permanentPincode') || '';
   const watchPermanentAddressLine = watch('permanentAddressLine') || '';
   const watchCurrentStayAddress = watch('currentStayAddress') || '';
+
+  // Warn (and block) a candidate who already registered with this mobile
+  // number before they invest time filling out the rest of the form —
+  // previously this was only discovered silently at final submission,
+  // which quietly updated the existing record instead of telling them.
+  useEffect(() => {
+    const digits = watchMobileNumber.replace(/\D/g, '');
+    if (!/^[6-9]\d{9}$/.test(digits)) {
+      setDuplicateMobileInfo(null);
+      return;
+    }
+    let isCancelled = false;
+    setIsCheckingMobile(true);
+    const timer = setTimeout(() => {
+      checkMobileRegistered(digits)
+        .then((res) => {
+          if (isCancelled) return;
+          setDuplicateMobileInfo(res?.exists ? { fullName: res.fullName, candidateCode: res.candidateCode } : null);
+        })
+        .catch(() => {
+          // Non-blocking — a check failure should never trap a genuine candidate.
+        })
+        .finally(() => {
+          if (!isCancelled) setIsCheckingMobile(false);
+        });
+    }, 500);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [watchMobileNumber]);
 
   // No fallback to watchPermanentState/watchPermanentDistrict here — that
   // silently mirrored the Permanent Address into these fields (and, via the
@@ -384,9 +425,20 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       if (isCancelled) return;
 
       if (watchPermanentSubdivision && watchPermanentSubdivision.trim().length > 0) {
+        // Merge rather than replace: selecting an option from the dropdown
+        // already triggers its own immediate load+merge of the full
+        // government village list (see the Subdivision field's
+        // onSelectOption below), and this debounced effect re-fires 350ms
+        // later for that same final value. Overwriting here with just the
+        // small curated fallback regressed the list back down right after
+        // it had already been correctly filled with hundreds of real
+        // villages — this is what left the village count stuck low.
         const localVills = getVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision);
         if (localVills && localVills.length > 0) {
-          setCurrentVillages(localVills);
+          setCurrentVillages((prev) => {
+            const merged = [...new Set([...(prev || []), ...localVills])];
+            return merged.length === (prev || []).length ? prev : merged;
+          });
         }
 
         fetchVillagesForTehsil(watchPermanentState, watchPermanentDistrict, watchPermanentSubdivision).then((vills) => {
@@ -571,6 +623,26 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     );
   };
 
+  // "Same as Permanent" and GPS capture must be mutually exclusive in what
+  // gets stored — a candidate could previously capture GPS, then tick "Same
+  // as Permanent", and the stale geoLat/geoLng/geoAddress from the earlier
+  // GPS fix stayed saved alongside the new "same as permanent" text, so the
+  // owner dashboard showed a contradictory record (permanent address in one
+  // state, GPS-captured address in a completely different one). Ticking
+  // this on now clears any previously-captured GPS data.
+  const handleSameAsPermanentToggle = (isSame) => {
+    setCurrentSameAsPermanent(isSame);
+    if (isSame) {
+      setValue('currentStayAddress', 'स्थाई पते के अनुसार (Same as Permanent)');
+      setValue('geoLat', undefined);
+      setValue('geoLng', undefined);
+      setValue('geoAddress', '');
+      setLocationStatus(null);
+    } else {
+      setValue('currentStayAddress', '');
+    }
+  };
+
   const handleToggleSameForPreferred = (checked) => {
     setSameAsPermanentForPreferred(checked);
     if (checked) {
@@ -598,21 +670,42 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const stepFields = {
     1: ['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'],
-    2: ['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles'],
+    2: ['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'],
     3: ['highestQualification', 'consentGiven'],
   };
 
   const handleNextStep = async () => {
+    if (currentStep === 1 && duplicateMobileInfo) {
+      setSubmitError(`यह मोबाइल नंबर पहले से पंजीकृत है (${duplicateMobileInfo.fullName} — ${duplicateMobileInfo.candidateCode})। कृपया दोबारा फॉर्म न भरें। (This mobile number is already registered. Please do not fill the form again.)`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (currentStep === 2) {
       const curCity = watch('permanentDistrict') || 'Jaipur';
       const curSub = watch('permanentSubdivision') || '';
       const curBlk = watch('permanentBlock') || watch('permanentTehsil') || '';
       const curVillage = watch('permanentVillage') || '';
       const curAddr = watch('permanentAddressLine') || '';
-      const stayAddr = watch('currentStayAddress') || '';
+      const stayAddr = (watch('currentStayAddress') || '').trim();
       const geoAddr = watch('geoAddress') || '';
 
-      const combinedArea = stayAddr || geoAddr || [curSub, curBlk, curVillage, curAddr].filter(Boolean).join(', ') || `${curCity} Main Area`;
+      // A candidate must actively confirm their current address — either by
+      // checking "Same as Permanent" or by giving a real stay address
+      // (typed or GPS-captured) — before moving on. This used to always
+      // synthesize a filler value (even a bare "${curCity} Main Area}")
+      // regardless of whether either was actually provided, which silently
+      // let candidates through the step with no real current-address data.
+      if (!currentSameAsPermanent && !stayAddr) {
+        setSubmitError('कृपया वर्तमान पता भरें या "स्थाई पते पर ही रहता हूँ" विकल्प चुनें। (Please fill your current address or select "Same as Permanent".)');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      setSubmitError('');
+
+      const combinedArea = currentSameAsPermanent
+        ? [curSub, curBlk, curVillage, curAddr].filter(Boolean).join(', ') || `${curCity} Main Area`
+        : (stayAddr || geoAddr);
       setValue('currentArea', combinedArea);
 
       const prefDist = watch('preferredDistrict') || curCity;
@@ -687,7 +780,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
           if (['fullName', 'mobileNumber', 'whatsappNumber', 'age', 'gender'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 1);
-          } else if (['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles'].includes(field)) {
+          } else if (['permanentDistrict', 'currentArea', 'permanentState', 'preferredRoles', 'preferredState', 'preferredDistrict', 'preferredSubdivision'].includes(field)) {
             jumpToStep = Math.min(jumpToStep, 2);
           }
         });
@@ -945,21 +1038,15 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
             })}
           </div>
 
-          {/* Animated Liquid Progress Bar with Gliding Shimmer Light */}
-          <div className="relative w-full bg-slate-100/90 h-2 sm:h-2.5 rounded-full overflow-hidden shadow-inner mt-3.5 border border-slate-200/50">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 relative overflow-hidden"
-              initial={false}
-              animate={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-              transition={{ type: "spring", stiffness: 90, damping: 15 }}
-            >
-              {/* Continuous glowing shimmer wave */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-              />
-            </motion.div>
+          {/* Note: encourage complete, accurate details instead of a plain progress bar */}
+          <div className="mt-3.5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5">
+            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <p className="text-[11px] sm:text-xs font-medium text-amber-900 leading-snug">
+              कृपया सभी जानकारी पूरी और सही भरें, इससे आपको नौकरी मिलने की संभावना बढ़ जाती है।
+              <span className="block text-amber-700/90 font-normal mt-0.5">
+                (Please fill in all details completely and correctly — this improves your chances of getting a job.)
+              </span>
+            </p>
           </div>
         </div>
 
@@ -1033,9 +1120,28 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     {errors.mobileNumber.message}
                   </p>
                 )}
-                <p className="text-[11px] text-slate-500 mt-1">
-                  इस नंबर पर आपको जॉब की जानकारी और इंटरव्यू का कॉल आएगा।
-                </p>
+                {isCheckingMobile && !duplicateMobileInfo && (
+                  <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    नंबर जाँचा जा रहा है...
+                  </p>
+                )}
+                {duplicateMobileInfo && (
+                  <div className="mt-2 p-3 rounded-xl bg-red-50 border border-red-300 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-xs font-semibold text-red-800 leading-relaxed">
+                      आप पहले से पंजीकृत हैं ({duplicateMobileInfo.fullName} — {duplicateMobileInfo.candidateCode})। कृपया दोबारा फॉर्म न भरें।
+                      <span className="block font-normal text-red-700 mt-0.5">
+                        (You are already registered. Please do not fill the form again.)
+                      </span>
+                    </p>
+                  </div>
+                )}
+                {!duplicateMobileInfo && (
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    इस नंबर पर आपको जॉब की जानकारी और इंटरव्यू का कॉल आएगा।
+                  </p>
+                )}
               </div>
 
               {/* WhatsApp Checkbox */}
@@ -1366,8 +1472,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
                   {/* Tier 6: Pincode (with Auto-fetch pill) */}
                   <div>
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <label htmlFor="current-pincode" className="block text-xs sm:text-sm font-semibold text-slate-800">
+                    <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                      <label htmlFor="current-pincode" className="block text-[11px] sm:text-xs font-semibold text-slate-800">
                         पिनकोड (Pincode)
                       </label>
                       {watchPermanentPincode && (
@@ -1398,9 +1504,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     />
                   </div>
 
-                  {/* Tier 7: House / Street / Landmark (Spans 2 columns on md) */}
-                  <div className="md:col-span-2">
-                    <label htmlFor="current-address-line" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
+                  {/* Tier 7: House / Street / Landmark (paired with Pincode above, same row) */}
+                  <div>
+                    <label htmlFor="current-address-line" className="block text-[11px] sm:text-xs font-semibold text-slate-800 mb-1.5 truncate">
                       मकान नं., टोला, गली व लैंडमार्क (House / Street / Landmark)
                     </label>
                     <input
@@ -1441,16 +1547,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
                 {/* Option 1: Live at Native Home / Permanent Address */}
                 <div
-                  onClick={() => {
-                    const newSame = !currentSameAsPermanent;
-                    setCurrentSameAsPermanent(newSame);
-                    if (newSame) {
-                      setValue('currentStayAddress', 'स्थाई पते के अनुसार (Same as Permanent)');
-                      setLocationStatus(null);
-                    } else {
-                      setValue('currentStayAddress', '');
-                    }
-                  }}
+                  onClick={() => handleSameAsPermanentToggle(!currentSameAsPermanent)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer ${
                     currentSameAsPermanent
                       ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-200/60 shadow-2xs'
@@ -1461,16 +1558,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     <input
                       type="checkbox"
                       checked={currentSameAsPermanent}
-                      onChange={(e) => {
-                        const isSame = e.target.checked;
-                        setCurrentSameAsPermanent(isSame);
-                        if (isSame) {
-                          setValue('currentStayAddress', 'स्थाई पते के अनुसार (Same as Permanent)');
-                          setLocationStatus(null);
-                        } else {
-                          setValue('currentStayAddress', '');
-                        }
-                      }}
+                      onChange={(e) => handleSameAsPermanentToggle(e.target.checked)}
                       className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
@@ -1636,6 +1724,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       options={statesList}
                       placeholder="राज्य टाइप करें या चुनें"
                       required
+                      error={errors.preferredState?.message}
                     />
                   </div>
 
@@ -1660,6 +1749,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       options={preferredDistricts.length > 0 ? preferredDistricts : getDistrictsForState(watchPreferredState)}
                       placeholder="जिला टाइप करें या चुनें"
                       required
+                      error={errors.preferredDistrict?.message}
                       isLoading={isLoadingPrefDistricts}
                       badgeText={preferredDistricts.length > 0 ? `${preferredDistricts.length} जिले` : ''}
                     />
@@ -1683,6 +1773,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       }}
                       options={preferredSubdivisions}
                       placeholder={preferredSubdivisions.length > 0 ? "तहसील टाइप करें या चुनें" : "तहसील का नाम लिखें"}
+                      required
+                      error={errors.preferredSubdivision?.message}
                       isLoading={isLoadingPrefSubdivisions}
                       badgeText={preferredSubdivisions.length > 0 ? `${preferredSubdivisions.length} तहसील` : ''}
                     />
@@ -1715,10 +1807,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   </div>
                   */}
 
-                  {/* Row 3, Col 1: Preferred Pincode */}
+                  {/* Row 2, Col 2: Preferred Pincode (auto-flows next to Subdivision since Block above is hidden) */}
                   <div>
-                    <div className="flex items-center justify-between gap-1 mb-1.5">
-                      <label htmlFor="pref-pincode" className="block text-xs sm:text-sm font-semibold text-slate-800">
+                    <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                      <label htmlFor="pref-pincode" className="block text-[11px] sm:text-xs font-semibold text-slate-800">
                         पसंदीदा पिनकोड (Duty PIN Code)
                       </label>
                       {watchPreferredPincode && (
@@ -1738,8 +1830,8 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     />
                   </div>
 
-                  {/* Row 3, Col 2: Preferred Duty Landmark / Area */}
-                  <div>
+                  {/* Row 4: Preferred Duty Landmark / Area (spans 2 columns — free-text field, matches Permanent Address's Address Line treatment) */}
+                  <div className="md:col-span-2">
                     <label htmlFor="pref-landmark" className="block text-xs sm:text-sm font-semibold text-slate-800 mb-1.5">
                       इच्छित ड्यूटी क्षेत्र / लैंडमार्क (Duty Landmark / Area)
                     </label>
