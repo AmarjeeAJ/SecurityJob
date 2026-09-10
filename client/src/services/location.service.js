@@ -114,11 +114,15 @@ export async function fetchBlocks(state = '', district = '', subdivision = '') {
  * Auto-resolve PIN code based on location hierarchy (with server resolver and instant local fallback)
  */
 export async function resolvePincode(state = '', district = '', block = '', village = '') {
-  const localPin = getPincodeForLocation(district, block, village);
-  if (localPin && /^\d{6}$/.test(localPin)) {
-    return localPin;
-  }
-
+  // The server resolver checks the real government village->pincode data
+  // first (and only then falls back to this same local heuristic map among
+  // other sources) — calling it first here, instead of after, is what
+  // actually lets that real per-village data reach the form. Checking the
+  // local block-level heuristic first meant it returned immediately for
+  // almost any village (since the map has some entry for most blocks),
+  // silently short-circuiting the authoritative server lookup and making
+  // the autofilled pincode read as "based on the tehsil" rather than the
+  // specific village.
   try {
     const res = await axios.get('/api/public/candidates/locations/resolve-pincode', {
       params: { state, district, block, village },
@@ -128,10 +132,15 @@ export async function resolvePincode(state = '', district = '', block = '', vill
       return res.data.pincode;
     }
   } catch {
-    // Non-blocking fallback
+    // Non-blocking — fall through to the local heuristic below.
   }
 
-  return localPin || '';
+  const localPin = getPincodeForLocation(district, block, village);
+  if (localPin && /^\d{6}$/.test(localPin)) {
+    return localPin;
+  }
+
+  return '';
 }
 
 export function resolvePincodeSync(district = '', block = '', village = '') {

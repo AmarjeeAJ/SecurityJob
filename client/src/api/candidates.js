@@ -5,6 +5,11 @@ export async function fetchPageConfig(jobSlug) {
   return data;
 }
 
+export async function checkMobileRegistered(mobileNumber) {
+  const { data } = await apiClient.get(`/public/candidates/check-mobile/${encodeURIComponent(mobileNumber)}`);
+  return data;
+}
+
 export async function submitCandidateApplication(formData) {
   // Deliberately no explicit Content-Type header: the browser must generate its
   // own multipart boundary for a FormData body. Setting 'multipart/form-data'

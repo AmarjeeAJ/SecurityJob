@@ -5,6 +5,7 @@ import { registrationRateLimiter } from '../../middleware/rateLimit.middleware.j
 import { uploadCandidateDocuments, handleUploadErrors } from '../../middleware/upload.middleware.js';
 import { registerCandidateSchema } from './candidates.schema.js';
 import { register } from './candidates.controller.js';
+import normalizeIndianMobile from '../../utils/phone-normalizer.js';
 import { RAJASTHAN_LOCATIONS_DATA, RAJASTHAN_DISTRICTS, getSmartAreasForDistrict } from '../../utils/rajasthan-locations.js';
 import { INDIA_STATES_DISTRICTS, ALL_INDIAN_STATES } from '../../utils/india-locations.js';
 import { 
@@ -449,6 +450,53 @@ router.get('/locations/resolve-pincode', async (req, res) => {
         rows = fuzzy.rows;
       }
 
+      // A slight spelling difference (typo, alternate romanization) misses
+      // both the exact and substring match above, and previously fell all
+      // the way through to the block/tehsil-level default — which is what
+      // reads as "pincode is based on the tehsil, not the village" even
+      // though real per-village government data exists. Resolve the
+      // block(s) for this subdivision/tehsil and pick the closest-spelled
+      // village within them by edit distance, so a near-miss still
+      // resolves to a real village's pincode instead of the block default.
+      if (rows.length === 0 && block) {
+        const dbBlocksForVillage = await query(
+          `SELECT b.block_code, b.block_name FROM blocks b
+           JOIN districts d ON d.district_code = b.district_code
+           JOIN states s ON s.state_code = d.state_code
+           WHERE lower(s.state_name) = lower($1) AND lower(d.district_name) = lower($2)`,
+          [state, district]
+        );
+        const blockNamesInSubdivision = getBlocksForSubdivision(state, district, block);
+        let matchedBlocks = matchNamesAgainstRows(blockNamesInSubdivision, dbBlocksForVillage.rows, (r) => r.block_name);
+        if (matchedBlocks.length === 0) {
+          matchedBlocks = matchNamesAgainstRows([block], dbBlocksForVillage.rows, (r) => r.block_name);
+        }
+        if (matchedBlocks.length > 0) {
+          const candidates = await query(
+            'SELECT village_name, pincode FROM villages WHERE block_code = ANY($1::int[]) AND pincode IS NOT NULL',
+            [matchedBlocks.map((r) => r.block_code)]
+          );
+          const cleanTarget = village.toLowerCase().replace(/[^a-z0-9]/g, '');
+          let best = null;
+          let bestDistance = Infinity;
+          for (const c of candidates.rows) {
+            const cleanC = (c.village_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const distance = levenshteinDistance(cleanTarget, cleanC);
+            if (distance < bestDistance) {
+              bestDistance = distance;
+              best = c;
+            }
+          }
+          if (best) {
+            const cleanBest = (best.village_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const threshold = Math.max(2, Math.floor(Math.max(cleanTarget.length, cleanBest.length) * 0.3));
+            if (bestDistance <= threshold) {
+              rows = [{ pincode: best.pincode, block_name: null }];
+            }
+          }
+        }
+      }
+
       if (rows.length > 0) {
         // Multiple villages can share a name within a district — if the
         // candidate also gave a block/subdivision, prefer the row whose
@@ -671,6 +719,35 @@ router.get('/locations/areas', (req, res) => {
     areas,
     count: areas.length,
   });
+});
+
+// Lets the form warn a candidate before they fill everything out that this
+// mobile number is already registered, instead of only finding out at
+// final submission (which today silently updates the existing record).
+router.get('/check-mobile/:mobile', async (req, res) => {
+  const normalized = normalizeIndianMobile(req.params.mobile);
+  if (!normalized) {
+    return res.json({ success: true, exists: false });
+  }
+
+  try {
+    const result = await query(
+      'SELECT candidate_code, full_name FROM candidates WHERE normalized_mobile_number = $1',
+      [normalized]
+    );
+    if (result.rows.length > 0) {
+      return res.json({
+        success: true,
+        exists: true,
+        candidateCode: result.rows[0].candidate_code,
+        fullName: result.rows[0].full_name,
+      });
+    }
+    return res.json({ success: true, exists: false });
+  } catch {
+    // DB hiccup — fail open so a real glitch never blocks a genuine candidate.
+    return res.json({ success: true, exists: false });
+  }
 });
 
 router.post(
