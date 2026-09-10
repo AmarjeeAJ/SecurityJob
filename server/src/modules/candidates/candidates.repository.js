@@ -14,6 +14,8 @@ const CANDIDATE_COLUMNS = [
   'permanent_district', 'permanent_state', 'permanent_subdivision', 'permanent_block', 'permanent_tehsil',
   'permanent_village', 'permanent_pincode', 'permanent_address_line',
   'current_area', 'current_stay_address', 'geo_lat', 'geo_lng', 'geo_address',
+  'preferred_state', 'preferred_district', 'preferred_subdivision', 'preferred_block', 'preferred_tehsil',
+  'preferred_pincode', 'preferred_address_line',
   'highest_qualification', 'total_experience_months', 'security_experience_months', 'previous_company',
   'current_employment_status', 'joining_availability', 'expected_salary', 'shift_preference', 'duty_hour_preference',
   'height_cm', 'languages', 'ex_serviceman', 'is_experienced', 'aadhaar_available', 'police_verification_available',
@@ -110,15 +112,20 @@ function buildFilterClauses(filters, startIndex = 1) {
     values.push(`%${filters.search}%`, `%${filters.search}%`);
     i += 2;
   }
+  if (filters.state) {
+    clauses.push(`c.permanent_state ILIKE $${i}`);
+    values.push(`%${filters.state}%`);
+    i += 1;
+  }
   if (filters.city) {
     clauses.push(`(c.permanent_district ILIKE $${i} OR c.current_area ILIKE $${i} OR EXISTS (SELECT 1 FROM candidate_preferred_locations cpl WHERE cpl.candidate_id = c.id AND cpl.city_name ILIKE $${i}))`);
     values.push(`%${filters.city}%`);
     i += 1;
   }
-  if (filters.area) {
-    clauses.push(`(c.current_area ILIKE $${i} OR $${i + 1} ILIKE ('%' || c.current_area || '%'))`);
-    values.push(`%${filters.area}%`, filters.area);
-    i += 2;
+  if (filters.subdivision) {
+    clauses.push(`(c.permanent_subdivision ILIKE $${i} OR c.permanent_tehsil ILIKE $${i})`);
+    values.push(`%${filters.subdivision}%`);
+    i += 1;
   }
   if (filters.role) {
     clauses.push(`EXISTS (SELECT 1 FROM candidate_roles cr WHERE cr.candidate_id = c.id AND cr.role_name = $${i})`);
@@ -131,14 +138,25 @@ function buildFilterClauses(filters, startIndex = 1) {
     i += 1;
   }
   if (filters.dateFrom) {
-    clauses.push(`c.last_submitted_at >= $${i}`);
+    clauses.push(`c.last_submitted_at >= $${i}::date`);
     values.push(filters.dateFrom);
     i += 1;
   }
   if (filters.dateTo) {
-    clauses.push(`c.last_submitted_at <= $${i}`);
+    // "To Date" must include the entire day, not just midnight — an
+    // <input type="date"> value like "2026-09-09" compared with a plain
+    // <= against a timestamp column matched only submissions exactly at
+    // 2026-09-09 00:00:00, silently excluding everything submitted later
+    // that same day.
+    clauses.push(`c.last_submitted_at < ($${i}::date + interval '1 day')`);
     values.push(filters.dateTo);
     i += 1;
+  }
+  if (filters.duplicateOnly) {
+    // A candidate row is updated in place (not re-inserted) when they
+    // resubmit with the same mobile number, so "registered more than once"
+    // shows up as first_registered_at and last_submitted_at diverging.
+    clauses.push(`c.first_registered_at IS DISTINCT FROM c.last_submitted_at`);
   }
 
   return { whereSql: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', values, nextIndex: i };
@@ -268,7 +286,10 @@ export async function* streamCandidatesForExport(filters, batchSize = 500) {
         c.email, c.age, c.gender,
         c.permanent_state, c.permanent_district, c.permanent_subdivision, c.permanent_block, c.permanent_tehsil,
         c.permanent_village, c.permanent_pincode, c.permanent_address_line,
-        c.current_area, c.current_stay_address, c.highest_qualification,
+        c.current_area, c.current_stay_address,
+        c.preferred_state, c.preferred_district, c.preferred_subdivision, c.preferred_block, c.preferred_tehsil,
+        c.preferred_pincode, c.preferred_address_line,
+        c.highest_qualification,
         c.total_experience_months, c.security_experience_months, c.previous_company, c.is_experienced,
         c.current_employment_status, c.joining_availability, c.expected_salary, c.shift_preference,
         c.duty_hour_preference, c.ex_serviceman, c.aadhaar_available, c.police_verification_available,

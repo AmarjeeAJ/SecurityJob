@@ -59,9 +59,9 @@ export const candidateFormSchema = z
     geoAddress: z.string().trim().optional().or(z.literal('')),
     currentStayAddress: z.string().trim().optional().or(z.literal('')),
 
-    preferredState: z.string().trim().optional().or(z.literal('')),
-    preferredDistrict: z.string().trim().optional().or(z.literal('')),
-    preferredSubdivision: z.string().trim().optional().or(z.literal('')),
+    preferredState: z.string().trim().min(1, 'Preferred state is required'),
+    preferredDistrict: z.string().trim().min(1, 'Preferred district is required'),
+    preferredSubdivision: z.string().trim().min(1, 'Preferred tehsil/subdivision is required'),
     preferredBlock: z.string().trim().optional().or(z.literal('')),
     preferredTehsil: z.string().trim().optional().or(z.literal('')),
     preferredVillage: z.string().trim().optional().or(z.literal('')),
