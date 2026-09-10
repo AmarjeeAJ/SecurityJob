@@ -1,14 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Filter, 
-  Download, 
-  FileSpreadsheet, 
-  RotateCcw, 
+import {
+  Filter,
+  Download,
+  FileSpreadsheet,
+  RotateCcw,
   ChevronDown,
   Users,
   ShieldCheck,
   CheckCircle2,
+  UserPlus,
   X
 } from 'lucide-react';
 import { fetchCandidates, buildExportCsvUrl } from '../api/ownerCandidates.js';
@@ -23,12 +24,14 @@ import { useNoIndex } from '../hooks/useNoIndex.js';
 
 const DEFAULT_FILTERS = {
   search: '',
+  state: '',
   city: '',
-  area: '',
+  subdivision: '',
   role: '',
   source: '',
   dateFrom: '',
   dateTo: '',
+  duplicateOnly: false,
   sortBy: 'latest_submission',
   sortDir: 'desc',
   page: 1,
@@ -46,6 +49,8 @@ export default function CandidateRecordsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [latestCandidate, setLatestCandidate] = useState(null);
+  const latestCandidateIdRef = useRef(null);
 
   const [successBanner, setSuccessBanner] = useState(location.state?.successMessage || '');
 
@@ -58,48 +63,91 @@ export default function CandidateRecordsPage() {
 
   const debouncedSearch = useDebouncedValue(filters.search, 350);
   const debouncedCity = useDebouncedValue(filters.city, 350);
-  const debouncedArea = useDebouncedValue(filters.area, 350);
   const debouncedSource = useDebouncedValue(filters.source, 350);
 
-  const loadCandidates = useCallback(async () => {
-    setLoading(true);
+  // `silent` skips the loading skeleton — used for the background poll so
+  // the table doesn't flicker every time it refreshes on its own.
+  const loadCandidates = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     setError('');
     try {
       const queryFilters = {
         ...filters,
         search: debouncedSearch,
         city: debouncedCity,
-        area: debouncedArea,
         source: debouncedSource,
       };
       const data = await fetchCandidates(queryFilters);
       setCandidates(data.data);
       setPagination(data.pagination);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Could not load candidate records.');
+      if (!silent) setError(err?.response?.data?.message || 'Could not load candidate records.');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  }, [filters, debouncedSearch, debouncedCity, debouncedArea, debouncedSource]);
+  }, [filters, debouncedSearch, debouncedCity, debouncedSource]);
 
   useEffect(() => {
     loadCandidates();
   }, [loadCandidates]);
 
+  // Live updates without a manual page refresh: poll the current (filtered)
+  // list and the single most-recent registration in the background. This
+  // project has no WebSocket/Socket.IO server wired up despite the
+  // dashboard needing a refresh to see new registrations — polling is a
+  // simpler, dependency-free way to get the same "no refresh needed"
+  // result without standing up new realtime infrastructure.
+  useEffect(() => {
+    const POLL_MS = 20000;
+    const timer = setInterval(() => {
+      loadCandidates(true);
+      fetchCandidates({ sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
+        .then((data) => {
+          const latest = data?.data?.[0];
+          if (latest && latest.id !== latestCandidateIdRef.current) {
+            latestCandidateIdRef.current = latest.id;
+            setLatestCandidate(latest);
+          }
+        })
+        .catch(() => {
+          // Non-blocking — the badge just won't update this cycle.
+        });
+    }, POLL_MS);
+    return () => clearInterval(timer);
+  }, [loadCandidates]);
+
+  // Fetch the latest-registered candidate once on mount so the badge shows
+  // immediately, without waiting for the first poll cycle.
+  useEffect(() => {
+    fetchCandidates({ sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
+      .then((data) => {
+        const latest = data?.data?.[0];
+        if (latest) {
+          latestCandidateIdRef.current = latest.id;
+          setLatestCandidate(latest);
+        }
+      })
+      .catch(() => {
+        // Non-blocking
+      });
+  }, []);
+
   const activeExportFilters = {
     search: debouncedSearch,
+    state: filters.state,
     city: debouncedCity,
-    area: debouncedArea,
+    subdivision: filters.subdivision,
     role: filters.role,
     source: debouncedSource,
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
+    duplicateOnly: filters.duplicateOnly,
     sortBy: filters.sortBy,
     sortDir: filters.sortDir,
   };
 
   const activeFilterCount = [
-    debouncedSearch, debouncedCity, debouncedArea, filters.role, debouncedSource, filters.dateFrom, filters.dateTo,
+    debouncedSearch, filters.state, debouncedCity, filters.subdivision, filters.role, debouncedSource, filters.dateFrom, filters.dateTo, filters.duplicateOnly,
   ].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -164,6 +212,30 @@ export default function CandidateRecordsPage() {
               <X className="w-4 h-4" />
             </button>
           </div>
+        )}
+
+        {/* Latest Registration Capsule */}
+        {latestCandidate && (
+          <button
+            type="button"
+            onClick={() => navigate(`/owner/candidates/${latestCandidate.id}`)}
+            className="inline-flex w-full sm:w-auto items-center gap-2.5 rounded-full bg-emerald-50 border border-emerald-200 pl-2 pr-4 py-1.5 text-left hover:bg-emerald-100/80 hover:border-emerald-300 transition-colors cursor-pointer"
+            title="Open this candidate's record"
+          >
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="p-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
+              <UserPlus className="w-3.5 h-3.5" />
+            </span>
+            <span className="text-xs font-semibold text-emerald-900 truncate">
+              Latest Registration: <span className="font-bold">{latestCandidate.fullName}</span>
+            </span>
+            <span className="font-mono text-[11px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+              {latestCandidate.candidateCode}
+            </span>
+          </button>
         )}
 
         {/* Modern Filter Card */}

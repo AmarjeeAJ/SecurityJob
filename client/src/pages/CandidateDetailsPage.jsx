@@ -556,7 +556,12 @@ export default function CandidateDetailsPage() {
                   <Field label="State" value={candidate.permanent_state} />
                   <Field label="District" value={candidate.permanent_district} />
                   <Field label="Subdivision" value={candidate.permanent_subdivision} />
+                  {/* Block / Tehsil hidden — the form no longer collects it
+                      (Village now keys off Subdivision directly), so this
+                      always read as a blank dash. Re-enable if the Block
+                      field comes back.
                   <Field label="Block / Tehsil" value={candidate.permanent_tehsil} />
+                  */}
                   <Field label="Village" value={candidate.permanent_village} />
                   <Field label="Pincode" value={candidate.permanent_pincode} />
                   <Field label="Address Line" value={candidate.permanent_address_line} />
@@ -566,9 +571,38 @@ export default function CandidateDetailsPage() {
               <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Current Address</p>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
-                  <Field label="Current Area" value={candidate.current_area} />
-                  <Field label="Current Stay Address" value={candidate.current_stay_address} />
-                  <Field label="GPS-Captured Address" value={candidate.geo_address} />
+                  {/* When "Get My Location" is used, current_area,
+                      current_stay_address and geo_address are all
+                      intentionally set to the same GPS text (so search still
+                      works via current_area without extra typing) — showing
+                      all three identical strings is just noise, so collapse
+                      to one field whenever they genuinely match. If the
+                      candidate typed something different from what GPS gave
+                      (or didn't use GPS at all), show them separately as before. */}
+                  {candidate.geo_address &&
+                  candidate.geo_address === candidate.current_area &&
+                  candidate.geo_address === candidate.current_stay_address ? (
+                    <Field label="Current Address (GPS)" value={candidate.geo_address} />
+                  ) : (
+                    <>
+                      <Field label="Current Area" value={candidate.current_area} />
+                      <Field label="Current Stay Address" value={candidate.current_stay_address} />
+                      <Field label="GPS-Captured Address" value={candidate.geo_address} />
+                    </>
+                  )}
+                  {candidate.geo_lat && candidate.geo_lng && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">GPS Coordinates</p>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${candidate.geo_lat},${candidate.geo_lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-0.5 inline-block text-sm font-semibold text-gold-600 hover:text-gold-700 hover:underline break-words"
+                      >
+                        {candidate.geo_lat}, {candidate.geo_lng} (मैप पर देखें)
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
@@ -586,8 +620,27 @@ export default function CandidateDetailsPage() {
                     <Field label="Duty-Hour Preference" value={candidate.duty_hour_preference} />
                   </>
                 )}
+                {/* Aadhaar Available field hidden — the form no longer asks
+                    candidates for this, so it always reads "No" and is just
+                    noise on the dashboard. Re-enable alongside the Aadhaar
+                    upload feature below if/when it comes back.
                 <Field label="Aadhaar Available" value={candidate.aadhaar_available ? 'Yes' : 'No'} />
+                */}
               </div>
+
+              {(candidate.preferred_state || candidate.preferred_district || candidate.preferred_subdivision || candidate.preferred_pincode || candidate.preferred_address_line) && (
+                <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Preferred Job Location (Detail)</p>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
+                    <Field label="Duty State" value={candidate.preferred_state} />
+                    <Field label="Duty District" value={candidate.preferred_district} />
+                    <Field label="Duty Subdivision" value={candidate.preferred_subdivision} />
+                    <Field label="Duty Tehsil / Block" value={candidate.preferred_tehsil || candidate.preferred_block} />
+                    <Field label="Duty Pincode" value={candidate.preferred_pincode} />
+                    <Field label="Duty Landmark / Area" value={candidate.preferred_address_line} />
+                  </div>
+                </div>
+              )}
             </SectionCard>
 
             {(candidate.additional_message) && (
