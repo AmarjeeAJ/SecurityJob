@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import normalizeIndianMobile, { looksLikeFakeMobile } from '../utils/phone.js';
+import { ALL_INDIAN_STATES } from '../utils/india-locations.js';
+
+// India's state/UT list is fixed and complete (36 values) — unlike
+// Village/Tehsil, which genuinely have real data-coverage gaps and so
+// legitimately need to accept free-text custom entries, there's no valid
+// reason a State field should ever hold something that isn't a real state.
+const stateField = (message) => z.string().trim().refine((val) => ALL_INDIAN_STATES.includes(val), { message });
 
 const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s.'\-()]{0,149}$/u;
@@ -47,7 +54,7 @@ export const candidateFormSchema = z
       .string({ required_error: 'Current area / locality is required' })
       .trim()
       .min(1, 'Current area / locality is required'),
-    permanentState: z.string({ required_error: 'Permanent state is required' }).trim().min(1, 'Permanent state is required'),
+    permanentState: stateField('Please select a valid state from the list'),
     permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required'),
     permanentBlock: z.string().trim().optional().or(z.literal('')),
     permanentTehsil: z.string().trim().optional().or(z.literal('')),
@@ -59,7 +66,7 @@ export const candidateFormSchema = z
     geoAddress: z.string().trim().optional().or(z.literal('')),
     currentStayAddress: z.string().trim().optional().or(z.literal('')),
 
-    preferredState: z.string().trim().min(1, 'Preferred state is required'),
+    preferredState: stateField('Please select a valid state from the list'),
     preferredDistrict: z.string().trim().min(1, 'Preferred district is required'),
     preferredSubdivision: z.string().trim().min(1, 'Preferred tehsil/subdivision is required'),
     preferredBlock: z.string().trim().optional().or(z.literal('')),

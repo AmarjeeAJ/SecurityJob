@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { JOB_ROLES } from '../../utils/job-roles.js';
 import { looksLikeFakeMobile } from '../../utils/phone-normalizer.js';
+import { ALL_INDIAN_STATES } from '../../utils/india-locations.js';
+
+// India's state/UT list is fixed and complete (36 values) — unlike
+// Village/Tehsil, which genuinely have real data-coverage gaps and so
+// legitimately need to accept free-text custom entries, there's no valid
+// reason a State field should ever hold something that isn't a real state.
+const stateField = (message) => z.string().trim().max(100).refine((val) => ALL_INDIAN_STATES.includes(val), { message });
 
 const boolFromForm = z.preprocess((val) => {
   if (typeof val === 'boolean') return val;
@@ -42,7 +49,7 @@ export const registerCandidateSchema = z
     gender: z.enum(['male', 'female', 'other'], { errorMap: () => ({ message: 'Please select a gender' }) }),
     permanentDistrict: z.string().trim().min(1, 'Permanent district is required').max(100),
     currentArea: z.string().trim().min(1, 'Current area / locality is required').max(300),
-    permanentState: z.string().trim().min(1, 'Permanent state is required').max(100),
+    permanentState: stateField('Please select a valid state from the list'),
     permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required').max(100),
     permanentBlock: z.string().trim().max(100).optional().or(z.literal('')),
     permanentTehsil: z.string().trim().max(100).optional().or(z.literal('')),
@@ -53,7 +60,7 @@ export const registerCandidateSchema = z
     geoLat: z.preprocess((val) => (val ? Number(val) : undefined), z.number().optional()),
     geoLng: z.preprocess((val) => (val ? Number(val) : undefined), z.number().optional()),
     geoAddress: z.string().trim().max(300).optional().or(z.literal('')),
-    preferredState: z.string().trim().min(1, 'Preferred state is required').max(100),
+    preferredState: stateField('Please select a valid state from the list'),
     preferredDistrict: z.string().trim().min(1, 'Preferred district is required').max(100),
     preferredSubdivision: z.string().trim().min(1, 'Preferred tehsil/subdivision is required').max(100),
     preferredBlock: z.string().trim().max(100).optional().or(z.literal('')),
