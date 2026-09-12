@@ -181,7 +181,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       mobileNumber: '',
       whatsappSameAsMobile: true,
       whatsappNumber: '',
-      age: 25,
+      // undefined (not 25) so the field starts genuinely empty, showing
+      // its placeholder instead of a plausible-looking number the
+      // candidate never actually typed.
+      age: undefined,
       gender: 'male',
       permanentDistrict: 'Jaipur',
       currentArea: '',
