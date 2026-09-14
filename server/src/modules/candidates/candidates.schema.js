@@ -50,7 +50,10 @@ export const registerCandidateSchema = z
     permanentDistrict: z.string().trim().min(1, 'Permanent district is required').max(100),
     currentArea: z.string().trim().min(1, 'Current area / locality is required').max(300),
     permanentState: stateField('Please select a valid state from the list'),
-    permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required').max(100),
+    // Optional again — Permanent Address's UI is commented out client-side
+    // (no longer collected from the candidate), so there's nothing left to
+    // fill this in.
+    permanentSubdivision: z.string().trim().max(100).optional().or(z.literal('')),
     permanentBlock: z.string().trim().max(100).optional().or(z.literal('')),
     permanentTehsil: z.string().trim().max(100).optional().or(z.literal('')),
     permanentVillage: z.string().trim().max(150).optional().or(z.literal('')),

@@ -55,7 +55,9 @@ export const candidateFormSchema = z
       .trim()
       .min(1, 'Current area / locality is required'),
     permanentState: stateField('Please select a valid state from the list'),
-    permanentSubdivision: z.string().trim().min(1, 'Permanent tehsil/subdivision is required'),
+    // Optional again — Permanent Address's UI is commented out (no longer
+    // collected from the candidate), so there's nothing left to fill this in.
+    permanentSubdivision: z.string().trim().optional().or(z.literal('')),
     permanentBlock: z.string().trim().optional().or(z.literal('')),
     permanentTehsil: z.string().trim().optional().or(z.literal('')),
     permanentVillage: z.string().trim().optional().or(z.literal('')),
