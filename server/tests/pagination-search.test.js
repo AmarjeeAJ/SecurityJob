@@ -22,10 +22,20 @@ test('owner can paginate, search by name, and filter by city', async () => {
 
   await request(app)
     .post('/api/public/candidates/register')
-    .field({ ...baseRegistrationFields(mobileA), fullName: `PaginationTest${uniqueTag}`, permanentDistrict: 'Udaipur' });
+    .field({
+      ...baseRegistrationFields(mobileA),
+      fullName: `PaginationTest${uniqueTag}`,
+      permanentDistrict: 'Udaipur',
+      permanentSubdivision: 'Girwa / City (गिर्वा)',
+    });
   await request(app)
     .post('/api/public/candidates/register')
-    .field({ ...baseRegistrationFields(mobileB), fullName: `OtherCandidate${uniqueTag}`, permanentDistrict: 'Jodhpur' });
+    .field({
+      ...baseRegistrationFields(mobileB),
+      fullName: `OtherCandidate${uniqueTag}`,
+      permanentDistrict: 'Jodhpur',
+      permanentSubdivision: 'Jodhpur Sadar (जोधपुर सदर)',
+    });
 
   const agent = await loggedInAgent();
 

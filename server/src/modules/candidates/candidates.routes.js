@@ -5,6 +5,7 @@ import { registrationRateLimiter } from '../../middleware/rateLimit.middleware.j
 import { uploadCandidateDocuments, handleUploadErrors } from '../../middleware/upload.middleware.js';
 import { registerCandidateSchema } from './candidates.schema.js';
 import { register } from './candidates.controller.js';
+import { AppError, asyncHandler } from '../../middleware/error.middleware.js';
 import normalizeIndianMobile from '../../utils/phone-normalizer.js';
 import { RAJASTHAN_LOCATIONS_DATA, RAJASTHAN_DISTRICTS, getSmartAreasForDistrict } from '../../utils/rajasthan-locations.js';
 import { INDIA_STATES_DISTRICTS, ALL_INDIAN_STATES } from '../../utils/india-locations.js';
@@ -71,17 +72,19 @@ router.get('/locations/states', (req, res) => {
 });
 
 // 2. State-specific Districts API
-router.get('/locations/districts', async (req, res) => {
-  const state = req.query.state || 'Rajasthan';
-
-  // The curated INDIA_STATES_DISTRICTS list is hand-maintained and drifts
-  // out of sync with real administrative changes — e.g. Rajasthan's "Deeg"
-  // district (carved out of Bharatpur in 2023) was never added to it, so
-  // it silently offered no match for a real, current district. The real
-  // `districts` table (seeded from the official LGD directory) is kept
-  // current and is what Tehsil/Village already resolve against — use it
-  // here too, falling back to the curated list only if the DB has nothing
-  // for this state.
+// Shared by the /locations/districts route below and by the registration
+// validation step, so "what the dropdown offered" and "what validation
+// accepts" can never drift apart.
+//
+// The curated INDIA_STATES_DISTRICTS list is hand-maintained and drifts
+// out of sync with real administrative changes — e.g. Rajasthan's "Deeg"
+// district (carved out of Bharatpur in 2023) was never added to it, so
+// it silently offered no match for a real, current district. The real
+// `districts` table (seeded from the official LGD directory) is kept
+// current and is what Tehsil/Village already resolve against — use it
+// here too, falling back to the curated list only if the DB has nothing
+// for this state.
+export async function resolveDistrictsForState(state) {
   try {
     const dbDistricts = await query(
       `SELECT d.district_name FROM districts d
@@ -91,14 +94,17 @@ router.get('/locations/districts', async (req, res) => {
       [state]
     );
     if (dbDistricts.rows.length > 0) {
-      const districts = dbDistricts.rows.map((r) => r.district_name).filter(Boolean);
-      return res.json({ success: true, state, districts, total: districts.length });
+      return dbDistricts.rows.map((r) => r.district_name).filter(Boolean);
     }
   } catch (err) {
     // DB unreachable/unseeded — degrade to the curated list below.
   }
+  return INDIA_STATES_DISTRICTS[state] || INDIA_STATES_DISTRICTS['Rajasthan'] || RAJASTHAN_DISTRICTS;
+}
 
-  const districts = INDIA_STATES_DISTRICTS[state] || INDIA_STATES_DISTRICTS['Rajasthan'] || RAJASTHAN_DISTRICTS;
+router.get('/locations/districts', async (req, res) => {
+  const state = req.query.state || 'Rajasthan';
+  const districts = await resolveDistrictsForState(state);
   res.json({
     success: true,
     state,
@@ -379,21 +385,23 @@ router.get('/locations/villages', async (req, res) => {
 });
 
 // 3c. Subdivisions for District
-router.get('/locations/subdivisions', async (req, res) => {
-  const district = (req.query.district || '').trim();
-  const state = (req.query.state || '').trim();
+// Shared by the /locations/subdivisions route below and by the
+// registration validation step, so "what the dropdown offered" and "what
+// validation accepts" can never drift apart.
+//
+// SUBDIVISION_BLOCK_MAP is hand-curated for only 23 districts (Bihar's and
+// Rajasthan's major ones, plus 3 in UP). Every other district — 97% of
+// India — fell back to a generic "District सदर / District ग्रामीण"
+// placeholder that doesn't correspond to any real administrative unit, so
+// picking either one returned the exact same unscoped, district-wide
+// village list (verified: Ludhiana Sadar vs Ludhiana Rural, 382/387
+// identical villages). For those districts, use the real LGD blocks —
+// already loaded for all 784 districts via seedLgd.js — as the
+// selectable list instead, so each option actually scopes the village
+// list to its own real area.
+export async function resolveSubdivisionsForDistrict(state, district) {
   let subdivisions = getSubdivisionsForDistrict(state, district);
 
-  // SUBDIVISION_BLOCK_MAP is hand-curated for only 23 districts (Bihar's and
-  // Rajasthan's major ones, plus 3 in UP). Every other district — 97% of
-  // India — fell back to a generic "District सदर / District ग्रामीण"
-  // placeholder that doesn't correspond to any real administrative unit, so
-  // picking either one returned the exact same unscoped, district-wide
-  // village list (verified: Ludhiana Sadar vs Ludhiana Rural, 382/387
-  // identical villages). For those districts, use the real LGD blocks —
-  // already loaded for all 784 districts via seedLgd.js — as the
-  // selectable list instead, so each option actually scopes the village
-  // list to its own real area.
   const isPlaceholder =
     subdivisions.length > 0 &&
     subdivisions.length <= 2 &&
@@ -433,6 +441,14 @@ router.get('/locations/subdivisions', async (req, res) => {
       // dropdown isn't left empty.
     }
   }
+
+  return subdivisions;
+}
+
+router.get('/locations/subdivisions', async (req, res) => {
+  const district = (req.query.district || '').trim();
+  const state = (req.query.state || '').trim();
+  const subdivisions = await resolveSubdivisionsForDistrict(state, district);
 
   res.json({
     success: true,
@@ -714,7 +730,10 @@ router.get('/locations/reverse-geo', async (req, res) => {
   }
 
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`;
+    // zoom=18 is Nominatim's finest (building-level) precision; zoom=16 only
+    // resolves to "major streets", which was snapping candidates' exact GPS
+    // pins to the nearest named road/area instead of their actual location.
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 4000);
     const resp = await fetch(url, {
@@ -803,12 +822,64 @@ router.get('/check-mobile/:mobile', async (req, res) => {
   }
 });
 
+// Runs after registerCandidateSchema's basic Zod checks, which only confirm
+// District/Subdivision are non-empty strings. This confirms they're values
+// that were genuinely selectable for the given State/District — reusing
+// the exact same resolver functions the /locations/districts and
+// /locations/subdivisions dropdowns above call, so "what the form offered"
+// and "what gets accepted here" can never drift apart. Village is
+// deliberately NOT checked: unlike State/District/Subdivision, which are
+// now complete government lists with no legitimate coverage gaps, Village
+// genuinely still has real localities missing from every data source we
+// have, and candidates need to keep being able to type theirs in.
+function normalizeLocationName(value) {
+  return (value || '').toLowerCase().trim();
+}
+
+async function isKnownDistrict(state, district) {
+  if (!district) return true; // emptiness is the base schema's job to reject
+  const districts = await resolveDistrictsForState(state);
+  return districts.some((d) => normalizeLocationName(d) === normalizeLocationName(district));
+}
+
+async function isKnownSubdivision(state, district, subdivision) {
+  if (!subdivision) return true;
+  const subdivisions = await resolveSubdivisionsForDistrict(state, district);
+  return subdivisions.some((s) => normalizeLocationName(s) === normalizeLocationName(subdivision));
+}
+
+const validateLocationSelections = asyncHandler(async (req, res, next) => {
+  const body = req.body;
+  const details = {};
+
+  const [permanentDistrictOk, preferredDistrictOk] = await Promise.all([
+    isKnownDistrict(body.permanentState, body.permanentDistrict),
+    isKnownDistrict(body.preferredState, body.preferredDistrict),
+  ]);
+  if (!permanentDistrictOk) details.permanentDistrict = 'Please select a valid district from the list';
+  if (!preferredDistrictOk) details.preferredDistrict = 'Please select a valid district from the list';
+
+  const [permanentSubdivisionOk, preferredSubdivisionOk] = await Promise.all([
+    isKnownSubdivision(body.permanentState, body.permanentDistrict, body.permanentSubdivision),
+    isKnownSubdivision(body.preferredState, body.preferredDistrict, body.preferredSubdivision),
+  ]);
+  if (!permanentSubdivisionOk) details.permanentSubdivision = 'Please select a valid tehsil/subdivision from the list';
+  if (!preferredSubdivisionOk) details.preferredSubdivision = 'Please select a valid tehsil/subdivision from the list';
+
+  if (Object.keys(details).length > 0) {
+    throw new AppError('Please correct the highlighted fields and try again.', 422, details);
+  }
+
+  next();
+});
+
 router.post(
   '/register',
   registrationRateLimiter,
   uploadCandidateDocuments,
   handleUploadErrors,
   validateBody(registerCandidateSchema),
+  validateLocationSelections,
   register
 );
 
