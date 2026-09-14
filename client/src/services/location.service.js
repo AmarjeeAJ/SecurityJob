@@ -303,7 +303,9 @@ export async function reverseGeocode(lat, lng) {
   } catch {
     // Fallback direct call
     try {
-      const direct = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`);
+      // zoom=18 is Nominatim's finest (building-level) precision — kept in
+      // sync with the server route's same fix.
+      const direct = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
       if (direct.ok) {
         const data = await direct.json();
         const addr = data?.address || {};
