@@ -55,10 +55,12 @@ function CandidateCard({ c }) {
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z" /></svg>
           {c.mobileNumber}
         </span>
+        {/* Permanent District commented out — only current and preferred location stay
         <span className="flex items-center gap-1">
           <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
           {c.permanentDistrict}
         </span>
+        */}
       </div>
 
       <p className="mt-2 text-xs text-slate-600">
@@ -100,7 +102,9 @@ export default function CandidateTable({ candidates, loading }) {
             <tr className="bg-gradient-to-b from-navy-900 to-navy-800 text-left text-[11px] font-bold uppercase tracking-wider text-gold-300">
               <th className={`${TH_CLASSES} sticky left-0 z-20 bg-navy-900`}>Candidate</th>
               <th className={TH_CLASSES}>Mobile</th>
+              {/* Permanent City / District commented out — only preferred & current location stay
               <th className={TH_CLASSES}>City</th>
+              */}
               <th className={TH_CLASSES}>Preferred Roles</th>
               <th className={TH_CLASSES}>Preferred Locations</th>
               <th className={TH_CLASSES}>Security Exp.</th>
@@ -141,7 +145,9 @@ export default function CandidateTable({ candidates, loading }) {
                   </div>
                 </td>
                 <td className="px-4 py-3.5 text-slate-600">{c.mobileNumber}</td>
+                {/* Permanent City / District commented out
                 <td className="px-4 py-3.5 text-slate-600">{c.permanentDistrict}</td>
+                */}
                 <td className="px-4 py-3.5">
                   <div className="flex flex-wrap gap-1">
                     {c.preferredRoles.length > 0

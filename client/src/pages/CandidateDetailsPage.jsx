@@ -550,23 +550,20 @@ export default function CandidateDetailsPage() {
                 <Field label="Qualification" value={candidate.highest_qualification} />
               </div>
 
+              {/* Permanent Address commented out — only current location and preferred location stay
               <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Permanent Address</p>
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
                   <Field label="State" value={candidate.permanent_state} />
                   <Field label="District" value={candidate.permanent_district} />
                   <Field label="Subdivision" value={candidate.permanent_subdivision} />
-                  {/* Block / Tehsil hidden — the form no longer collects it
-                      (Village now keys off Subdivision directly), so this
-                      always read as a blank dash. Re-enable if the Block
-                      field comes back.
                   <Field label="Block / Tehsil" value={candidate.permanent_tehsil} />
-                  */}
                   <Field label="Village" value={candidate.permanent_village} />
                   <Field label="Pincode" value={candidate.permanent_pincode} />
                   <Field label="Address Line" value={candidate.permanent_address_line} />
                 </div>
               </div>
+              */}
 
               <div className="mt-5 sm:mt-6 border-t border-slate-100 pt-4 sm:pt-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Current Address</p>
