@@ -17,6 +17,7 @@ const DEFAULT_JOB_SLUG = 'security-guard';
 
 export default function CandidateApplicationPage() {
   const { language } = useLanguage();
+  const isHindi = language === 'hi';
   const { jobSlug = DEFAULT_JOB_SLUG } = useParams();
   const [pageConfig, setPageConfig] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -58,7 +59,7 @@ export default function CandidateApplicationPage() {
 
       <main className="flex-1 pb-16">
         {/* Top Header Banner (Light Theme) */}
-        <section className="bg-light-hero py-8 sm:py-10 border-b border-slate-200/80 relative overflow-hidden">
+        <section className="bg-light-hero py-4 sm:py-5 border-b border-slate-200/80 relative overflow-hidden">
           <div className="mx-auto max-w-4xl px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -67,14 +68,18 @@ export default function CandidateApplicationPage() {
                   className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-blue-600 mb-2 transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Browse Other Security Roles
+                  {isHindi ? 'अन्य सिक्योरिटी जॉब देखें' : 'Browse Other Security Roles'}
                 </Link>
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  Apply for {pageConfig?.heading || 'Security Guard Jobs'}
+                  {isHindi ? 'सिक्योरिटी जॉब आवेदन फॉर्म' : `Apply for ${pageConfig?.heading || 'Security Guard Jobs'}`}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Free Registration &middot; Zero Agency Fees &middot; Direct Employer Match</span>
+                  <span>
+                    {isHindi
+                      ? '100% फ्री · सीधी भर्ती (Zero Agency Fees) · सरकारी PF व ESIC सुविधा · 2 मिनट में भरें'
+                      : 'Free Registration · Zero Agency Fees · Direct Employer Match'}
+                  </span>
                 </p>
               </div>
 
@@ -83,7 +88,7 @@ export default function CandidateApplicationPage() {
                 <LanguageToggle />
                 <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Secure Form</span>
+                  <span>{isHindi ? 'सुरक्षित फॉर्म' : 'Secure Form'}</span>
                 </div>
               </div>
             </div>
@@ -91,7 +96,7 @@ export default function CandidateApplicationPage() {
         </section>
 
         {/* Application Form Container */}
-        <div className="mx-auto max-w-3xl px-3 sm:px-6 pt-4 sm:pt-6 pb-8">
+        <div className="mx-auto max-w-3xl px-3 sm:px-6 pt-3 sm:pt-4 pb-8">
           {!pageConfig && !loadError && (
             <Card className="p-6 sm:p-10">
               <LoadingSkeleton rows={8} />
