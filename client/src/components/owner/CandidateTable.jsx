@@ -71,9 +71,14 @@ function CandidateCard({ c }) {
         {c.source && (
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.source}</span>
         )}
+        {/* joiningAvailability hidden — the form's Experience section is
+            just a Fresher/Experienced toggle with no input for this, so
+            it was always a fabricated default ("immediate") rather than
+            a real answer.
         {c.joiningAvailability && (
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.joiningAvailability}</span>
         )}
+        */}
         <span className="ml-auto text-slate-400">{formatDate(c.lastSubmittedAt)}</span>
       </div>
     </Link>
@@ -107,8 +112,13 @@ export default function CandidateTable({ candidates, loading }) {
               */}
               <th className={TH_CLASSES}>Preferred Roles</th>
               <th className={TH_CLASSES}>Preferred Locations</th>
+              {/* Security Exp. / Joining columns hidden — the form's Experience
+                  section is just a Fresher/Experienced toggle with no input for
+                  either, so both were always fabricated defaults (12 months /
+                  immediate), identical for every experienced candidate.
               <th className={TH_CLASSES}>Security Exp.</th>
               <th className={TH_CLASSES}>Joining</th>
+              */}
               <th className={TH_CLASSES}>Source</th>
               <th className={TH_CLASSES}>Campaign</th>
               <th className={TH_CLASSES}>Latest Submission</th>
@@ -160,6 +170,7 @@ export default function CandidateTable({ candidates, loading }) {
                   </div>
                 </td>
                 <td className="px-4 py-3.5 text-slate-600">{c.preferredLocations.join(' | ') || '—'}</td>
+                {/* Security Exp. / Joining cells hidden — see matching header comment above.
                 <td className="px-4 py-3.5 text-slate-600">{c.securityExperienceMonths} mo</td>
                 <td className="px-4 py-3.5">
                   {c.joiningAvailability ? (
@@ -168,6 +179,7 @@ export default function CandidateTable({ candidates, loading }) {
                     </span>
                   ) : '—'}
                 </td>
+                */}
                 <td className="px-4 py-3.5">
                   {c.source ? (
                     <span className="whitespace-nowrap rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{c.source}</span>

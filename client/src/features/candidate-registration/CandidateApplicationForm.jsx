@@ -116,10 +116,14 @@ function buildFormData(data, trackingData, frontFile, backFile) {
     highestQualification: data.highestQualification || '10th Pass',
     otherRoleText: data.otherRoleText || '',
     isExperienced: Boolean(data.isExperienced),
-    securityExperienceMonths: data.isExperienced ? (Number(data.securityExperienceMonths) > 0 ? Number(data.securityExperienceMonths) : 12) : 0,
-    currentEmploymentStatus: data.isExperienced ? (data.currentEmploymentStatus || 'unemployed') : undefined,
-    joiningAvailability: data.isExperienced ? (data.joiningAvailability || 'immediate') : undefined,
-    dutyHourPreference: data.isExperienced ? (data.dutyHourPreference || 'any') : undefined,
+    // No input anywhere in the form collects real values for these --
+    // sending fabricated defaults (12 months / unemployed / immediate /
+    // any) made every "Experienced" candidate's data identical and
+    // meaningless. Left empty until real inputs exist to collect them.
+    securityExperienceMonths: 0,
+    currentEmploymentStatus: undefined,
+    joiningAvailability: undefined,
+    dutyHourPreference: undefined,
     aadhaarAvailable: hasAadhaar,
     // Was hard-coded `true` here regardless of the checkbox's actual state
     // -- the consent checkbox was functionally meaningless, since
@@ -371,8 +375,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const watchRoles = watch('preferredRoles') || [];
   const watchLocations = watch('preferredLocations') || [];
   const watchExperienced = watch('isExperienced');
-  const watchDutyHour = watch('dutyHourPreference');
-  const watchJoining = watch('joiningAvailability');
   const watchConsent = watch('consentGiven');
 
   // 1. Load States list from API
@@ -1428,9 +1430,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     type="button"
                     onClick={() => {
                       setValue('isExperienced', false, { shouldValidate: true });
-                      setValue('securityExperienceMonths', 0);
-                      setValue('dutyHourPreference', undefined);
-                      setValue('joiningAvailability', undefined);
                     }}
                     className={`py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center border transition-all cursor-pointer ${
                       !watchExperienced
@@ -1445,9 +1444,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     type="button"
                     onClick={() => {
                       setValue('isExperienced', true, { shouldValidate: true });
-                      setValue('securityExperienceMonths', 12, { shouldValidate: true });
-                      setValue('dutyHourPreference', 'any', { shouldValidate: true });
-                      setValue('joiningAvailability', 'immediate', { shouldValidate: true });
                     }}
                     className={`py-3 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center border transition-all cursor-pointer ${
                       watchExperienced

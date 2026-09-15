@@ -16,8 +16,12 @@ const CSV_HEADERS = [
   'Preferred Job Roles', 'Preferred Working Cities',
   'Preferred Duty State', 'Preferred Duty District', 'Preferred Duty Subdivision',
   'Preferred Duty Block/Tehsil', 'Preferred Duty Pincode', 'Preferred Duty Landmark',
-  'Qualification', 'Experienced', 'Security Experience (Months)',
-  'Employment Status', 'Joining Availability', 'Duty-Hour Preference',
+  // Security Experience (Months) / Employment Status / Joining Availability /
+  // Duty-Hour Preference columns removed -- the form's Experience section is
+  // just a Fresher/Experienced toggle with no input for any of these, so
+  // they were always fabricated defaults (12 months / unemployed /
+  // immediate / any), identical for every experienced candidate.
+  'Qualification', 'Experienced',
   'Aadhaar Available', 'Source', 'Campaign', 'Landing Page', 'First Registration Date',
   'Latest Submission Date', 'Consent Status',
 ];
@@ -57,10 +61,6 @@ function rowToCsvValues(row) {
     row.preferred_address_line || '',
     row.highest_qualification || '',
     yesNo(row.is_experienced),
-    row.security_experience_months,
-    row.current_employment_status || '',
-    row.joining_availability || '',
-    row.duty_hour_preference || '',
     yesNo(row.aadhaar_available),
     row.source || '',
     row.campaign || '',

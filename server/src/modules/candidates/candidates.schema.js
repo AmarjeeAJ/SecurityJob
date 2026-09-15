@@ -134,26 +134,12 @@ export const registerCandidateSchema = z
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
     }
-    // Was silently substituting plausible-looking defaults ('unemployed',
-    // 'immediate', '12_hours') for anything left blank here, which meant a
-    // client-side bug (or a direct API call) could submit "Experienced"
-    // with none of the actual experience detail ever provided, and the
-    // server would fabricate it instead of rejecting the submission. Now
-    // genuinely required, mirroring the client schema.
-    if (data.isExperienced) {
-      if (!data.securityExperienceMonths || data.securityExperienceMonths <= 0) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['securityExperienceMonths'], message: 'Please enter your security experience in months' });
-      }
-      // currentEmploymentStatus has no UI control on the client form at
-      // all -- never required here, since there'd be no way for a
-      // candidate to satisfy that validation.
-      if (!data.joiningAvailability) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
-      }
-      if (!data.dutyHourPreference) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
-      }
-    }
+    // securityExperienceMonths/currentEmploymentStatus/joiningAvailability/
+    // dutyHourPreference have no UI control on the client form at all (the
+    // Experience section is just a Fresher/Experienced toggle) -- never
+    // required here, since there'd be no way for a candidate to satisfy
+    // that validation. Previously the toggle silently sent fabricated
+    // defaults (12 months / immediate / any) for these instead.
     for (const role of data.preferredRoles) {
       if (!JOB_ROLES.includes(role)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['preferredRoles'], message: `Invalid preferred role: ${role}` });

@@ -609,6 +609,13 @@ export default function CandidateDetailsPage() {
                 <Field label="Preferred Roles" value={candidate.roles.map((r) => r.role_name).join(' | ')} />
                 <Field label="Preferred Locations" value={candidate.preferredLocations.join(' | ')} />
                 <Field label="Experienced" value={candidate.is_experienced ? 'Yes' : 'No (Fresher)'} />
+                {/* Security Experience / Employment Status / Joining Availability /
+                    Duty-Hour Preference hidden -- the Experience section on the
+                    form is just a Fresher/Experienced toggle with no input for
+                    any of these, so they were always fabricated defaults
+                    (12 months / unemployed / immediate / any), identical for
+                    every experienced candidate. Re-enable if real inputs are
+                    added to collect them.
                 {candidate.is_experienced && (
                   <>
                     <Field label="Security Experience" value={`${candidate.security_experience_months} months`} />
@@ -617,6 +624,7 @@ export default function CandidateDetailsPage() {
                     <Field label="Duty-Hour Preference" value={candidate.duty_hour_preference} />
                   </>
                 )}
+                */}
                 {/* Aadhaar Available field hidden — the form no longer asks
                     candidates for this, so it always reads "No" and is just
                     noise on the dashboard. Re-enable alongside the Aadhaar

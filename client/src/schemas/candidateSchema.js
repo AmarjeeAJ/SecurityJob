@@ -108,20 +108,12 @@ export const candidateFormSchema = z
     if (data.preferredRoles.includes('Other') && !data.otherRoleText) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['otherRoleText'], message: 'Please specify the preferred role' });
     }
-    if (data.isExperienced) {
-      if (!data.securityExperienceMonths || data.securityExperienceMonths <= 0) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['securityExperienceMonths'], message: 'Please enter your security experience in months' });
-      }
-      // currentEmploymentStatus has no UI control anywhere in this form
-      // (no input/dropdown/buttons for it) — never required here, since
-      // there'd be no way for a candidate to satisfy that validation.
-      if (!data.joiningAvailability) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['joiningAvailability'], message: 'Please select your joining availability' });
-      }
-      if (!data.dutyHourPreference) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dutyHourPreference'], message: 'Please select your duty-hour preference' });
-      }
-    }
+    // securityExperienceMonths/currentEmploymentStatus/joiningAvailability/
+    // dutyHourPreference have no UI control anywhere in this form (the
+    // Experience section is just a Fresher/Experienced toggle) — never
+    // required here, since there'd be no way for a candidate to satisfy
+    // that validation. Previously the toggle silently sent fabricated
+    // defaults (12 months / immediate / any) for these instead.
   });
 
 export default candidateFormSchema;
