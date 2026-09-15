@@ -241,6 +241,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const [isCapturingLocation, setIsCapturingLocation] = useState(false);
   const [locationStatus, setLocationStatus] = useState(null);
+  // Drives the inline red error state on the Current Address field --
+  // set when submission is blocked because neither GPS nor manual entry
+  // was provided, cleared as soon as the candidate does either.
+  const [currentAddressError, setCurrentAddressError] = useState(false);
   // Defaults to unchecked — the candidate must actively confirm their
   // current address (either "same as permanent" or their own stay
   // address) rather than have it silently assumed on page load.
@@ -311,7 +315,6 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
   const [isLoadingPrefSubdivisions, setIsLoadingPrefSubdivisions] = useState(false);
   const [isLoadingPrefBlocks, setIsLoadingPrefBlocks] = useState(false);
 
-  const watchWhatsappSame = watch('whatsappSameAsMobile');
   const watchGender = watch('gender');
   const watchMobileNumber = watch('mobileNumber') || '';
   const [duplicateMobileInfo, setDuplicateMobileInfo] = useState(null);
@@ -343,7 +346,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
       checkMobileRegistered(digits)
         .then((res) => {
           if (isCancelled) return;
-          setDuplicateMobileInfo(res?.exists ? { fullName: res.fullName, candidateCode: res.candidateCode } : null);
+          setDuplicateMobileInfo(res?.exists ? true : null);
         })
         .catch(() => {
           // Non-blocking — a check failure should never trap a genuine candidate.
@@ -631,6 +634,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
         setValue('currentStayAddress', capturedAddressText);
         setValue('currentArea', capturedAddressText);
         setCurrentSameAsPermanent(false);
+        setCurrentAddressError(false);
         setLocationStatus({
           success: true,
           message: 'आपकी वर्तमान लोकेशन मिल गई और नीचे फॉर्म में भर दी गई है!',
@@ -726,7 +730,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   const handleNextStep = async () => {
     if (currentStep === 1 && duplicateMobileInfo) {
-      setSubmitError(`यह मोबाइल नंबर पहले से पंजीकृत है (${duplicateMobileInfo.fullName} — ${duplicateMobileInfo.candidateCode})। कृपया दोबारा फॉर्म न भरें। (This mobile number is already registered. Please do not fill the form again.)`);
+      setSubmitError('यह मोबाइल नंबर पहले से पंजीकृत है। कृपया दोबारा फॉर्म न भरें। (This mobile number is already registered. Please do not fill the form again.)');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -777,10 +781,12 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
     if (!stayAddr && !geoAddr) {
       setSubmitError('कृपया वर्तमान पता भरें या "📍 अभी की लोकेशन लें" बटन दबाएं। (Please fill your current address or use the auto-fill location button.)');
+      setCurrentAddressError(true);
       window.scrollTo({ top: 120, behavior: 'smooth' });
       return;
     }
     setSubmitError('');
+    setCurrentAddressError(false);
 
     const combinedArea = stayAddr || geoAddr || `${curCity} Main Area`;
     setValue('currentArea', combinedArea);
@@ -943,7 +949,9 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
   return (
     <div className="w-full space-y-5">
-      {/* Guard Friendly Trust Header - Clean, Light & Reassuring */}
+      {/* Guard Friendly Trust Header commented out — pushed the actual form
+          below the fold, forcing candidates to scroll before seeing Step 1.
+          Kept, not deleted.
       <div className="rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0">
@@ -977,89 +985,54 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
           </span>
         </div>
       </div>
+      */}
 
       <Card className="p-4 sm:p-7 shadow-xs border-slate-200/90 bg-white">
-        {/* Step Indicator Progress Bar - Clean 2-Step Design */}
-        <div className="mb-6 sm:mb-7">
-          {/* Top Status Meta Row */}
-          <div className="flex items-center justify-between gap-2 mb-3 px-1">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-extrabold text-xs">
+        {/* Step Indicator Progress Bar - Compact Single-Row Design (was 3
+            stacked blocks: status row + large node rail + label grid --
+            collapsed to one row + a thin progress line to cut vertical
+            space on the form). */}
+        <div className="mb-5 sm:mb-6">
+          <div className="flex items-center justify-between gap-2 mb-2 px-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-extrabold text-xs shrink-0">
                 {currentStep}
               </span>
-              <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight truncate">
                 {stepsMeta[currentStep - 1]?.title}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/80 text-[11px] font-bold text-slate-700">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/80 text-[11px] font-bold text-slate-700 shrink-0">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
               <span>{currentStep === 1 ? '50% (स्टेप 1/2)' : '100% (अंतिम चरण)'}</span>
             </div>
           </div>
 
-          {/* Interactive Steps Rail with Connecting Lines */}
-          <div className="relative flex items-center justify-between mb-2.5 px-6 sm:px-14">
-            {/* Background Rail Line */}
-            <div className="absolute left-10 right-10 sm:left-20 sm:right-20 top-1/2 -translate-y-1/2 h-1 bg-slate-200 rounded-full z-0" />
-            
-            {/* Animated Active Rail Fill */}
+          {/* Thin Progress Rail */}
+          <div className="relative h-1.5 bg-slate-200 rounded-full overflow-hidden">
             <motion.div
-              className="absolute left-10 sm:left-20 top-1/2 -translate-y-1/2 h-1 bg-blue-600 rounded-full z-0 origin-left"
+              className="absolute inset-y-0 left-0 bg-blue-600 rounded-full"
               initial={false}
-              animate={{
-                width: currentStep === 1 ? '0%' : 'calc(100% - 5rem)'
-              }}
+              animate={{ width: currentStep === 1 ? '50%' : '100%' }}
               transition={{ type: "spring", stiffness: 100, damping: 16 }}
             />
-
-            {/* Step Nodes */}
-            {stepsMeta.map((s) => {
-              const isPassed = currentStep > s.num;
-              const isCurrent = currentStep === s.num;
-              return (
-                <div key={s.num} className="relative z-10 flex flex-col items-center">
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      scale: isCurrent ? 1.05 : 1,
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center transition-all ${
-                      isPassed
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : isCurrent
-                        ? 'bg-blue-600 text-white shadow-sm ring-4 ring-blue-100'
-                        : 'bg-white text-slate-400 border-2 border-slate-200'
-                    }`}
-                  >
-                    {isPassed ? (
-                      <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
-                    ) : (
-                      <span>{s.num}</span>
-                    )}
-                  </motion.div>
-                </div>
-              );
-            })}
           </div>
 
-          {/* Step Labels Grid */}
-          <div className="grid grid-cols-2 gap-2 text-center">
+          {/* Step Labels Row (below the bar) */}
+          <div className="grid grid-cols-2 gap-2 mt-1.5 text-center">
             {stepsMeta.map((s) => {
               const isPassed = currentStep > s.num;
               const isCurrent = currentStep === s.num;
               return (
                 <div key={s.num} className="px-1">
                   <p
-                    className={`text-xs font-bold leading-tight transition-colors ${
-                      isCurrent || isPassed
-                        ? 'text-blue-700'
-                        : 'text-slate-500'
+                    className={`text-[11px] sm:text-xs font-bold leading-tight transition-colors ${
+                      isCurrent || isPassed ? 'text-blue-700' : 'text-slate-500'
                     }`}
                   >
                     {s.title}
                   </p>
-                  <p className="text-[11px] text-slate-400 font-medium hidden sm:block mt-0.5">
+                  <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">
                     {s.sub}
                   </p>
                 </div>
@@ -1150,7 +1123,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     <div className="mt-2 p-3 rounded-xl bg-red-50 border border-red-300 flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                       <p className="text-xs font-semibold text-red-800 leading-relaxed">
-                        आप पहले से पंजीकृत हैं ({duplicateMobileInfo.fullName} — {duplicateMobileInfo.candidateCode})। कृपया दोबारा फॉर्म न भरें।
+                        आप पहले से पंजीकृत हैं। कृपया दोबारा फॉर्म न भरें।
                         <span className="block font-normal text-red-700 mt-0.5">
                           (You are already registered. Please do not fill the form again.)
                         </span>
@@ -1164,7 +1137,10 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   )}
                 </div>
 
-                {/* WhatsApp Checkbox */}
+                {/* WhatsApp Checkbox commented out -- whatsappSameAsMobile
+                    defaults to true, so WhatsApp number keeps mirroring
+                    Mobile Number automatically with no separate control
+                    needed. Kept, not deleted.
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
@@ -1195,6 +1171,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                     </div>
                   )}
                 </div>
+                */}
 
                 {/* Age & Gender Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -1420,7 +1397,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                       2. कार्य अनुभव (Work Experience) <span className="text-red-500">*</span>
                     </h4>
                     <p className="text-xs text-slate-500 font-medium">
-                      क्या आपको पहले सिक्योरिटी का अनुभव है?
+                      क्या आपको सिक्योरिटी गार्ड, सुपरवाइज़र या किसी अन्य पद पर पहले से कोई अनुभव है?
                     </p>
                   </div>
                 </div>
@@ -1437,7 +1414,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <span>नया गार्ड / फ्रेशर (Fresher)</span>
+                    <span>फ्रेशर (Fresher)</span>
                   </button>
 
                   <button
@@ -1451,7 +1428,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <span>अनुभवी गार्ड (Experienced)</span>
+                    <span>अनुभवी (Experienced)</span>
                   </button>
                 </div>
               </div>
@@ -1614,32 +1591,19 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   </div>
                   <div>
                     <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                      4. आप अभी कहाँ रहते हैं? (Current Address)
+                      4. वर्तमान पता/लोकेशन दर्ज करें (Current Address/Location)
                     </h4>
-                    <p className="text-xs text-slate-600 font-medium mt-0.5">
-                      अभी आप जिस जगह या शहर में रह रहे हैं (Where you currently live)
-                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-3.5">
                   {/* GPS Auto-Fill Button */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-blue-50/40 border border-blue-200/80">
-                    <div>
-                      <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                        <LocateFixed className="w-4 h-4 text-blue-600" />
-                        <span>मोबाइल से अपना पता भरें (Auto-Fill Location)</span>
-                      </span>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        बटन दबाते ही आपकी अभी की लोकेशन अपने-आप आ जाएगी
-                      </p>
-                    </div>
-
                     <button
                       type="button"
                       onClick={handleCaptureLocation}
                       disabled={isCapturingLocation}
-                      className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shrink-0"
+                      className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-all shrink-0 order-first"
                     >
                       {isCapturingLocation ? (
                         <>
@@ -1653,6 +1617,16 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                         </>
                       )}
                     </button>
+
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <LocateFixed className="w-4 h-4 text-blue-600" />
+                        <span>सुरक्षित है, बेझिझक एक क्लिक में लोकेशन भरें (Auto-Fill Location)</span>
+                      </span>
+                      <p className="text-[11px] text-blue-700 font-semibold mt-0.5">
+                        आपकी लोकेशन लेने का उद्देश्य यह है कि आपकी अगली नौकरी आपकी लोकेशन के पास ही मिले।
+                      </p>
+                    </div>
                   </div>
 
                   {/* Captured GPS message if any */}
@@ -1689,23 +1663,35 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
                   {/* Manual / Verified Current Address */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-800 mb-1.5">
-                      रहने का पता (Current Address)
+                      अपना पता खुद लिखें (Type Your Address Manually)
                     </label>
                     <input
                       type="text"
-                      placeholder="उदा. कमरा/मकान नं., गली, कॉलोनी या एरिया (या ऊपर बटन से भरें)"
+                      placeholder="जैसे: मकान नं. 45, गली नं. 2, कॉलोनी का नाम"
                       value={watchCurrentStayAddress}
                       onChange={(e) => {
                         const val = e.target.value;
                         setValue('currentStayAddress', val);
                         setValue('currentArea', val.trim() || 'City Area');
                         if (currentSameAsPermanent) setCurrentSameAsPermanent(false);
+                        if (val.trim() && currentAddressError) setCurrentAddressError(false);
                       }}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all placeholder:font-normal placeholder:text-slate-400"
+                      className={`w-full px-4 py-3 rounded-xl border bg-white text-xs sm:text-sm font-semibold text-slate-900 focus:ring-2 focus:outline-none transition-all placeholder:font-normal placeholder:text-slate-400 ${
+                        currentAddressError
+                          ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
+                          : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
+                      }`}
                     />
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      यदि आप किराए पर या किसी अन्य जगह पर रहते हैं, तो यहाँ का पता लिखें।
-                    </p>
+                    {currentAddressError ? (
+                      <p className="text-[11px] text-red-600 font-semibold mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        कृपया अपना पता भरें या ऊपर लोकेशन बटन दबाएं (This field is required)
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        सही पता भरें ताकि आपको आपके घर के पास ही नौकरी मिल सके!
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
