@@ -803,19 +803,14 @@ router.get('/check-mobile/:mobile', async (req, res) => {
   }
 
   try {
+    // Only a boolean is returned -- this is an unauthenticated public
+    // endpoint with no proof the caller owns this mobile number, so it
+    // must never reveal whose name/candidate ID is registered under it.
     const result = await query(
-      'SELECT candidate_code, full_name FROM candidates WHERE normalized_mobile_number = $1',
+      'SELECT 1 FROM candidates WHERE normalized_mobile_number = $1',
       [normalized]
     );
-    if (result.rows.length > 0) {
-      return res.json({
-        success: true,
-        exists: true,
-        candidateCode: result.rows[0].candidate_code,
-        fullName: result.rows[0].full_name,
-      });
-    }
-    return res.json({ success: true, exists: false });
+    return res.json({ success: true, exists: result.rows.length > 0 });
   } catch {
     // DB hiccup — fail open so a real glitch never blocks a genuine candidate.
     return res.json({ success: true, exists: false });
