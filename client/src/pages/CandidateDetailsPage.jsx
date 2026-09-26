@@ -680,6 +680,32 @@ export default function CandidateDetailsPage() {
             )}
 
             <SectionCard icon={ICONS.trending} title="Campaign Sources">
+              {candidate.submissions.length > 0 && (
+                <div className="mb-5 border-b border-slate-100 pb-4">
+                  <h3 className="mb-2 text-sm font-bold text-navy-900">Marketing Attribution</h3>
+                  <p className="mb-3 text-xs text-slate-500">
+                    From the latest submission ({formatDateTime(candidate.submissions[0].submitted_at)})
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <Field label="Source" value={candidate.submissions[0].source} />
+                    <Field label="Medium" value={candidate.submissions[0].medium} />
+                    <Field label="Campaign" value={candidate.submissions[0].campaign} />
+                    <Field label="UTM Content" value={candidate.submissions[0].utm_content} />
+                    <Field label="UTM Term" value={candidate.submissions[0].utm_term} />
+                    <Field label="Campaign ID" value={candidate.submissions[0].campaign_id} />
+                    <Field label="Ad Set ID" value={candidate.submissions[0].adset_id} />
+                    <Field label="Ad ID" value={candidate.submissions[0].ad_id} />
+                    <Field label="FBCLID" value={candidate.submissions[0].fbclid} />
+                    <div className="col-span-2 sm:col-span-3">
+                      <Field label="Landing Page" value={candidate.submissions[0].landing_page_url} />
+                    </div>
+                    <div className="col-span-2 sm:col-span-3">
+                      <Field label="Referrer" value={candidate.submissions[0].referrer_url} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col gap-2">
                 {candidate.sources.map((s, i) => (
                   <div key={i} className="flex flex-wrap justify-between gap-1 rounded-lg bg-slate-50 px-3 py-2 text-sm">
