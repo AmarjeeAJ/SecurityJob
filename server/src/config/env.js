@@ -27,6 +27,13 @@ const env = {
   ownerDefaultPassword: process.env.OWNER_DEFAULT_PASSWORD || '',
   metaPixelId: process.env.META_PIXEL_ID || '',
   gaMeasurementId: process.env.GA_MEASUREMENT_ID || '',
+  // All optional -- Meta CAPI is a non-critical dependency. No fallback
+  // API version is hardcoded here; metaConversions.service.js skips the
+  // send (safely, with a log) rather than guessing a version if this is
+  // left blank.
+  metaAccessToken: process.env.META_ACCESS_TOKEN || '',
+  metaApiVersion: process.env.META_API_VERSION || '',
+  metaTestEventCode: process.env.META_TEST_EVENT_CODE || '',
 };
 
 export default env;

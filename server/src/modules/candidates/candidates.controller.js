@@ -1,7 +1,9 @@
+import crypto from 'node:crypto';
 import { asyncHandler } from '../../middleware/error.middleware.js';
 import { registerCandidate } from './candidates.service.js';
 import { JOB_ROLES, roleForSlug } from '../../utils/job-roles.js';
 import hashIp from '../../utils/ip-hash.js';
+import { sendCompleteRegistrationEvent } from '../../services/metaConversions.service.js';
 
 const ROLE_LABELS = {
   'security-guard': 'Security Guard',
@@ -22,6 +24,22 @@ export const register = asyncHandler(async (req, res) => {
     jobSlug,
     ipHash,
   });
+
+  // Meta Conversions API: Fire-and-forget CompleteRegistration event ONLY
+  // for new candidate registrations. Resubmissions / updates for existing
+  // candidates must NOT generate duplicate registration conversions.
+  if (!isExistingCandidate) {
+    sendCompleteRegistrationEvent({
+      eventId: crypto.randomUUID(),
+      candidateCode,
+      mobileNumber: req.body.mobileNumber,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      fbp: req.body.fbp || null,
+      fbc: req.body.fbc || null,
+      eventSourceUrl: req.body.landingPageUrl || null,
+    }).catch(() => {});
+  }
 
   res.status(201).json({
     success: true,
