@@ -108,6 +108,12 @@ export const registerCandidateSchema = z
     utmCampaign: z.string().trim().max(150).optional().or(z.literal('')),
     utmContent: z.string().trim().max(150).optional().or(z.literal('')),
     utmTerm: z.string().trim().max(150).optional().or(z.literal('')),
+    // Meta's structured ad-hierarchy IDs -- only present when the
+    // advertiser adds them as URL parameters on the ad's destination URL.
+    // Always optional; a registration must work normally without them.
+    campaignId: z.string().trim().max(100).optional().or(z.literal('')),
+    adsetId: z.string().trim().max(100).optional().or(z.literal('')),
+    adId: z.string().trim().max(100).optional().or(z.literal('')),
     fbclid: z.string().trim().max(255).optional().or(z.literal('')),
     fbp: z.string().trim().max(255).optional().or(z.literal('')),
     fbc: z.string().trim().max(255).optional().or(z.literal('')),

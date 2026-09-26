@@ -34,6 +34,12 @@ export function captureTrackingData(jobSlug) {
     utmCampaign: params.get('utm_campaign') || '',
     utmContent: params.get('utm_content') || '',
     utmTerm: params.get('utm_term') || '',
+    // Only populated when the advertiser adds these as URL parameters on
+    // the Meta ad's destination URL (e.g. &campaign_id={{campaign.id}}) --
+    // Meta does not send them by default.
+    campaignId: params.get('campaign_id') || '',
+    adsetId: params.get('adset_id') || '',
+    adId: params.get('ad_id') || '',
     fbclid: params.get('fbclid') || '',
     fbp: readCookie('_fbp'),
     fbc: readCookie('_fbc'),
