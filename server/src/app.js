@@ -19,6 +19,7 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 import candidatesRoutes from './modules/candidates/candidates.routes.js';
 import pageConfigRoutes from './modules/candidates/page-config.routes.js';
 import ownerCandidatesRoutes from './modules/candidates/owner-candidates.routes.js';
+import ownerBrandsRoutes from './modules/candidates/brands.routes.js';
 import ownerAuthRoutes from './modules/owner-auth/owner-auth.routes.js';
 
 const app = express();
@@ -79,6 +80,7 @@ app.use('/api/public/candidates', candidatesRoutes);
 app.use('/api/public/page-config', pageConfigRoutes);
 app.use('/api/owner/auth', ownerAuthRoutes);
 app.use('/api/owner/candidates', ownerCandidatesRoutes);
+app.use('/api/owner/brands', ownerBrandsRoutes);
 
 app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok' }));
 

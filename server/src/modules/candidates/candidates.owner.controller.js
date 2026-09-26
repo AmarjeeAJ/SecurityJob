@@ -3,8 +3,16 @@ import path from 'node:path';
 import { asyncHandler, AppError } from '../../middleware/error.middleware.js';
 import query from '../../db/query.js';
 import { uploadRoot } from '../../middleware/upload.middleware.js';
-import { listCandidatesPaginated, getCandidateFullById } from './candidates.repository.js';
+import { listCandidatesPaginated, getCandidateFullById, listBrands as listBrandsQuery } from './candidates.repository.js';
 
+
+export const listBrands = asyncHandler(async (req, res) => {
+  const brands = await listBrandsQuery();
+  res.json({
+    success: true,
+    data: brands.map((b) => ({ id: b.id, name: b.name, slug: b.slug })),
+  });
+});
 
 export const listCandidates = asyncHandler(async (req, res) => {
   const { rows, total } = await listCandidatesPaginated(req.query);
@@ -24,6 +32,9 @@ export const listCandidates = asyncHandler(async (req, res) => {
       joiningAvailability: row.joining_availability,
       source: row.source,
       campaign: row.campaign,
+      campaignId: row.campaign_id,
+      adsetId: row.adset_id,
+      adId: row.ad_id,
       firstRegisteredAt: row.first_registered_at,
       lastSubmittedAt: row.last_submitted_at,
       isDuplicate: Boolean(

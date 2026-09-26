@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const listCandidatesQuerySchema = z.object({
+  brand: z.string().trim().max(50).optional(),
   search: z.string().trim().max(150).optional(),
   state: z.string().trim().max(100).optional(),
   city: z.string().trim().max(100).optional(),
