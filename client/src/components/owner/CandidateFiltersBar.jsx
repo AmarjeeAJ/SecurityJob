@@ -8,7 +8,8 @@ import {
   X,
   RotateCcw,
   ChevronDown,
-  Copy
+  Copy,
+  Building2
 } from 'lucide-react';
 import JOB_ROLES from '../../utils/jobRoles.js';
 import { RAJASTHAN_CITIES } from '../../utils/locations.js';
@@ -17,7 +18,7 @@ import { getSubdivisionsForDistrict } from '../../utils/tehsilVillages.js';
 import { fetchDistricts } from '../../services/location.service.js';
 import SearchableLocationInput from '../form/SearchableLocationInput.jsx';
 
-export default function CandidateFiltersBar({ filters, onChange, onReset }) {
+export default function CandidateFiltersBar({ filters, onChange, onReset, brands = [] }) {
   function update(key, value) {
     onChange({ ...filters, [key]: value, page: 1 });
   }
@@ -85,9 +86,9 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
   if (filters.duplicateOnly) activeFilters.push({ key: 'duplicateOnly', label: 'Duplicate Register only', clear: () => update('duplicateOnly', false) });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-end gap-2.5 pb-3 border-b border-slate-100">
+      <div className="flex flex-wrap items-center justify-end gap-2.5 pb-2.5 border-b border-slate-100">
         {/* Sort Order — a compact chip-style select, not a full input field */}
         <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 border border-slate-200/60 text-slate-600 cursor-pointer">
           <ArrowUpDown className="w-3 h-3 text-blue-600 shrink-0" />
@@ -124,9 +125,30 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
 
       {/* Main Form Fields Grid */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 items-start">
-        
-        {/* 1. Global Search Field (Span 3 cols on desktop) */}
-        <div className="sm:col-span-2 lg:col-span-3 space-y-1">
+
+        {/* 0. Brand Selector (Span 4 cols on desktop -- 3 fields per row, matches the rest) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
+            Brand
+          </label>
+          <div className="relative flex items-center bg-slate-50/90 hover:bg-slate-100/70 focus-within:bg-white rounded-xl border border-slate-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all">
+            <Building2 className="w-4 h-4 text-amber-600 absolute left-3 pointer-events-none" />
+            <select
+              value={filters.brand}
+              onChange={(e) => update('brand', e.target.value)}
+              className="w-full appearance-none pl-9 pr-8 py-2 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer"
+            >
+              <option value="">All Brands</option>
+              {brands.map((b) => (
+                <option key={b.slug} value={b.slug}>{b.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* 1. Global Search Field (Span 4 cols on desktop) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
             Search Records
           </label>
@@ -137,7 +159,7 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
               placeholder="Name, 10-digit mobile or ID..."
               value={filters.search}
               onChange={(e) => update('search', e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none"
+              className="w-full pl-9 pr-8 py-2 bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
             {filters.search && (
               <button
@@ -151,8 +173,8 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
           </div>
         </div>
 
-        {/* 2. Preferred Role Select (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
+        {/* 2. Preferred Role Select (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
             Preferred Role
           </label>
@@ -161,7 +183,7 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
             <select
               value={filters.role}
               onChange={(e) => update('role', e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
+              className="w-full pl-9 pr-8 py-2 bg-transparent text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer appearance-none truncate"
             >
               <option value="">All Security Roles</option>
               {JOB_ROLES.map((role) => (
@@ -172,8 +194,8 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
           </div>
         </div>
 
-        {/* 3. State — searchable, matching the candidate registration form (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3">
+        {/* 3. State — searchable, matching the candidate registration form (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4">
           <SearchableLocationInput
             id="filter-state"
             label="State (राज्य)"
@@ -182,11 +204,12 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
             onSelectOption={(val) => handleStateChange(val)}
             options={ALL_INDIAN_STATES}
             placeholder="All States"
+            compact
           />
         </div>
 
-        {/* 4. District — searchable, options follow the selected State (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3">
+        {/* 4. District — searchable, options follow the selected State (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4">
           <SearchableLocationInput
             id="filter-district"
             label="District (जिला)"
@@ -196,11 +219,12 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
             options={districtOptions}
             placeholder="All Districts"
             badgeText={districtOptions.length > 0 ? `${districtOptions.length} जिले` : ''}
+            compact
           />
         </div>
 
-        {/* 4b. Tehsil / Subdivision — searchable, scoped to the selected District (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3">
+        {/* 4b. Tehsil / Subdivision — searchable, scoped to the selected District (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4">
           <SearchableLocationInput
             id="filter-subdivision"
             label="Tehsil (तहसील)"
@@ -211,11 +235,12 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
             placeholder={filters.city ? 'All Tehsils' : 'Select a district first'}
             disabled={!filters.city}
             badgeText={subdivisionOptions.length > 0 ? `${subdivisionOptions.length} तहसील` : ''}
+            compact
           />
         </div>
 
-        {/* 5. Marketing Source (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
+        {/* 5. Marketing Source (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
             Source Channel
           </label>
@@ -226,7 +251,7 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
               placeholder="e.g. facebook, direct, whatsapp"
               value={filters.source}
               onChange={(e) => update('source', e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none"
+              className="w-full pl-9 pr-8 py-2 bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none"
             />
             {filters.source && (
               <button
@@ -240,8 +265,8 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
           </div>
         </div>
 
-        {/* 6. From Date (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
+        {/* 6. From Date (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
             From Date
           </label>
@@ -251,14 +276,14 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
               type="date"
               value={filters.dateFrom}
               onChange={(e) => update('dateFrom', e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer"
+              className="w-full pl-9 pr-3 py-2 bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer"
               aria-label="From date"
             />
           </div>
         </div>
 
-        {/* 7. To Date (Span 3 cols) */}
-        <div className="sm:col-span-1 lg:col-span-3 space-y-1">
+        {/* 7. To Date (Span 4 cols) */}
+        <div className="sm:col-span-1 lg:col-span-4 space-y-1">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
             To Date
           </label>
@@ -268,7 +293,7 @@ export default function CandidateFiltersBar({ filters, onChange, onReset }) {
               type="date"
               value={filters.dateTo}
               onChange={(e) => update('dateTo', e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer"
+              className="w-full pl-9 pr-3 py-2 bg-transparent text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none cursor-pointer"
               aria-label="To date"
             />
           </div>

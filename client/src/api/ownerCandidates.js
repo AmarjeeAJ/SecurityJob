@@ -5,6 +5,11 @@ export async function fetchCandidates(params) {
   return data;
 }
 
+export async function fetchBrands() {
+  const { data } = await apiClient.get('/owner/brands');
+  return data;
+}
+
 export async function fetchCandidateDetails(id) {
   const { data } = await apiClient.get(`/owner/candidates/${id}`);
   return data;

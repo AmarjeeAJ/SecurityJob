@@ -12,7 +12,7 @@ import {
   UserPlus,
   X
 } from 'lucide-react';
-import { fetchCandidates, buildExportCsvUrl } from '../api/ownerCandidates.js';
+import { fetchCandidates, fetchBrands, buildExportCsvUrl } from '../api/ownerCandidates.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import OwnerHeader from '../components/owner/OwnerHeader.jsx';
 import CandidateFiltersBar from '../components/owner/CandidateFiltersBar.jsx';
@@ -23,6 +23,10 @@ import ErrorBanner from '../components/form/ErrorBanner.jsx';
 import { useNoIndex } from '../hooks/useNoIndex.js';
 
 const DEFAULT_FILTERS = {
+  // Defaults to SecurityJob.in, not "All Brands" -- this page is
+  // fundamentally SecurityJob-specific today, and Spybot Security
+  // Services has no candidate rows yet.
+  brand: 'securityjob-in',
   search: '',
   state: '',
   city: '',
@@ -51,6 +55,15 @@ export default function CandidateRecordsPage() {
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [latestCandidate, setLatestCandidate] = useState(null);
   const latestCandidateIdRef = useRef(null);
+  const [brands, setBrands] = useState([]);
+
+  useEffect(() => {
+    fetchBrands()
+      .then((data) => setBrands(data?.data || []))
+      .catch(() => {
+        // Non-blocking — the Brand filter just won't have options this load.
+      });
+  }, []);
 
   const [successBanner, setSuccessBanner] = useState(location.state?.successMessage || '');
 
@@ -101,7 +114,7 @@ export default function CandidateRecordsPage() {
     const POLL_MS = 20000;
     const timer = setInterval(() => {
       loadCandidates(true);
-      fetchCandidates({ sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
+      fetchCandidates({ brand: filters.brand, sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
         .then((data) => {
           const latest = data?.data?.[0];
           if (latest && latest.id !== latestCandidateIdRef.current) {
@@ -114,25 +127,26 @@ export default function CandidateRecordsPage() {
         });
     }, POLL_MS);
     return () => clearInterval(timer);
-  }, [loadCandidates]);
+  }, [loadCandidates, filters.brand]);
 
-  // Fetch the latest-registered candidate once on mount so the badge shows
-  // immediately, without waiting for the first poll cycle.
+  // Fetch the latest-registered candidate on mount and whenever the Brand
+  // filter changes, so the badge shows the right brand's latest
+  // registration immediately rather than waiting up to 20s for the next
+  // poll — and correctly clears to nothing for a brand with zero records.
   useEffect(() => {
-    fetchCandidates({ sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
+    fetchCandidates({ brand: filters.brand, sortBy: 'latest_submission', sortDir: 'desc', page: 1, pageSize: 1 })
       .then((data) => {
-        const latest = data?.data?.[0];
-        if (latest) {
-          latestCandidateIdRef.current = latest.id;
-          setLatestCandidate(latest);
-        }
+        const latest = data?.data?.[0] || null;
+        latestCandidateIdRef.current = latest?.id || null;
+        setLatestCandidate(latest);
       })
       .catch(() => {
         // Non-blocking
       });
-  }, []);
+  }, [filters.brand]);
 
   const activeExportFilters = {
+    brand: filters.brand,
     search: debouncedSearch,
     state: filters.state,
     city: debouncedCity,
@@ -238,12 +252,16 @@ export default function CandidateRecordsPage() {
           </button>
         )}
 
-        {/* Modern Filter Card */}
-        <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm overflow-hidden transition-all">
+        {/* Modern Filter Card -- deliberately no overflow-hidden here: it used
+            to clip the rounded corners cleanly, but it also clipped the
+            State/District/Tehsil dropdown popups whenever they needed to
+            extend past the card's edge, cutting the suggestion list off
+            mid-item. Rounding is handled explicitly per-child instead. */}
+        <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm transition-all">
           <button
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
-            className="flex w-full items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/70 hover:bg-slate-100/70 text-left transition-colors cursor-pointer border-b border-slate-100"
+            className={`flex w-full items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/70 hover:bg-slate-100/70 text-left transition-colors cursor-pointer border-b border-slate-100 rounded-t-2xl ${!filtersOpen ? 'rounded-b-2xl' : ''}`}
           >
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
@@ -279,11 +297,12 @@ export default function CandidateRecordsPage() {
           </button>
 
           {filtersOpen && (
-            <div className="p-5 sm:p-6 bg-white">
-              <CandidateFiltersBar 
-                filters={filters} 
-                onChange={setFilters} 
-                onReset={clearFilters} 
+            <div className="p-4 sm:p-5 bg-white rounded-b-2xl">
+              <CandidateFiltersBar
+                filters={filters}
+                onChange={setFilters}
+                onReset={clearFilters}
+                brands={brands}
               />
             </div>
           )}

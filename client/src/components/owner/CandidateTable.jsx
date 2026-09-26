@@ -5,6 +5,21 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+/** Meta ad-hierarchy IDs (campaign/adset/ad) can be long numeric strings --
+ * truncated visually with the full value available via title/hover, never
+ * altering the underlying stored value. */
+function IdCell({ value }) {
+  if (!value) return <span className="text-slate-400">—</span>;
+  return (
+    <span
+      title={value}
+      className="inline-block max-w-[140px] truncate align-bottom font-mono text-xs text-slate-600"
+    >
+      {value}
+    </span>
+  );
+}
+
 function LoadingState() {
   return (
     <div className="flex flex-col gap-2 p-6">
@@ -33,7 +48,7 @@ function CandidateCard({ c }) {
   return (
     <Link
       to={`/owner/candidates/${c.id}`}
-      className="block rounded-xl border border-slate-200 p-4 transition-colors hover:border-gold-400/60 hover:bg-gold-500/5 bg-white"
+      className="block rounded-xl border border-slate-200 p-4 transition-colors hover:border-sky-400/60 hover:bg-sky-100/60 bg-white"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -71,6 +86,11 @@ function CandidateCard({ c }) {
         {c.source && (
           <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600">{c.source}</span>
         )}
+        {c.campaignId && (
+          <span title={c.campaignId} className="max-w-[110px] truncate rounded-full bg-slate-100 px-2.5 py-1 font-mono font-medium text-slate-600">
+            {c.campaignId}
+          </span>
+        )}
         {/* joiningAvailability hidden — the form's Experience section is
             just a Fresher/Experienced toggle with no input for this, so
             it was always a fabricated default ("immediate") rather than
@@ -102,10 +122,10 @@ export default function CandidateTable({ candidates, loading }) {
 
       {/* Desktop: full data table. */}
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1040px] border-collapse text-sm">
+        <table className="w-full min-w-[1360px] border-collapse text-sm">
           <thead>
-            <tr className="bg-gradient-to-b from-navy-900 to-navy-800 text-left text-[11px] font-bold uppercase tracking-wider text-gold-300">
-              <th className={`${TH_CLASSES} sticky left-0 z-20 bg-navy-900`}>Candidate</th>
+            <tr className="bg-sky-100 border-b-2 border-sky-300 text-left text-[11px] font-bold uppercase tracking-wider text-sky-800">
+              <th className={`${TH_CLASSES} sticky left-0 z-20 bg-sky-100`}>Candidate</th>
               <th className={TH_CLASSES}>Mobile</th>
               {/* Permanent City / District commented out — only preferred & current location stay
               <th className={TH_CLASSES}>City</th>
@@ -121,6 +141,9 @@ export default function CandidateTable({ candidates, loading }) {
               */}
               <th className={TH_CLASSES}>Source</th>
               <th className={TH_CLASSES}>Campaign</th>
+              <th className={TH_CLASSES}>Campaign ID</th>
+              <th className={TH_CLASSES}>Ad Set ID</th>
+              <th className={TH_CLASSES}>Ad ID</th>
               <th className={TH_CLASSES}>Latest Submission</th>
               <th className={`${TH_CLASSES} text-right`}>Action</th>
             </tr>
@@ -129,7 +152,7 @@ export default function CandidateTable({ candidates, loading }) {
             {candidates.map((c, i) => (
               <tr
                 key={c.id}
-                className={`group border-b border-slate-100 transition-colors hover:bg-gold-500/[0.06] ${i % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}`}
+                className={`group border-b border-slate-100 transition-colors hover:bg-sky-100/60 ${i % 2 === 1 ? 'bg-sky-50/70' : 'bg-white'}`}
               >
                 {/*
                   The sticky cell needs its OWN fully opaque background, not the
@@ -138,9 +161,9 @@ export default function CandidateTable({ candidates, loading }) {
                   viewport, and a semi-transparent fill lets the scrolled-away
                   columns show through underneath, causing ghosted/overlapping text.
                 */}
-                <td className={`sticky left-0 z-[1] px-4 py-3.5 transition-colors group-hover:bg-amber-50 ${i % 2 === 1 ? 'bg-slate-50' : 'bg-white'}`}>
+                <td className={`sticky left-0 z-[1] px-4 py-3.5 transition-colors group-hover:bg-sky-100 ${i % 2 === 1 ? 'bg-sky-50' : 'bg-white'}`}>
                   <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xs font-bold text-gold-300">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">
                       {c.fullName?.[0]?.toUpperCase()}
                     </span>
                     <div className="min-w-0">
@@ -162,7 +185,7 @@ export default function CandidateTable({ candidates, loading }) {
                   <div className="flex flex-wrap gap-1">
                     {c.preferredRoles.length > 0
                       ? c.preferredRoles.map((r) => (
-                          <span key={r} className="whitespace-nowrap rounded-full bg-navy-800/5 px-2 py-0.5 text-xs font-medium text-navy-700">
+                          <span key={r} className="whitespace-nowrap rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
                             {r}
                           </span>
                         ))
@@ -186,11 +209,14 @@ export default function CandidateTable({ candidates, loading }) {
                   ) : '—'}
                 </td>
                 <td className="px-4 py-3.5 text-slate-500">{c.campaign || '—'}</td>
+                <td className="px-4 py-3.5"><IdCell value={c.campaignId} /></td>
+                <td className="px-4 py-3.5"><IdCell value={c.adsetId} /></td>
+                <td className="px-4 py-3.5"><IdCell value={c.adId} /></td>
                 <td className="px-4 py-3.5 text-slate-500">{formatDate(c.lastSubmittedAt)}</td>
                 <td className="px-4 py-3.5 text-right">
                   <Link
                     to={`/owner/candidates/${c.id}`}
-                    className="inline-flex items-center gap-1 rounded-full border border-navy-800/15 px-3 py-1.5 text-xs font-semibold text-navy-700 transition-colors hover:border-gold-400 hover:bg-gold-500 hover:text-navy-950"
+                    className="inline-flex items-center gap-1 rounded-full border border-sky-300 px-3 py-1.5 text-xs font-semibold text-sky-700 transition-colors hover:border-sky-500 hover:bg-sky-500 hover:text-white"
                   >
                     View
                     <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5">

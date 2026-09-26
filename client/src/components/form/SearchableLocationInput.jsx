@@ -26,6 +26,7 @@ export default function SearchableLocationInput({
   isLoading = false,
   badgeText = '',
   subLabel = '',
+  compact = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -147,7 +148,7 @@ export default function SearchableLocationInput({
               }
             }
           }}
-          className={`w-full px-4 py-3 pr-16 rounded-xl border text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50/40 hover:bg-white focus:bg-white transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none ${
+          className={`w-full px-4 ${compact ? 'py-2' : 'py-3'} pr-16 rounded-xl border text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50/40 hover:bg-white focus:bg-white transition-all placeholder:font-normal placeholder:text-slate-400 focus:outline-none ${
             error
               ? 'border-red-400 bg-red-50/20 focus:border-red-500 focus:ring-2 focus:ring-red-100'
               : 'border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100'
@@ -206,7 +207,7 @@ export default function SearchableLocationInput({
             <span className="flex items-center gap-1">
               <Search className="w-3 h-3 text-slate-400" />
               {filteredOptions.length > 0
-                ? `${filteredOptions.length} सुझाव (Tap to select)`
+                ? `${filteredOptions.length} सुझाव (टैप करके चुनें)`
                 : 'कोई सीधा मिलान नहीं'}
             </span>
             {query && (
