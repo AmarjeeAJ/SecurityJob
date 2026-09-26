@@ -1,5 +1,10 @@
 import query from '../../db/query.js';
 
+export async function listBrands() {
+  const result = await query('SELECT id, name, slug FROM brands WHERE is_active = TRUE ORDER BY id');
+  return result.rows;
+}
+
 export async function findCandidateByNormalizedMobile(client, normalizedMobile) {
   const result = await client.query(
     'SELECT * FROM candidates WHERE normalized_mobile_number = $1 FOR UPDATE',
@@ -81,11 +86,13 @@ export async function insertCandidateSubmission(client, candidateId, tracking) {
     `INSERT INTO candidate_submissions (
       candidate_id, landing_page_slug, source, medium, campaign,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term,
+      campaign_id, adset_id, ad_id,
       fbclid, fbp, fbc, referrer_url, landing_page_url, device_type, browser, ip_hash
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
     [
       candidateId, tracking.landingPageSlug, tracking.source, tracking.medium, tracking.campaign,
       tracking.utmSource, tracking.utmMedium, tracking.utmCampaign, tracking.utmContent, tracking.utmTerm,
+      tracking.campaignId, tracking.adsetId, tracking.adId,
       tracking.fbclid, tracking.fbp, tracking.fbc, tracking.referrerUrl, tracking.landingPageUrl,
       tracking.deviceType, tracking.browser, tracking.ipHash,
     ]
@@ -158,6 +165,16 @@ function buildFilterClauses(filters, startIndex = 1) {
     // shows up as first_registered_at and last_submitted_at diverging.
     clauses.push(`c.first_registered_at IS DISTINCT FROM c.last_submitted_at`);
   }
+  if (filters.brand) {
+    // Matches by brand slug, not id -- the frontend never needs to know
+    // numeric brand ids. Spybot Security Services has no candidate rows
+    // yet (candidates.brand_id is only ever set to SecurityJob.in's id
+    // today), so filtering by its slug correctly returns zero rows rather
+    // than an error -- that is expected, not a bug.
+    clauses.push(`c.brand_id = (SELECT id FROM brands WHERE slug = $${i})`);
+    values.push(filters.brand);
+    i += 1;
+  }
 
   return { whereSql: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', values, nextIndex: i };
 }
@@ -193,7 +210,8 @@ export async function listCandidatesPaginated(filters) {
       c.security_experience_months, c.joining_availability, c.first_registered_at, c.last_submitted_at,
       COALESCE(roles.role_names, '') AS role_names,
       COALESCE(locations.city_names, '') AS preferred_city_names,
-      src.source, src.campaign
+      src.source, src.campaign,
+      sub.campaign_id, sub.adset_id, sub.ad_id
     FROM page
     JOIN candidates c ON c.id = page.id
     LEFT JOIN LATERAL (
@@ -207,6 +225,9 @@ export async function listCandidatesPaginated(filters) {
     LEFT JOIN LATERAL (
       SELECT source, campaign FROM candidate_sources WHERE candidate_id = c.id ORDER BY last_seen_at DESC LIMIT 1
     ) src ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT campaign_id, adset_id, ad_id FROM candidate_submissions WHERE candidate_id = c.id ORDER BY submitted_at DESC LIMIT 1
+    ) sub ON TRUE
     ORDER BY ${sortColumn} ${sortDir}
   `;
 
@@ -250,6 +271,14 @@ export async function getCandidateFullById(id) {
           'source', cs.source,
           'medium', cs.medium,
           'campaign', cs.campaign,
+          'utm_content', cs.utm_content,
+          'utm_term', cs.utm_term,
+          'campaign_id', cs.campaign_id,
+          'adset_id', cs.adset_id,
+          'ad_id', cs.ad_id,
+          'fbclid', cs.fbclid,
+          'landing_page_url', cs.landing_page_url,
+          'referrer_url', cs.referrer_url,
           'submitted_at', cs.submitted_at
         ) ORDER BY cs.submitted_at DESC)
         FROM candidate_submissions cs WHERE cs.candidate_id = c.id
