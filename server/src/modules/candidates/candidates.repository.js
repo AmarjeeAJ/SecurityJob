@@ -5,6 +5,11 @@ export async function listBrands() {
   return result.rows;
 }
 
+export async function getBrandIdBySlug(slug) {
+  const result = await query('SELECT id FROM brands WHERE slug = $1', [slug]);
+  return result.rows[0]?.id ?? null;
+}
+
 export async function findCandidateByNormalizedMobile(client, normalizedMobile) {
   const result = await client.query(
     'SELECT * FROM candidates WHERE normalized_mobile_number = $1 FOR UPDATE',
@@ -14,6 +19,7 @@ export async function findCandidateByNormalizedMobile(client, normalizedMobile) 
 }
 
 const CANDIDATE_COLUMNS = [
+  'brand_id',
   'full_name', 'mobile_number', 'normalized_mobile_number', 'whatsapp_number', 'normalized_whatsapp_number',
   'alternate_mobile_number', 'email', 'date_of_birth', 'age', 'gender',
   'permanent_district', 'permanent_state', 'permanent_subdivision', 'permanent_block', 'permanent_tehsil',

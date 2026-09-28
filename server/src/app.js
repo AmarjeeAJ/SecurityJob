@@ -21,6 +21,7 @@ import pageConfigRoutes from './modules/candidates/page-config.routes.js';
 import ownerCandidatesRoutes from './modules/candidates/owner-candidates.routes.js';
 import ownerBrandsRoutes from './modules/candidates/brands.routes.js';
 import ownerAuthRoutes from './modules/owner-auth/owner-auth.routes.js';
+import ownerMarketingRoutes from './modules/marketing/marketing.routes.js';
 
 const app = express();
 const PgSession = connectPgSimple(session);
@@ -81,6 +82,7 @@ app.use('/api/public/page-config', pageConfigRoutes);
 app.use('/api/owner/auth', ownerAuthRoutes);
 app.use('/api/owner/candidates', ownerCandidatesRoutes);
 app.use('/api/owner/brands', ownerBrandsRoutes);
+app.use('/api/owner/marketing', ownerMarketingRoutes);
 
 app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok' }));
 

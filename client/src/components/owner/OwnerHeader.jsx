@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, LogOut, User, Lock, ExternalLink } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
+import { ShieldCheck, LogOut, User, Lock, ExternalLink, BarChart3 } from 'lucide-react';
 import { useOwnerAuth } from '../../features/owner-auth/OwnerAuthContext.jsx';
 import Logo from '../common/Logo.jsx';
 import ConfirmDialog from '../common/ConfirmDialog.jsx';
@@ -23,6 +23,21 @@ export default function OwnerHeader() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <NavLink
+            to="/owner/marketing"
+            className={({ isActive }) =>
+              `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
+                isActive
+                  ? 'text-blue-700 bg-blue-50 border-blue-300'
+                  : 'text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200/70 border-slate-200'
+              }`
+            }
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">Marketing & Analysis</span>
+            <span className="hidden sm:inline lg:hidden">Marketing</span>
+          </NavLink>
+
           <Link
             to="/"
             target="_blank"

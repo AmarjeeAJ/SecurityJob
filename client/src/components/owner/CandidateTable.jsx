@@ -125,13 +125,13 @@ export default function CandidateTable({ candidates, loading }) {
         <table className="w-full min-w-[1360px] border-collapse text-sm">
           <thead>
             <tr className="bg-sky-100 border-b-2 border-sky-300 text-left text-[11px] font-bold uppercase tracking-wider text-sky-800">
-              <th className={`${TH_CLASSES} sticky left-0 z-20 bg-sky-100`}>Candidate</th>
+              <th className={`${TH_CLASSES} sticky left-0 z-20 bg-sky-100 w-[220px] min-w-[220px] max-w-[220px]`}>Candidate</th>
               <th className={TH_CLASSES}>Mobile</th>
               {/* Permanent City / District commented out — only preferred & current location stay
               <th className={TH_CLASSES}>City</th>
               */}
-              <th className={TH_CLASSES}>Preferred Roles</th>
-              <th className={TH_CLASSES}>Preferred Locations</th>
+              <th className={`${TH_CLASSES} max-w-[200px]`}>Preferred Roles</th>
+              <th className={`${TH_CLASSES} max-w-[180px]`}>Preferred Locations</th>
               {/* Security Exp. / Joining columns hidden — the form's Experience
                   section is just a Fresher/Experienced toggle with no input for
                   either, so both were always fabricated defaults (12 months /
@@ -161,7 +161,7 @@ export default function CandidateTable({ candidates, loading }) {
                   viewport, and a semi-transparent fill lets the scrolled-away
                   columns show through underneath, causing ghosted/overlapping text.
                 */}
-                <td className={`sticky left-0 z-[1] px-4 py-3.5 transition-colors group-hover:bg-sky-100 ${i % 2 === 1 ? 'bg-sky-50' : 'bg-white'}`}>
+                <td className={`sticky left-0 z-[1] px-4 py-3.5 w-[220px] min-w-[220px] max-w-[220px] transition-colors group-hover:bg-sky-100 ${i % 2 === 1 ? 'bg-sky-50' : 'bg-white'}`}>
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">
                       {c.fullName?.[0]?.toUpperCase()}
@@ -181,7 +181,7 @@ export default function CandidateTable({ candidates, loading }) {
                 {/* Permanent City / District commented out
                 <td className="px-4 py-3.5 text-slate-600">{c.permanentDistrict}</td>
                 */}
-                <td className="px-4 py-3.5">
+                <td className="px-4 py-3.5 max-w-[200px]">
                   <div className="flex flex-wrap gap-1">
                     {c.preferredRoles.length > 0
                       ? c.preferredRoles.map((r) => (
@@ -192,7 +192,7 @@ export default function CandidateTable({ candidates, loading }) {
                       : '—'}
                   </div>
                 </td>
-                <td className="px-4 py-3.5 text-slate-600">{c.preferredLocations.join(' | ') || '—'}</td>
+                <td className="px-4 py-3.5 max-w-[180px] text-slate-600">{c.preferredLocations.join(' | ') || '—'}</td>
                 {/* Security Exp. / Joining cells hidden — see matching header comment above.
                 <td className="px-4 py-3.5 text-slate-600">{c.securityExperienceMonths} mo</td>
                 <td className="px-4 py-3.5">

@@ -34,6 +34,10 @@ const env = {
   metaAccessToken: process.env.META_ACCESS_TOKEN || '',
   metaApiVersion: process.env.META_API_VERSION || '',
   metaTestEventCode: process.env.META_TEST_EVENT_CODE || '',
+  // Meta Ads Insights sync (Marketing & Analysis page). Reuses
+  // metaAccessToken/metaApiVersion above. Optional -- the sync safely
+  // no-ops with a clear log if this is blank, same pattern as CAPI.
+  metaAdAccountId: process.env.META_AD_ACCOUNT_ID || '',
 };
 
 export default env;

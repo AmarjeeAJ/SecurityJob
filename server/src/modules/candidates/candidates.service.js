@@ -16,10 +16,29 @@ import {
   insertCandidateDocument,
   insertCandidateSubmission,
   upsertCandidateSource,
+  getBrandIdBySlug,
 } from './candidates.repository.js';
+
+// This registration route only ever serves SecurityJob.in today -- there is
+// no other live form writing into this table. Cached after the first
+// successful lookup so every registration doesn't re-query a value that
+// essentially never changes; a lookup failure falls back to null rather
+// than ever blocking a registration over it.
+let cachedSecurityJobBrandId;
+async function resolveSecurityJobBrandId() {
+  if (cachedSecurityJobBrandId !== undefined) return cachedSecurityJobBrandId;
+  try {
+    cachedSecurityJobBrandId = await getBrandIdBySlug('securityjob-in');
+  } catch (error) {
+    logger.warn('Could not resolve SecurityJob.in brand id; leaving brand_id unset', { message: error?.message });
+    cachedSecurityJobBrandId = null;
+  }
+  return cachedSecurityJobBrandId;
+}
 
 function buildCandidateRow(input) {
   return {
+    brand_id: input.brandId ?? null,
     full_name: input.fullName,
     mobile_number: input.normalizedMobile,
     normalized_mobile_number: input.normalizedMobile,
@@ -115,7 +134,8 @@ export async function registerCandidate({ body, files, jobSlug, ipHash }) {
     preferredRoles = [slugRole, ...preferredRoles];
   }
 
-  const candidateRow = buildCandidateRow({ ...body, normalizedMobile, normalizedWhatsapp });
+  const brandId = await resolveSecurityJobBrandId();
+  const candidateRow = buildCandidateRow({ ...body, normalizedMobile, normalizedWhatsapp, brandId });
   const tracking = resolveTracking(body, jobSlug);
   tracking.ipHash = ipHash;
 

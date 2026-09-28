@@ -25,6 +25,7 @@ const CandidateConsentPolicyPage = lazy(() => import('./pages/CandidateConsentPo
 const OwnerLoginPage = lazy(() => import('./pages/OwnerLoginPage.jsx'));
 const CandidateRecordsPage = lazy(() => import('./pages/CandidateRecordsPage.jsx'));
 const CandidateDetailsPage = lazy(() => import('./pages/CandidateDetailsPage.jsx'));
+const MarketingAnalyticsPage = lazy(() => import('./pages/MarketingAnalyticsPage.jsx'));
 
 const ExploreRolesPage = lazy(() => import('./pages/ExploreRolesPage.jsx'));
 
@@ -80,6 +81,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <CandidateDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/owner/marketing"
+              element={
+                <ProtectedRoute>
+                  <MarketingAnalyticsPage />
                 </ProtectedRoute>
               }
             />
