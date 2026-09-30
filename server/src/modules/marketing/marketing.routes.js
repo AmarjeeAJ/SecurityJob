@@ -13,6 +13,7 @@ import {
   getLocations,
   getRoles,
   runMetaSync,
+  runMetaLeadsSync,
   debugMetaToken,
 } from './marketing.controller.js';
 
@@ -30,6 +31,7 @@ router.get('/sources', validateQuery(marketingFiltersQuerySchema), getSources);
 router.get('/locations', validateQuery(marketingFiltersQuerySchema), getLocations);
 router.get('/roles', validateQuery(marketingFiltersQuerySchema), getRoles);
 router.post('/meta-sync', validateBody(metaSyncBodySchema), runMetaSync);
+router.post('/meta-leads-sync', runMetaLeadsSync);
 router.get('/debug-token', debugMetaToken); // TEMPORARY -- remove after diagnosis
 
 export default router;

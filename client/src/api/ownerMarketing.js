@@ -19,3 +19,8 @@ export async function runMetaSync(body) {
   const { data } = await apiClient.post('/owner/marketing/meta-sync', body || {});
   return data;
 }
+
+export async function runMetaLeadsSync() {
+  const { data } = await apiClient.post('/owner/marketing/meta-leads-sync', {});
+  return data;
+}

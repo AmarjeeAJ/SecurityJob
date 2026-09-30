@@ -291,6 +291,75 @@ export async function getLocationAnalytics(filters) {
   return result.rows;
 }
 
+function buildFormLeadsFilters(filters, startIndex = 1) {
+  const clauses = [];
+  const values = [];
+  let i = startIndex;
+
+  if (filters.brand) {
+    clauses.push(`mfl.brand_id = (SELECT id FROM brands WHERE slug = $${i})`);
+    values.push(filters.brand);
+    i += 1;
+  }
+  if (filters.dateFrom) {
+    clauses.push(`mfl.created_time >= $${i}::date`);
+    values.push(filters.dateFrom);
+    i += 1;
+  }
+  if (filters.dateTo) {
+    clauses.push(`mfl.created_time < ($${i}::date + interval '1 day')`);
+    values.push(filters.dateTo);
+    i += 1;
+  }
+  if (filters.campaignId) {
+    clauses.push(`mfl.campaign_id = $${i}`);
+    values.push(filters.campaignId);
+    i += 1;
+  }
+  if (filters.adsetId) {
+    clauses.push(`mfl.adset_id = $${i}`);
+    values.push(filters.adsetId);
+    i += 1;
+  }
+  if (filters.adId) {
+    clauses.push(`mfl.ad_id = $${i}`);
+    values.push(filters.adId);
+    i += 1;
+  }
+
+  return { whereSql: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', values, nextIndex: i };
+}
+
+// Meta Instant Form leads are a genuinely separate channel from website
+// registrations -- someone can submit a form on Facebook without ever
+// visiting the site. "Unique" leads are counted by excluding form leads
+// whose phone number matches an existing candidate, so a person who did
+// both is never counted twice; a lead with no usable phone number is kept
+// (there's no evidence it's a duplicate, so it isn't assumed to be one).
+export async function getMetaFormLeadsTotals(filters) {
+  const { whereSql, values } = buildFormLeadsFilters(filters);
+  const totalResult = await query(
+    `SELECT COUNT(*) AS total FROM meta_form_leads mfl ${whereSql}`,
+    values
+  );
+
+  const dedupeClause = `NOT EXISTS (
+    SELECT 1 FROM candidates c2
+    WHERE mfl.normalized_phone IS NOT NULL
+      AND (c2.normalized_mobile_number = mfl.normalized_phone OR c2.normalized_whatsapp_number = mfl.normalized_phone)
+  )`;
+  const uniqueWhere = whereSql ? `${whereSql} AND ${dedupeClause}` : `WHERE ${dedupeClause}`;
+  const uniqueResult = await query(
+    `SELECT COUNT(*) AS unique_leads FROM meta_form_leads mfl ${uniqueWhere}`,
+    values
+  );
+
+  return {
+    total: Number(totalResult.rows[0].total),
+    uniqueOfWebsite: Number(uniqueResult.rows[0].unique_leads),
+  };
+}
+
 export async function getRoleAnalytics(filters) {
   const { whereSql, values } = buildRegistrationFilters(filters);
   const result = await query(

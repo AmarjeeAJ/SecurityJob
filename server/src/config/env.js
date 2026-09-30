@@ -38,6 +38,9 @@ const env = {
   // metaAccessToken/metaApiVersion above. Optional -- the sync safely
   // no-ops with a clear log if this is blank, same pattern as CAPI.
   metaAdAccountId: process.env.META_AD_ACCOUNT_ID || '',
+  // Meta native Instant Form leads sync. Same reuse/optional pattern as
+  // metaAdAccountId above.
+  metaPageId: process.env.META_PAGE_ID || '',
 };
 
 export default env;

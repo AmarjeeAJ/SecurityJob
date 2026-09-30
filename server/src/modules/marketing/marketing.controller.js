@@ -2,6 +2,7 @@ import { asyncHandler, AppError } from '../../middleware/error.middleware.js';
 import env from '../../config/env.js';
 import safeDivide from '../../utils/safe-math.js';
 import { syncMetaInsights } from '../../services/metaInsights.service.js';
+import { syncMetaFormLeads } from '../../services/metaFormLeads.service.js';
 import {
   getInsightsTotals,
   getRegistrationCount,
@@ -13,6 +14,7 @@ import {
   getSourceAnalytics,
   getLocationAnalytics,
   getRoleAnalytics,
+  getMetaFormLeadsTotals,
 } from './marketing.repository.js';
 
 function isMetaInsightsConfigured() {
@@ -49,11 +51,16 @@ function shapeTotals(insightsTotals, registrations, hasInsightsData) {
   };
 }
 
+function isMetaLeadsConfigured() {
+  return Boolean(env.metaAccessToken && env.metaApiVersion && env.metaPageId);
+}
+
 export const getSummary = asyncHandler(async (req, res) => {
   const filters = req.query;
-  const [insightsTotals, registrations] = await Promise.all([
+  const [insightsTotals, registrations, formLeads] = await Promise.all([
     getInsightsTotals(filters),
     getRegistrationCount(filters),
+    getMetaFormLeadsTotals(filters),
   ]);
 
   const hasSyncedData = Number(insightsTotals.row_count) > 0;
@@ -63,8 +70,20 @@ export const getSummary = asyncHandler(async (req, res) => {
     success: true,
     data: {
       metaConfigured: isMetaInsightsConfigured(),
+      metaLeadsConfigured: isMetaLeadsConfigured(),
       hasSyncedData,
       kpis,
+      // Two genuinely separate channels, shown honestly rather than merged
+      // into one guessed number: someone can submit a Meta Instant Form
+      // without ever visiting the website, or vice versa. totalUniqueLeads
+      // excludes form leads whose phone already matches a website
+      // registration, so a person who did both is never double-counted.
+      leads: {
+        websiteRegistrations: registrations,
+        metaFormLeads: formLeads.total,
+        metaFormLeadsUniqueOfWebsite: formLeads.uniqueOfWebsite,
+        totalUniqueLeads: registrations + formLeads.uniqueOfWebsite,
+      },
       funnel: {
         impressions: kpis.impressions,
         linkClicks: kpis.linkClicks,
@@ -275,6 +294,11 @@ export const getRoles = asyncHandler(async (req, res) => {
 export const runMetaSync = asyncHandler(async (req, res) => {
   const { since, until } = req.body || {};
   const result = await syncMetaInsights({ since, until });
+  res.json({ success: result.success, data: result });
+});
+
+export const runMetaLeadsSync = asyncHandler(async (req, res) => {
+  const result = await syncMetaFormLeads();
   res.json({ success: result.success, data: result });
 });
 

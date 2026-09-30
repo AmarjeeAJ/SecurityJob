@@ -18,6 +18,7 @@ import {
   fetchMarketingLocations,
   fetchMarketingRoles,
   runMetaSync,
+  runMetaLeadsSync,
 } from '../api/ownerMarketing.js';
 import MarketingFiltersBar from '../components/marketing/MarketingFiltersBar.jsx';
 import KpiCard from '../components/marketing/KpiCard.jsx';
@@ -82,6 +83,8 @@ export default function MarketingAnalyticsPage() {
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
+  const [leadsSyncing, setLeadsSyncing] = useState(false);
+  const [leadsSyncMessage, setLeadsSyncMessage] = useState('');
 
   useEffect(() => {
     fetchBrands()
@@ -149,8 +152,30 @@ export default function MarketingAnalyticsPage() {
     }
   }
 
+  async function handleLeadsSync() {
+    setLeadsSyncing(true);
+    setLeadsSyncMessage('');
+    try {
+      const result = await runMetaLeadsSync();
+      if (result.success) {
+        setLeadsSyncMessage(`Synced ${result.data.synced} form lead(s).`);
+        loadData();
+      } else if (result.data?.reason === 'not_configured') {
+        setLeadsSyncMessage('Meta Instant Form leads integration is not configured.');
+      } else {
+        setLeadsSyncMessage('Sync failed -- check server logs for details.');
+      }
+    } catch {
+      setLeadsSyncMessage('Sync request failed.');
+    } finally {
+      setLeadsSyncing(false);
+    }
+  }
+
   const metaConfigured = summary?.metaConfigured ?? false;
+  const metaLeadsConfigured = summary?.metaLeadsConfigured ?? false;
   const hasSyncedData = summary?.hasSyncedData ?? false;
+  const leads = summary?.leads;
 
   return (
     <div className="bg-[#f8fafc] min-h-screen">
@@ -167,16 +192,28 @@ export default function MarketingAnalyticsPage() {
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <button
-              type="button"
-              onClick={handleSync}
-              disabled={syncing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 shadow-sm transition-all disabled:opacity-60 cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Syncing…' : 'Sync Meta Ads Data'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSync}
+                disabled={syncing}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 shadow-sm transition-all disabled:opacity-60 cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Syncing…' : 'Sync Meta Ads Data'}
+              </button>
+              <button
+                type="button"
+                onClick={handleLeadsSync}
+                disabled={leadsSyncing}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 shadow-sm transition-all disabled:opacity-60 cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${leadsSyncing ? 'animate-spin' : ''}`} />
+                {leadsSyncing ? 'Syncing…' : 'Sync Meta Form Leads'}
+              </button>
+            </div>
             {syncMessage && <p className="text-[11px] text-slate-500 max-w-xs text-right">{syncMessage}</p>}
+            {leadsSyncMessage && <p className="text-[11px] text-slate-500 max-w-xs text-right">{leadsSyncMessage}</p>}
           </div>
         </div>
 
@@ -197,6 +234,38 @@ export default function MarketingAnalyticsPage() {
             <span>Meta Ads spend data has not been synced yet for this range. Click "Sync Meta Ads Data" above.</span>
           </div>
         )}
+        {!metaLeadsConfigured && (
+          <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>
+              Meta Instant Form leads integration is not configured. Leads submitted directly on
+              Facebook/Instagram (never touching the website) won't be counted until{' '}
+              <code className="font-mono">META_PAGE_ID</code> is set.
+            </span>
+          </div>
+        )}
+
+        <SectionCard title="Total Leads">
+          {leads ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">Website Registrations</p>
+                <p className="mt-1 text-2xl font-black text-slate-900">{formatNumber(leads.websiteRegistrations)}</p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200">
+                <p className="text-[11px] font-bold text-purple-700 uppercase tracking-wide">Meta Form Leads</p>
+                <p className="mt-1 text-2xl font-black text-slate-900">{formatNumber(leads.metaFormLeads)}</p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Total Unique Leads</p>
+                <p className="mt-1 text-2xl font-black text-slate-900">{formatNumber(leads.totalUniqueLeads)}</p>
+                <p className="mt-1 text-[10px] text-slate-400">Website + Meta form, deduplicated by phone number</p>
+              </div>
+            </div>
+          ) : (
+            <p className="py-4 text-center text-sm text-slate-400">Loading…</p>
+          )}
+        </SectionCard>
 
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">{error}</div>
