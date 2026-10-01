@@ -59,7 +59,17 @@ function shapeTotals(insightsTotals, registrations, hasInsightsData) {
     cpc: safeDivide(spend, linkClicks),
     cpm: safeDivide(spend, impressions, { multiplier: 1000 }),
     costPerRegistration: safeDivide(spend, registrations),
-    websiteConversionRate: safeDivide(registrations, landingPageViews, { multiplier: 100 }),
+    // landingPageViews comes from Meta's client-side pixel, which reliably
+    // undercounts (ad blockers, iOS privacy, pixel never firing) relative
+    // to registrations, which are a complete server-side count. On a
+    // low-traffic day that undercount can make registrations exceed
+    // landingPageViews, producing a >100% "conversion rate" -- nonsensical
+    // to show, so it's null (unavailable) rather than a misleading number
+    // like "800%" whenever the inputs can't support a meaningful ratio.
+    websiteConversionRate:
+      landingPageViews !== null && registrations > landingPageViews
+        ? null
+        : safeDivide(registrations, landingPageViews, { multiplier: 100 }),
   };
 }
 
