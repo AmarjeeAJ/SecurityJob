@@ -14,6 +14,8 @@ import {
   getRoles,
   runMetaSync,
   runMetaLeadsSync,
+  runSpybotMetaSync,
+  runSpybotMetaLeadsSync,
   debugMetaToken,
 } from './marketing.controller.js';
 
@@ -32,6 +34,8 @@ router.get('/locations', validateQuery(marketingFiltersQuerySchema), getLocation
 router.get('/roles', validateQuery(marketingFiltersQuerySchema), getRoles);
 router.post('/meta-sync', validateBody(metaSyncBodySchema), runMetaSync);
 router.post('/meta-leads-sync', runMetaLeadsSync);
+router.post('/spybot-meta-sync', validateBody(metaSyncBodySchema), runSpybotMetaSync);
+router.post('/spybot-meta-leads-sync', runSpybotMetaLeadsSync);
 router.get('/debug-token', debugMetaToken); // TEMPORARY -- remove after diagnosis
 
 export default router;

@@ -11,18 +11,21 @@ const INSIGHTS_FIELDS = [
   'spend', 'impressions', 'reach', 'clicks', 'inline_link_clicks', 'actions',
 ].join(',');
 
-// This sync only ever serves SecurityJob.in today -- same reasoning as the
-// CAPI brand resolution: there is no other live Meta ad account configured.
-let cachedSecurityJobBrandId;
-async function resolveSecurityJobBrandId() {
-  if (cachedSecurityJobBrandId !== undefined) return cachedSecurityJobBrandId;
+// Resolved per brand slug and cached -- every brand this sync ever serves
+// (SecurityJob.in, and now Spybot) has its own fixed slug, so a lookup
+// failure for one brand falls back to null without affecting the other.
+const cachedBrandIds = new Map();
+async function resolveBrandId(slug) {
+  if (cachedBrandIds.has(slug)) return cachedBrandIds.get(slug);
+  let brandId;
   try {
-    cachedSecurityJobBrandId = await getBrandIdBySlug('securityjob-in');
+    brandId = await getBrandIdBySlug(slug);
   } catch (error) {
-    logger.warn('Could not resolve SecurityJob.in brand id for Meta Insights sync', { message: error?.message });
-    cachedSecurityJobBrandId = null;
+    logger.warn('Could not resolve brand id for Meta Insights sync', { slug, message: error?.message });
+    brandId = null;
   }
-  return cachedSecurityJobBrandId;
+  cachedBrandIds.set(slug, brandId);
+  return brandId;
 }
 
 function extractLandingPageViews(actions) {
@@ -42,12 +45,12 @@ function defaultDateRange() {
   return { since: fmt(since), until: fmt(until) };
 }
 
-async function fetchWithTimeout(url) {
+async function fetchWithTimeout(url, accessToken) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${env.metaAccessToken}` },
+      headers: { Authorization: `Bearer ${accessToken}` },
       signal: controller.signal,
     });
     return resp;
@@ -56,7 +59,7 @@ async function fetchWithTimeout(url) {
   }
 }
 
-async function upsertInsightRow(brandId, row) {
+async function upsertInsightRow(brandId, accountId, row) {
   await query(
     `INSERT INTO meta_insights_daily (
       brand_id, date, platform, account_id, campaign_id, campaign_name,
@@ -82,7 +85,7 @@ async function upsertInsightRow(brandId, row) {
       // honestly represents "the Meta network as a whole" rather than
       // fabricating a platform split this sync doesn't actually have.
       'meta',
-      env.metaAdAccountId,
+      accountId,
       row.campaign_id || null,
       row.campaign_name || null,
       row.adset_id || null,
@@ -106,27 +109,38 @@ async function upsertInsightRow(brandId, row) {
  * object rather than propagated, matching the CAPI service's non-critical
  * dependency pattern. Safe to call repeatedly: every row is an upsert keyed
  * on (brand_id, date, ad_id), so re-syncing the same range never duplicates.
+ *
+ * Defaults to SecurityJob.in's own credentials/brand so existing call sites
+ * are unaffected; pass brandSlug/accessToken/apiVersion/adAccountId to sync
+ * a different brand's (e.g. Spybot's) separate Meta Business Portfolio.
  */
-export async function syncMetaInsights({ since, until } = {}) {
-  if (!env.metaAccessToken) {
-    logger.warn('Meta Insights sync skipped: META_ACCESS_TOKEN not configured');
+export async function syncMetaInsights({
+  since,
+  until,
+  brandSlug = 'securityjob-in',
+  accessToken = env.metaAccessToken,
+  apiVersion = env.metaApiVersion,
+  adAccountId = env.metaAdAccountId,
+} = {}) {
+  if (!accessToken) {
+    logger.warn('Meta Insights sync skipped: access token not configured', { brandSlug });
     return { success: false, reason: 'not_configured', synced: 0 };
   }
-  if (!env.metaApiVersion) {
-    logger.warn('Meta Insights sync skipped: META_API_VERSION not configured');
+  if (!apiVersion) {
+    logger.warn('Meta Insights sync skipped: API version not configured', { brandSlug });
     return { success: false, reason: 'not_configured', synced: 0 };
   }
-  if (!env.metaAdAccountId) {
-    logger.warn('Meta Insights sync skipped: META_AD_ACCOUNT_ID not configured');
+  if (!adAccountId) {
+    logger.warn('Meta Insights sync skipped: ad account id not configured', { brandSlug });
     return { success: false, reason: 'not_configured', synced: 0 };
   }
 
-  const brandId = await resolveSecurityJobBrandId();
+  const brandId = await resolveBrandId(brandSlug);
   const range = since && until ? { since, until } : defaultDateRange();
 
   const timeRange = encodeURIComponent(JSON.stringify({ since: range.since, until: range.until }));
   let url =
-    `https://graph.facebook.com/${env.metaApiVersion}/act_${env.metaAdAccountId}/insights` +
+    `https://graph.facebook.com/${apiVersion}/act_${adAccountId}/insights` +
     `?level=ad&time_increment=1&limit=500&time_range=${timeRange}&fields=${INSIGHTS_FIELDS}`;
 
   let synced = 0;
@@ -135,33 +149,33 @@ export async function syncMetaInsights({ since, until } = {}) {
 
   try {
     while (url && pages < MAX_PAGES) {
-      const resp = await fetchWithTimeout(url);
+      const resp = await fetchWithTimeout(url, accessToken);
       pages += 1;
 
       if (!resp.ok) {
         const errBody = await resp.text().catch(() => '');
-        logger.error('Meta Insights sync failed', { status: resp.status, body: errBody.slice(0, 300) });
+        logger.error('Meta Insights sync failed', { brandSlug, status: resp.status, body: errBody.slice(0, 300) });
         return { success: false, reason: 'meta_api_error', synced };
       }
 
       const json = await resp.json();
       for (const row of json.data || []) {
         try {
-          await upsertInsightRow(brandId, row);
+          await upsertInsightRow(brandId, adAccountId, row);
           synced += 1;
         } catch (rowError) {
-          logger.error('Meta Insights row upsert failed', { adId: row.ad_id, message: rowError?.message });
+          logger.error('Meta Insights row upsert failed', { brandSlug, adId: row.ad_id, message: rowError?.message });
         }
       }
 
       url = json.paging?.next || null;
     }
   } catch (error) {
-    logger.error('Meta Insights sync error', { message: error?.message });
+    logger.error('Meta Insights sync error', { brandSlug, message: error?.message });
     return { success: false, reason: 'network_error', synced };
   }
 
-  logger.info('Meta Insights sync complete', { synced, since: range.since, until: range.until });
+  logger.info('Meta Insights sync complete', { brandSlug, synced, since: range.since, until: range.until });
   return { success: true, synced, since: range.since, until: range.until };
 }
 

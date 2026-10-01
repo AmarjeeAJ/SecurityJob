@@ -1,24 +1,23 @@
 import { formatCurrency, formatNumber, formatPercent, formatChangePct } from '../../utils/marketingFormat.js';
 
-const ROWS = [
-  { key: 'spend', label: 'Spend', format: formatCurrency },
-  { key: 'registrations', label: 'Registrations', format: formatNumber },
-  { key: 'costPerRegistration', label: 'Cost per Registration', format: formatCurrency },
-  { key: 'cpm', label: 'CPM', format: formatCurrency },
-  { key: 'ctr', label: 'CTR', format: formatPercent },
-  { key: 'cpc', label: 'CPC', format: formatCurrency },
-  { key: 'landingPageViews', label: 'Landing Page Views', format: formatNumber },
-  { key: 'websiteConversionRate', label: 'Website Conversion Rate', format: formatPercent },
-];
-
 function changeColor(value) {
   if (value === null || value === undefined) return 'text-slate-400';
   return value > 0 ? 'text-emerald-600' : value < 0 ? 'text-rose-600' : 'text-slate-500';
 }
 
-export default function ComparisonPanel({ comparison }) {
+export default function ComparisonPanel({ comparison, registrationsLabel = 'Registrations' }) {
   if (!comparison) return null;
   const { current, previous, change, previousPeriod } = comparison;
+  const rows = [
+    { key: 'spend', label: 'Spend', format: formatCurrency },
+    { key: 'registrations', label: registrationsLabel, format: formatNumber },
+    { key: 'costPerRegistration', label: `Cost per ${registrationsLabel.replace(/s$/, '')}`, format: formatCurrency },
+    { key: 'cpm', label: 'CPM', format: formatCurrency },
+    { key: 'ctr', label: 'CTR', format: formatPercent },
+    { key: 'cpc', label: 'CPC', format: formatCurrency },
+    { key: 'landingPageViews', label: 'Landing Page Views', format: formatNumber },
+    { key: 'websiteConversionRate', label: 'Website Conversion Rate', format: formatPercent },
+  ];
 
   return (
     <div>
@@ -36,7 +35,7 @@ export default function ComparisonPanel({ comparison }) {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row) => (
+            {rows.map((row) => (
               <tr key={row.key} className="border-b border-slate-100">
                 <td className="py-2.5 pr-4 font-semibold text-slate-700">{row.label}</td>
                 <td className="py-2.5 pr-4 text-slate-900 font-bold">{row.format(current[row.key])}</td>

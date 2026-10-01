@@ -1,4 +1,20 @@
 import query from '../../db/query.js';
+import {
+  getSpybotLeadCount,
+  getSpybotLeadTrend,
+  getSpybotCampaignLeads,
+  getSpybotAdsetLeads,
+  getSpybotAdLeads,
+  getSpybotSourceAnalytics,
+  getSpybotLocationAnalytics,
+  getSpybotServiceTypeAnalytics,
+  getSpybotLeadPhoneSet,
+} from './spybotLeads.repository.js';
+
+const SPYBOT_SLUG = 'spybot-security-services';
+function isSpybotBrand(filters) {
+  return filters.brand === SPYBOT_SLUG;
+}
 
 // "Website Registrations" here always means a candidate's FIRST submission
 // (matching Meta CAPI's own definition -- CompleteRegistration only fires
@@ -138,6 +154,8 @@ export async function getInsightsTotals(filters) {
 }
 
 export async function getRegistrationCount(filters) {
+  if (isSpybotBrand(filters)) return getSpybotLeadCount(filters);
+
   const { whereSql, values } = buildRegistrationFilters(filters);
   const result = await query(
     `SELECT COUNT(*) AS registrations
@@ -163,6 +181,11 @@ export async function getInsightsTrend(filters) {
 }
 
 export async function getRegistrationTrend(filters) {
+  if (isSpybotBrand(filters)) {
+    const rows = await getSpybotLeadTrend(filters);
+    return rows.map((r) => ({ date: r.date, registrations: r.leads }));
+  }
+
   const { whereSql, values } = buildRegistrationFilters(filters);
   const result = await query(
     `SELECT c.first_registered_at::date::text AS date, COUNT(*) AS registrations
@@ -215,7 +238,18 @@ async function groupedRegistrations(dimensionExpr, filters) {
   return result.rows;
 }
 
+function reshapeSpybotLeads(rows) {
+  return rows.map((r) => ({ id: r.id, registrations: Number(r.leads) }));
+}
+
 export async function getCampaignPerformance(filters) {
+  if (isSpybotBrand(filters)) {
+    const [insights, leads] = await Promise.all([
+      groupedInsights('campaign_id', 'campaign_name', filters),
+      getSpybotCampaignLeads(filters),
+    ]);
+    return { insights, registrations: reshapeSpybotLeads(leads) };
+  }
   const [insights, regs] = await Promise.all([
     groupedInsights('campaign_id', 'campaign_name', filters),
     groupedRegistrations('first_sub.campaign_id', filters),
@@ -224,6 +258,13 @@ export async function getCampaignPerformance(filters) {
 }
 
 export async function getAdsetPerformance(filters) {
+  if (isSpybotBrand(filters)) {
+    const [insights, leads] = await Promise.all([
+      groupedInsights('adset_id', 'adset_name', filters),
+      getSpybotAdsetLeads(filters),
+    ]);
+    return { insights, registrations: reshapeSpybotLeads(leads) };
+  }
   const [insights, regs] = await Promise.all([
     groupedInsights('adset_id', 'adset_name', filters),
     groupedRegistrations('first_sub.adset_id', filters),
@@ -232,6 +273,13 @@ export async function getAdsetPerformance(filters) {
 }
 
 export async function getAdPerformance(filters) {
+  if (isSpybotBrand(filters)) {
+    const [insights, leads] = await Promise.all([
+      groupedInsights('ad_id', 'ad_name', filters),
+      getSpybotAdLeads(filters),
+    ]);
+    return { insights, registrations: reshapeSpybotLeads(leads) };
+  }
   const [insights, regs] = await Promise.all([
     groupedInsights('ad_id', 'ad_name', filters),
     groupedRegistrations('first_sub.ad_id', filters),
@@ -240,6 +288,15 @@ export async function getAdPerformance(filters) {
 }
 
 export async function getSourceAnalytics(filters) {
+  if (isSpybotBrand(filters)) {
+    // Spybot's source analytics don't attach spend per source (would need
+    // the same campaign_id cross-reference built for SecurityJob.in below,
+    // not built for this brand yet) -- spend is left null rather than
+    // fabricated, same "unavailable vs. zero" rule as everywhere else.
+    const rows = await getSpybotSourceAnalytics(filters);
+    return rows.map((r) => ({ source: r.source, registrations: Number(r.leads), spend: null }));
+  }
+
   const { whereSql, values } = buildRegistrationFilters(filters);
   const combinedWhere = whereSql
     ? `${whereSql} AND first_sub.source IS NOT NULL`
@@ -277,6 +334,13 @@ export async function getSourceAnalytics(filters) {
 }
 
 export async function getLocationAnalytics(filters) {
+  if (isSpybotBrand(filters)) {
+    const rows = await getSpybotLocationAnalytics(filters);
+    // Spybot's leads carry a specific city, not a "district" -- mapped onto
+    // the existing district field so the frontend/API contract is unchanged.
+    return rows.map((r) => ({ state: r.state, district: r.city, registrations: Number(r.leads) }));
+  }
+
   const { whereSql, values } = buildRegistrationFilters(filters);
   const combinedWhere = whereSql
     ? `${whereSql} AND c.permanent_state IS NOT NULL`
@@ -342,6 +406,27 @@ export async function getMetaFormLeadsTotals(filters) {
     `SELECT COUNT(*) AS total FROM meta_form_leads mfl ${whereSql}`,
     values
   );
+  const total = Number(totalResult.rows[0].total);
+
+  if (isSpybotBrand(filters)) {
+    // Spybot's website leads live in a separate database, so the dedup
+    // can't be a single SQL NOT EXISTS like the candidates case below --
+    // fetch Spybot's known phone numbers and set-difference in JS instead.
+    const spybotPhones = await getSpybotLeadPhoneSet(filters);
+    if (!spybotPhones) {
+      // Spybot DB unreachable/not configured: can't rule out duplicates,
+      // so don't claim a dedup figure -- fall back to the raw total.
+      return { total, uniqueOfWebsite: total };
+    }
+    const phonesResult = await query(
+      `SELECT normalized_phone FROM meta_form_leads mfl ${whereSql}`,
+      values
+    );
+    const uniqueOfWebsite = phonesResult.rows.filter(
+      (r) => !r.normalized_phone || !spybotPhones.has(r.normalized_phone)
+    ).length;
+    return { total, uniqueOfWebsite };
+  }
 
   const dedupeClause = `NOT EXISTS (
     SELECT 1 FROM candidates c2
@@ -355,12 +440,20 @@ export async function getMetaFormLeadsTotals(filters) {
   );
 
   return {
-    total: Number(totalResult.rows[0].total),
+    total,
     uniqueOfWebsite: Number(uniqueResult.rows[0].unique_leads),
   };
 }
 
 export async function getRoleAnalytics(filters) {
+  if (isSpybotBrand(filters)) {
+    // Spybot's equivalent of "Role Analytics": which security services a
+    // lead requested, not a job role -- same shape/field names so the
+    // frontend's BreakdownTable works unchanged, just relabeled in the UI.
+    const rows = await getSpybotServiceTypeAnalytics(filters);
+    return rows.map((r) => ({ role: r.service_type, registrations: Number(r.leads) }));
+  }
+
   const { whereSql, values } = buildRegistrationFilters(filters);
   const result = await query(
     `SELECT cr.role_name AS role, COUNT(DISTINCT c.id) AS registrations

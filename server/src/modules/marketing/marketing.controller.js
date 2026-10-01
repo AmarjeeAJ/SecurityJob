@@ -17,8 +17,20 @@ import {
   getMetaFormLeadsTotals,
 } from './marketing.repository.js';
 
-function isMetaInsightsConfigured() {
+const SPYBOT_SLUG = 'spybot-security-services';
+function isSpybotBrand(filters) {
+  return filters?.brand === SPYBOT_SLUG;
+}
+
+function isMetaInsightsConfigured(filters) {
+  if (isSpybotBrand(filters)) {
+    return Boolean(env.spybotMetaAccessToken && env.metaApiVersion && env.spybotMetaAdAccountId);
+  }
   return Boolean(env.metaAccessToken && env.metaApiVersion && env.metaAdAccountId);
+}
+
+function isSpybotDbConfigured() {
+  return Boolean(env.spybotDatabaseUrl);
 }
 
 // COALESCE(SUM(...), 0) in the SQL makes "no rows matched" and "rows
@@ -51,7 +63,10 @@ function shapeTotals(insightsTotals, registrations, hasInsightsData) {
   };
 }
 
-function isMetaLeadsConfigured() {
+function isMetaLeadsConfigured(filters) {
+  if (isSpybotBrand(filters)) {
+    return Boolean(env.spybotMetaAccessToken && env.metaApiVersion && env.spybotMetaPageId);
+  }
   return Boolean(env.metaAccessToken && env.metaApiVersion && env.metaPageId);
 }
 
@@ -69,8 +84,9 @@ export const getSummary = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {
-      metaConfigured: isMetaInsightsConfigured(),
-      metaLeadsConfigured: isMetaLeadsConfigured(),
+      metaConfigured: isMetaInsightsConfigured(filters),
+      metaLeadsConfigured: isMetaLeadsConfigured(filters),
+      spybotDbConfigured: isSpybotDbConfigured(),
       hasSyncedData,
       kpis,
       // Two genuinely separate channels, shown honestly rather than merged
@@ -130,7 +146,7 @@ export const getTrends = asyncHandler(async (req, res) => {
       costPerRegistration: safeDivide(d.spend, d.registrations),
     }));
 
-  res.json({ success: true, data: { metaConfigured: isMetaInsightsConfigured(), series } });
+  res.json({ success: true, data: { metaConfigured: isMetaInsightsConfigured(filters), series } });
 });
 
 function previousPeriodRange(dateFrom, dateTo) {
@@ -176,7 +192,7 @@ export const getComparison = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: { metaConfigured: isMetaInsightsConfigured(), current, previous, change, previousPeriod: prevRange },
+    data: { metaConfigured: isMetaInsightsConfigured(filters), current, previous, change, previousPeriod: prevRange },
   });
 });
 
@@ -236,7 +252,7 @@ export const getCampaigns = asyncHandler(async (req, res) => {
   const { insights, registrations } = await getCampaignPerformance(req.query);
   res.json({
     success: true,
-    data: { metaConfigured: isMetaInsightsConfigured(), rows: mergePerformanceRows(insights, registrations) },
+    data: { metaConfigured: isMetaInsightsConfigured(req.query), rows: mergePerformanceRows(insights, registrations) },
   });
 });
 
@@ -244,7 +260,7 @@ export const getAdsets = asyncHandler(async (req, res) => {
   const { insights, registrations } = await getAdsetPerformance(req.query);
   res.json({
     success: true,
-    data: { metaConfigured: isMetaInsightsConfigured(), rows: mergePerformanceRows(insights, registrations) },
+    data: { metaConfigured: isMetaInsightsConfigured(req.query), rows: mergePerformanceRows(insights, registrations) },
   });
 });
 
@@ -252,7 +268,7 @@ export const getAds = asyncHandler(async (req, res) => {
   const { insights, registrations } = await getAdPerformance(req.query);
   res.json({
     success: true,
-    data: { metaConfigured: isMetaInsightsConfigured(), rows: mergePerformanceRows(insights, registrations) },
+    data: { metaConfigured: isMetaInsightsConfigured(req.query), rows: mergePerformanceRows(insights, registrations) },
   });
 });
 
@@ -262,7 +278,7 @@ export const getSources = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {
-      metaConfigured: isMetaInsightsConfigured(),
+      metaConfigured: isMetaInsightsConfigured(req.query),
       rows: rows.map((r) => ({
         ...r,
         sharePct: safeDivide(r.registrations, total, { multiplier: 100 }),
@@ -284,6 +300,8 @@ export const getLocations = asyncHandler(async (req, res) => {
 
 export const getRoles = asyncHandler(async (req, res) => {
   // Same reasoning as locations -- role is not a Meta ad dimension we sync.
+  // For Spybot this returns service types under the same "role" field name
+  // (see marketing.repository.js), relabeled "Service Type Analytics" in the UI.
   const rows = await getRoleAnalytics(req.query);
   res.json({
     success: true,
@@ -299,6 +317,29 @@ export const runMetaSync = asyncHandler(async (req, res) => {
 
 export const runMetaLeadsSync = asyncHandler(async (req, res) => {
   const result = await syncMetaFormLeads();
+  res.json({ success: result.success, data: result });
+});
+
+export const runSpybotMetaSync = asyncHandler(async (req, res) => {
+  const { since, until } = req.body || {};
+  const result = await syncMetaInsights({
+    since,
+    until,
+    brandSlug: SPYBOT_SLUG,
+    accessToken: env.spybotMetaAccessToken,
+    apiVersion: env.metaApiVersion,
+    adAccountId: env.spybotMetaAdAccountId,
+  });
+  res.json({ success: result.success, data: result });
+});
+
+export const runSpybotMetaLeadsSync = asyncHandler(async (req, res) => {
+  const result = await syncMetaFormLeads({
+    brandSlug: SPYBOT_SLUG,
+    accessToken: env.spybotMetaAccessToken,
+    apiVersion: env.metaApiVersion,
+    pageId: env.spybotMetaPageId,
+  });
   res.json({ success: result.success, data: result });
 });
 

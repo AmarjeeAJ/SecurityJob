@@ -1,6 +1,6 @@
 import { formatCurrency, formatNumber, formatPercent } from '../../utils/marketingFormat.js';
 
-export default function PerformanceTable({ title, idLabel, rows, showParents = false }) {
+export default function PerformanceTable({ title, idLabel, rows, showParents = false, registrationsLabel = 'Registrations' }) {
   if (!rows || rows.length === 0) {
     return (
       <div className="py-8 text-center">
@@ -25,8 +25,8 @@ export default function PerformanceTable({ title, idLabel, rows, showParents = f
             <th className="py-2 pr-4">CTR</th>
             <th className="py-2 pr-4">CPC</th>
             <th className="py-2 pr-4">CPM</th>
-            <th className="py-2 pr-4">Registrations</th>
-            <th className="py-2 pr-4">Cost / Registration</th>
+            <th className="py-2 pr-4">{registrationsLabel}</th>
+            <th className="py-2 pr-4">Cost / {registrationsLabel.replace(/s$/, '')}</th>
           </tr>
         </thead>
         <tbody>

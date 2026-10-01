@@ -19,7 +19,11 @@ import {
   fetchMarketingRoles,
   runMetaSync,
   runMetaLeadsSync,
+  runSpybotMetaSync,
+  runSpybotMetaLeadsSync,
 } from '../api/ownerMarketing.js';
+
+const SPYBOT_SLUG = 'spybot-security-services';
 import MarketingFiltersBar from '../components/marketing/MarketingFiltersBar.jsx';
 import KpiCard from '../components/marketing/KpiCard.jsx';
 import TrendChart from '../components/marketing/TrendChart.jsx';
@@ -172,10 +176,55 @@ export default function MarketingAnalyticsPage() {
     }
   }
 
+  async function handleSpybotSync() {
+    setSyncing(true);
+    setSyncMessage('');
+    try {
+      const result = await runSpybotMetaSync({ since: filters.dateFrom, until: filters.dateTo });
+      if (result.success) {
+        setSyncMessage(`Synced ${result.data.synced} ad-day records.`);
+        loadData();
+      } else if (result.data?.reason === 'not_configured') {
+        setSyncMessage('Spybot Meta Ads Insights integration is not configured.');
+      } else {
+        setSyncMessage('Sync failed -- check server logs for details.');
+      }
+    } catch {
+      setSyncMessage('Sync request failed.');
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function handleSpybotLeadsSync() {
+    setLeadsSyncing(true);
+    setLeadsSyncMessage('');
+    try {
+      const result = await runSpybotMetaLeadsSync();
+      if (result.success) {
+        setLeadsSyncMessage(`Synced ${result.data.synced} form lead(s).`);
+        loadData();
+      } else if (result.data?.reason === 'not_configured') {
+        setLeadsSyncMessage('Spybot Meta Instant Form leads integration is not configured.');
+      } else {
+        setLeadsSyncMessage('Sync failed -- check server logs for details.');
+      }
+    } catch {
+      setLeadsSyncMessage('Sync request failed.');
+    } finally {
+      setLeadsSyncing(false);
+    }
+  }
+
+  const isSpybot = filters.brand === SPYBOT_SLUG;
   const metaConfigured = summary?.metaConfigured ?? false;
   const metaLeadsConfigured = summary?.metaLeadsConfigured ?? false;
+  const spybotDbConfigured = summary?.spybotDbConfigured ?? false;
   const hasSyncedData = summary?.hasSyncedData ?? false;
   const leads = summary?.leads;
+  const registrationsLabel = isSpybot ? 'Website Enquiries' : 'Website Registrations';
+  const roleSectionLabel = isSpybot ? 'Service Type Analytics' : 'Role Analytics';
+  const roleColumnLabel = isSpybot ? 'Service Type' : 'Role';
 
   return (
     <div className="bg-[#f8fafc] min-h-screen">
@@ -195,21 +244,21 @@ export default function MarketingAnalyticsPage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleSync}
+                onClick={isSpybot ? handleSpybotSync : handleSync}
                 disabled={syncing}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 shadow-sm transition-all disabled:opacity-60 cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
-                {syncing ? 'Syncing…' : 'Sync Meta Ads Data'}
+                {syncing ? 'Syncing…' : isSpybot ? 'Sync Spybot Ads Data' : 'Sync Meta Ads Data'}
               </button>
               <button
                 type="button"
-                onClick={handleLeadsSync}
+                onClick={isSpybot ? handleSpybotLeadsSync : handleLeadsSync}
                 disabled={leadsSyncing}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 shadow-sm transition-all disabled:opacity-60 cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${leadsSyncing ? 'animate-spin' : ''}`} />
-                {leadsSyncing ? 'Syncing…' : 'Sync Meta Form Leads'}
+                {leadsSyncing ? 'Syncing…' : isSpybot ? 'Sync Spybot Form Leads' : 'Sync Meta Form Leads'}
               </button>
             </div>
             {syncMessage && <p className="text-[11px] text-slate-500 max-w-xs text-right">{syncMessage}</p>}
@@ -217,30 +266,41 @@ export default function MarketingAnalyticsPage() {
           </div>
         </div>
 
+        {isSpybot && !spybotDbConfigured && (
+          <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>
+              Spybot's enquiry database isn't connected yet. Website Enquiries and all breakdowns
+              below won't be available until <code className="font-mono">SPYBOT_DATABASE_URL</code> is set.
+            </span>
+          </div>
+        )}
         {!metaConfigured && (
           <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>
-              Meta Ads Insights integration is not configured. Spend, impressions, reach, and
-              click metrics won't be available until <code className="font-mono">META_ACCESS_TOKEN</code>,{' '}
-              <code className="font-mono">META_API_VERSION</code>, and <code className="font-mono">META_AD_ACCOUNT_ID</code> are
-              set. Website Registrations and attribution below are unaffected and fully real.
+              Meta Ads Insights integration is not configured for this brand. Spend, impressions, reach, and
+              click metrics won't be available until{' '}
+              <code className="font-mono">{isSpybot ? 'SPYBOT_META_ACCESS_TOKEN' : 'META_ACCESS_TOKEN'}</code>,{' '}
+              <code className="font-mono">META_API_VERSION</code>, and{' '}
+              <code className="font-mono">{isSpybot ? 'SPYBOT_META_AD_ACCOUNT_ID' : 'META_AD_ACCOUNT_ID'}</code> are
+              set. {registrationsLabel} and attribution below are unaffected and fully real.
             </span>
           </div>
         )}
         {metaConfigured && !hasSyncedData && (
           <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>Meta Ads spend data has not been synced yet for this range. Click "Sync Meta Ads Data" above.</span>
+            <span>Meta Ads spend data has not been synced yet for this range. Click "Sync {isSpybot ? 'Spybot' : 'Meta'} Ads Data" above.</span>
           </div>
         )}
         {!metaLeadsConfigured && (
           <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>
-              Meta Instant Form leads integration is not configured. Leads submitted directly on
+              Meta Instant Form leads integration is not configured for this brand. Leads submitted directly on
               Facebook/Instagram (never touching the website) won't be counted until{' '}
-              <code className="font-mono">META_PAGE_ID</code> is set.
+              <code className="font-mono">{isSpybot ? 'SPYBOT_META_PAGE_ID' : 'META_PAGE_ID'}</code> is set.
             </span>
           </div>
         )}
@@ -249,7 +309,7 @@ export default function MarketingAnalyticsPage() {
           {leads ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200">
-                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">Website Registrations</p>
+                <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">{registrationsLabel}</p>
                 <p className="mt-1 text-2xl font-black text-slate-900">{formatNumber(leads.websiteRegistrations)}</p>
               </div>
               <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200">
@@ -278,7 +338,7 @@ export default function MarketingAnalyticsPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiCard icon={IndianRupee} label="Meta Spend" value={formatCurrency(summary?.kpis?.spend)} accent="blue" />
-          <KpiCard icon={Users} label="Website Registrations" value={formatNumber(summary?.kpis?.registrations)} accent="emerald" />
+          <KpiCard icon={Users} label={registrationsLabel} value={formatNumber(summary?.kpis?.registrations)} accent="emerald" />
           <KpiCard icon={Eye} label="Impressions" value={formatNumber(summary?.kpis?.impressions)} accent="sky" />
           <KpiCard icon={Eye} label="Reach" value={formatNumber(summary?.kpis?.reach)} accent="sky" />
           <KpiCard icon={MousePointerClick} label="Link Clicks" value={formatNumber(summary?.kpis?.linkClicks)} accent="purple" />
@@ -289,16 +349,16 @@ export default function MarketingAnalyticsPage() {
         </div>
 
         <SectionCard title="Marketing Funnel">
-          <FunnelChart funnel={summary?.funnel || {}} metaConfigured={metaConfigured} />
+          <FunnelChart funnel={summary?.funnel || {}} metaConfigured={metaConfigured} registrationsLabel={registrationsLabel} />
         </SectionCard>
 
         <SectionCard title="Performance Trend">
-          <TrendChart series={trends?.series} metaConfigured={metaConfigured} />
+          <TrendChart series={trends?.series} metaConfigured={metaConfigured} registrationsLabel={registrationsLabel} />
         </SectionCard>
 
         <SectionCard title="Previous Period Comparison">
           {comparison ? (
-            <ComparisonPanel comparison={comparison} />
+            <ComparisonPanel comparison={comparison} registrationsLabel={registrationsLabel} />
           ) : (
             <p className="py-6 text-center text-sm text-slate-400">
               Select a From Date and To Date to see period comparison.
@@ -307,15 +367,15 @@ export default function MarketingAnalyticsPage() {
         </SectionCard>
 
         <SectionCard title="Campaign Performance">
-          <PerformanceTable title="Campaign Performance" idLabel="Campaign" rows={campaigns} />
+          <PerformanceTable title="Campaign Performance" idLabel="Campaign" rows={campaigns} registrationsLabel={registrationsLabel} />
         </SectionCard>
 
         <SectionCard title="Ad Set Performance">
-          <PerformanceTable title="Ad Set Performance" idLabel="Ad Set" rows={adsets} showParents />
+          <PerformanceTable title="Ad Set Performance" idLabel="Ad Set" rows={adsets} showParents registrationsLabel={registrationsLabel} />
         </SectionCard>
 
         <SectionCard title="Ad Performance">
-          <PerformanceTable title="Ad Performance" idLabel="Ad" rows={ads} showParents />
+          <PerformanceTable title="Ad Performance" idLabel="Ad" rows={ads} showParents registrationsLabel={registrationsLabel} />
         </SectionCard>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -326,6 +386,7 @@ export default function MarketingAnalyticsPage() {
               getKey={(r) => r.source}
               getLabel={(r) => r.source}
               showSpend
+              registrationsLabel={registrationsLabel}
             />
           </SectionCard>
 
@@ -335,15 +396,17 @@ export default function MarketingAnalyticsPage() {
               rows={locations}
               getKey={(r) => `${r.state}-${r.district}`}
               getLabel={(r) => `${r.district || '—'}, ${r.state || '—'}`}
+              registrationsLabel={registrationsLabel}
             />
           </SectionCard>
 
-          <SectionCard title="Role Analytics">
+          <SectionCard title={roleSectionLabel}>
             <BreakdownTable
-              columns={{ label: 'Role' }}
+              columns={{ label: roleColumnLabel }}
               rows={roles}
               getKey={(r) => r.role}
               getLabel={(r) => r.role}
+              registrationsLabel={registrationsLabel}
             />
           </SectionCard>
         </div>

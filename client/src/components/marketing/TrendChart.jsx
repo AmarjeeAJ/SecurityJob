@@ -3,22 +3,21 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
 
-const METRICS = [
-  { key: 'spend', label: 'Spend (₹)', color: '#0284c7' },
-  { key: 'registrations', label: 'Registrations', color: '#16a34a' },
-  { key: 'costPerRegistration', label: 'Cost per Registration (₹)', color: '#dc2626' },
-  { key: 'cpc', label: 'CPC (₹)', color: '#9333ea' },
-  { key: 'ctr', label: 'CTR (%)', color: '#d97706' },
-  { key: 'cpm', label: 'CPM (₹)', color: '#0891b2' },
-];
-
 function formatDate(d) {
   const date = new Date(`${d}T00:00:00`);
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
 }
 
-export default function TrendChart({ series, metaConfigured }) {
+export default function TrendChart({ series, metaConfigured, registrationsLabel = 'Registrations' }) {
   const [activeMetrics, setActiveMetrics] = useState(['spend', 'registrations']);
+  const metrics = [
+    { key: 'spend', label: 'Spend (₹)', color: '#0284c7' },
+    { key: 'registrations', label: registrationsLabel, color: '#16a34a' },
+    { key: 'costPerRegistration', label: `Cost per ${registrationsLabel.replace(/s$/, '')} (₹)`, color: '#dc2626' },
+    { key: 'cpc', label: 'CPC (₹)', color: '#9333ea' },
+    { key: 'ctr', label: 'CTR (%)', color: '#d97706' },
+    { key: 'cpm', label: 'CPM (₹)', color: '#0891b2' },
+  ];
 
   function toggleMetric(key) {
     setActiveMetrics((prev) =>
@@ -31,7 +30,7 @@ export default function TrendChart({ series, metaConfigured }) {
       <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
         <p className="text-sm font-semibold text-slate-500">No trend data for this range yet.</p>
         {!metaConfigured && (
-          <p className="text-xs text-slate-400">Registrations will still show here once a date range with data is selected.</p>
+          <p className="text-xs text-slate-400">{registrationsLabel} will still show here once a date range with data is selected.</p>
         )}
       </div>
     );
@@ -42,7 +41,7 @@ export default function TrendChart({ series, metaConfigured }) {
   return (
     <div>
       <div className="flex flex-wrap gap-1.5 mb-4">
-        {METRICS.map((m) => (
+        {metrics.map((m) => (
           <button
             key={m.key}
             type="button"
@@ -69,7 +68,7 @@ export default function TrendChart({ series, metaConfigured }) {
             formatter={(value) => (value === null ? '—' : value)}
           />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          {METRICS.filter((m) => activeMetrics.includes(m.key)).map((m) => (
+          {metrics.filter((m) => activeMetrics.includes(m.key)).map((m) => (
             <Line
               key={m.key}
               type="monotone"

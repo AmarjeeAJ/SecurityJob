@@ -41,6 +41,18 @@ const env = {
   // Meta native Instant Form leads sync. Same reuse/optional pattern as
   // metaAdAccountId above.
   metaPageId: process.env.META_PAGE_ID || '',
+  // Spybot Security Services is a separate, already-live application with
+  // its own Postgres database -- this is a READ-ONLY connection used only
+  // to report on its client_leads table in the Marketing & Analysis page,
+  // never to write to it. Optional -- the Spybot side of the dashboard
+  // safely shows "not configured" if this is blank.
+  spybotDatabaseUrl: process.env.SPYBOT_DATABASE_URL || '',
+  // Spybot is a separate Meta Business Portfolio with its own ad account
+  // and Page, so it needs its own credentials -- none of the META_* vars
+  // above apply to it. Reuses the shared META_API_VERSION.
+  spybotMetaAccessToken: process.env.SPYBOT_META_ACCESS_TOKEN || '',
+  spybotMetaAdAccountId: process.env.SPYBOT_META_AD_ACCOUNT_ID || '',
+  spybotMetaPageId: process.env.SPYBOT_META_PAGE_ID || '',
 };
 
 export default env;

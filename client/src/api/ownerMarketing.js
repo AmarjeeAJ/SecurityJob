@@ -24,3 +24,13 @@ export async function runMetaLeadsSync() {
   const { data } = await apiClient.post('/owner/marketing/meta-leads-sync', {});
   return data;
 }
+
+export async function runSpybotMetaSync(body) {
+  const { data } = await apiClient.post('/owner/marketing/spybot-meta-sync', body || {});
+  return data;
+}
+
+export async function runSpybotMetaLeadsSync() {
+  const { data } = await apiClient.post('/owner/marketing/spybot-meta-leads-sync', {});
+  return data;
+}

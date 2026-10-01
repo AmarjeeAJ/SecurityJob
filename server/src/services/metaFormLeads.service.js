@@ -11,18 +11,20 @@ const LEAD_FIELDS = [
   'campaign_id', 'campaign_name', 'field_data', 'created_time',
 ].join(',');
 
-// This sync only ever serves SecurityJob.in today -- same reasoning as the
-// CAPI/Insights brand resolution: there is no other live Meta Page configured.
-let cachedSecurityJobBrandId;
-async function resolveSecurityJobBrandId() {
-  if (cachedSecurityJobBrandId !== undefined) return cachedSecurityJobBrandId;
+// Resolved per brand slug and cached -- each brand this sync serves
+// (SecurityJob.in, and now Spybot) has its own fixed slug.
+const cachedBrandIds = new Map();
+async function resolveBrandId(slug) {
+  if (cachedBrandIds.has(slug)) return cachedBrandIds.get(slug);
+  let brandId;
   try {
-    cachedSecurityJobBrandId = await getBrandIdBySlug('securityjob-in');
+    brandId = await getBrandIdBySlug(slug);
   } catch (error) {
-    logger.warn('Could not resolve SecurityJob.in brand id for Meta Form Leads sync', { message: error?.message });
-    cachedSecurityJobBrandId = null;
+    logger.warn('Could not resolve brand id for Meta Form Leads sync', { slug, message: error?.message });
+    brandId = null;
   }
-  return cachedSecurityJobBrandId;
+  cachedBrandIds.set(slug, brandId);
+  return brandId;
 }
 
 async function fetchWithTimeout(url) {
@@ -39,10 +41,10 @@ async function fetchWithTimeout(url) {
 // level token used for CAPI/Insights -- exchanged from the same underlying
 // System User token, which must have been granted access to this Page with
 // the leads_retrieval permission in Business Settings.
-async function getPageAccessToken() {
+async function getPageAccessToken(apiVersion, pageId, accessToken) {
   const url =
-    `https://graph.facebook.com/${env.metaApiVersion}/${env.metaPageId}` +
-    `?fields=access_token&access_token=${env.metaAccessToken}`;
+    `https://graph.facebook.com/${apiVersion}/${pageId}` +
+    `?fields=access_token&access_token=${accessToken}`;
   const resp = await fetchWithTimeout(url);
   const json = await resp.json();
   if (!resp.ok || !json.access_token) {
@@ -53,9 +55,9 @@ async function getPageAccessToken() {
   return json.access_token;
 }
 
-async function listLeadForms(pageAccessToken) {
+async function listLeadForms(apiVersion, pageId, pageAccessToken) {
   const url =
-    `https://graph.facebook.com/${env.metaApiVersion}/${env.metaPageId}/leadgen_forms` +
+    `https://graph.facebook.com/${apiVersion}/${pageId}/leadgen_forms` +
     `?fields=id,name&limit=200&access_token=${pageAccessToken}`;
   const resp = await fetchWithTimeout(url);
   const json = await resp.json();
@@ -114,31 +116,40 @@ async function upsertLead(brandId, formId, formName, lead) {
  * matching the CAPI/Insights services' non-critical dependency pattern.
  * Safe to call repeatedly: every row is keyed on the Meta-assigned
  * leadgen_id (UNIQUE), so re-syncing never duplicates.
+ *
+ * Defaults to SecurityJob.in's own credentials/brand so existing call sites
+ * are unaffected; pass brandSlug/accessToken/apiVersion/pageId to sync a
+ * different brand's (e.g. Spybot's) separate Meta Page.
  */
-export async function syncMetaFormLeads() {
-  if (!env.metaAccessToken || !env.metaApiVersion) {
-    logger.warn('Meta Form Leads sync skipped: META_ACCESS_TOKEN/META_API_VERSION not configured');
+export async function syncMetaFormLeads({
+  brandSlug = 'securityjob-in',
+  accessToken = env.metaAccessToken,
+  apiVersion = env.metaApiVersion,
+  pageId = env.metaPageId,
+} = {}) {
+  if (!accessToken || !apiVersion) {
+    logger.warn('Meta Form Leads sync skipped: access token/API version not configured', { brandSlug });
     return { success: false, reason: 'not_configured', synced: 0 };
   }
-  if (!env.metaPageId) {
-    logger.warn('Meta Form Leads sync skipped: META_PAGE_ID not configured');
+  if (!pageId) {
+    logger.warn('Meta Form Leads sync skipped: Page id not configured', { brandSlug });
     return { success: false, reason: 'not_configured', synced: 0 };
   }
 
-  const brandId = await resolveSecurityJobBrandId();
+  const brandId = await resolveBrandId(brandSlug);
 
   try {
-    const pageAccessToken = await getPageAccessToken();
+    const pageAccessToken = await getPageAccessToken(apiVersion, pageId, accessToken);
     if (!pageAccessToken) {
       return { success: false, reason: 'meta_api_error', synced: 0 };
     }
 
-    const forms = await listLeadForms(pageAccessToken);
+    const forms = await listLeadForms(apiVersion, pageId, pageAccessToken);
     let synced = 0;
 
     for (const form of forms) {
       let url =
-        `https://graph.facebook.com/${env.metaApiVersion}/${form.id}/leads` +
+        `https://graph.facebook.com/${apiVersion}/${form.id}/leads` +
         `?fields=${LEAD_FIELDS}&limit=100&access_token=${pageAccessToken}`;
       let pages = 0;
 
@@ -148,7 +159,7 @@ export async function syncMetaFormLeads() {
 
         if (!resp.ok) {
           const errBody = await resp.text().catch(() => '');
-          logger.error('Meta Form Leads sync failed for form', { formId: form.id, status: resp.status, body: errBody.slice(0, 300) });
+          logger.error('Meta Form Leads sync failed for form', { brandSlug, formId: form.id, status: resp.status, body: errBody.slice(0, 300) });
           break;
         }
 
@@ -158,7 +169,7 @@ export async function syncMetaFormLeads() {
             await upsertLead(brandId, form.id, form.name, lead);
             synced += 1;
           } catch (rowError) {
-            logger.error('Meta Form Leads row upsert failed', { leadgenId: lead.id, message: rowError?.message });
+            logger.error('Meta Form Leads row upsert failed', { brandSlug, leadgenId: lead.id, message: rowError?.message });
           }
         }
 
@@ -166,10 +177,10 @@ export async function syncMetaFormLeads() {
       }
     }
 
-    logger.info('Meta Form Leads sync complete', { synced, forms: forms.length });
+    logger.info('Meta Form Leads sync complete', { brandSlug, synced, forms: forms.length });
     return { success: true, synced, forms: forms.length };
   } catch (error) {
-    logger.error('Meta Form Leads sync error', { message: error?.message });
+    logger.error('Meta Form Leads sync error', { brandSlug, message: error?.message });
     return { success: false, reason: 'network_error', synced: 0 };
   }
 }
