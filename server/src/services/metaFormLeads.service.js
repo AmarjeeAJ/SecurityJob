@@ -75,13 +75,17 @@ function fieldValue(fieldData, key) {
   return match?.values?.[0] || null;
 }
 
+// Returns true when this leadgen_id was genuinely new (a real INSERT),
+// false when it already existed (the ON CONFLICT DO NOTHING no-op) --
+// that signal is what lets the sync loop below detect "caught up to
+// already-synced leads" and stop paginating early.
 async function upsertLead(brandId, formId, formName, lead) {
   const fullName = fieldValue(lead.field_data, 'full_name') || fieldValue(lead.field_data, 'name');
   const rawPhone = fieldValue(lead.field_data, 'phone_number');
   const email = fieldValue(lead.field_data, 'email');
   const normalizedPhone = normalizeIndianMobile(rawPhone);
 
-  await query(
+  const result = await query(
     `INSERT INTO meta_form_leads (
       brand_id, leadgen_id, form_id, form_name, campaign_id, campaign_name,
       adset_id, adset_name, ad_id, ad_name, full_name, phone_number,
@@ -107,6 +111,7 @@ async function upsertLead(brandId, formId, formName, lead) {
       lead.created_time || null,
     ]
   );
+  return result.rowCount > 0;
 }
 
 /**
@@ -145,13 +150,17 @@ export async function syncMetaFormLeads({
     }
 
     const forms = await listLeadForms(apiVersion, pageId, pageAccessToken);
-    let synced = 0;
 
-    for (const form of forms) {
+    // Each form's pages must be fetched in order (page 2's URL comes from
+    // page 1's response), but the forms themselves are fully independent --
+    // running all of them concurrently instead of one-at-a-time is the
+    // single biggest speedup for a first/full sync across many forms.
+    async function syncForm(form) {
       let url =
         `https://graph.facebook.com/${apiVersion}/${form.id}/leads` +
         `?fields=${LEAD_FIELDS}&limit=100&access_token=${pageAccessToken}`;
       let pages = 0;
+      let formSynced = 0;
 
       while (url && pages < MAX_PAGES_PER_FORM) {
         const resp = await fetchWithTimeout(url);
@@ -164,18 +173,33 @@ export async function syncMetaFormLeads({
         }
 
         const json = await resp.json();
-        for (const lead of json.data || []) {
+        const pageLeads = json.data || [];
+        let insertedInPage = 0;
+        for (const lead of pageLeads) {
           try {
-            await upsertLead(brandId, form.id, form.name, lead);
-            synced += 1;
+            if (await upsertLead(brandId, form.id, form.name, lead)) {
+              insertedInPage += 1;
+              formSynced += 1;
+            }
           } catch (rowError) {
             logger.error('Meta Form Leads row upsert failed', { brandSlug, leadgenId: lead.id, message: rowError?.message });
           }
         }
 
+        // Meta returns leads newest-first. A full page where every lead
+        // already existed means every lead on every later page is older
+        // still and already synced too -- safe to stop here rather than
+        // re-walking leads this sync already has from a previous run.
+        if (pageLeads.length > 0 && insertedInPage === 0) break;
+
         url = json.paging?.next || null;
       }
+
+      return formSynced;
     }
+
+    const formResults = await Promise.all(forms.map(syncForm));
+    const synced = formResults.reduce((sum, n) => sum + n, 0);
 
     logger.info('Meta Form Leads sync complete', { brandSlug, synced, forms: forms.length });
     return { success: true, synced, forms: forms.length };
