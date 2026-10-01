@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   BarChart3, IndianRupee, Users, Eye, MousePointerClick, Percent, RefreshCw, AlertCircle,
 } from 'lucide-react';
@@ -96,7 +96,18 @@ export default function MarketingAnalyticsPage() {
       .catch(() => {});
   }, []);
 
+  // Every filter change fires a fresh batch of requests, but nothing
+  // guarantees they resolve in the order they were sent -- a slower
+  // response for stale (previous) filters arriving after a faster response
+  // for the current filters would silently overwrite the page with
+  // mismatched data (e.g. a "Previous Period Comparison" date range that
+  // doesn't correspond to the currently selected Filters). requestIdRef
+  // guards against this: only the most recently *fired* request is allowed
+  // to apply its results.
+  const requestIdRef = useRef(0);
+
   const loadData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError('');
     try {
@@ -116,6 +127,8 @@ export default function MarketingAnalyticsPage() {
         fetchMarketingRoles(debouncedFilters),
       ]);
 
+      if (requestId !== requestIdRef.current) return; // a newer request has already superseded this one
+
       setSummary(summaryRes.data);
       setTrends(trendsRes.data);
       setComparison(comparisonRes.success ? comparisonRes.data : null);
@@ -126,9 +139,10 @@ export default function MarketingAnalyticsPage() {
       setLocations(locationsRes.data.rows);
       setRoles(rolesRes.data.rows);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       setError(err?.response?.data?.message || 'Could not load marketing analytics.');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [debouncedFilters]);
 
