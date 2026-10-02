@@ -5,6 +5,7 @@ import { LanguageProvider } from './i18n/LanguageContext.jsx';
 import ProtectedRoute from './components/owner/ProtectedRoute.jsx';
 import LoadingSkeleton from './components/common/LoadingSkeleton.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
+import ApplyNowModal from './components/common/ApplyNowModal.jsx';
 
 // Core Public Pages (100% Employee / Candidate Focused)
 import HomePage from './pages/HomePage.jsx';
@@ -97,6 +98,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        <ApplyNowModal />
       </OwnerAuthProvider>
     </LanguageProvider>
   );

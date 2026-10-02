@@ -147,7 +147,13 @@ function buildFormData(data, trackingData, frontFile, backFile) {
   return formData;
 }
 
-export default function CandidateApplicationForm({ preselectedRole, trackingData }) {
+export default function CandidateApplicationForm({
+  preselectedRole,
+  trackingData,
+  isModal = false,
+  onClose,
+  scrollContainerRef,
+}) {
   const { language } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [submissionResult, setSubmissionResult] = useState(null);
@@ -728,10 +734,18 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     ],
   };
 
+  const scrollToTop = (topOffset = 0) => {
+    if (scrollContainerRef?.current) {
+      scrollContainerRef.current.scrollTo({ top: topOffset, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: topOffset === 0 ? 0 : 120, behavior: 'smooth' });
+    }
+  };
+
   const handleNextStep = async () => {
     if (currentStep === 1 && duplicateMobileInfo) {
       setSubmitError('यह मोबाइल नंबर पहले से पंजीकृत है। कृपया दोबारा फॉर्म न भरें। (This mobile number is already registered. Please do not fill the form again.)');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTop(0);
       return;
     }
 
@@ -746,12 +760,12 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     trackEvent(`step_${currentStep}_complete`, { nextStep: currentStep + 1 });
 
     setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS));
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    scrollToTop(120);
   };
 
   const handlePrevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    scrollToTop(120);
   };
 
   const handleFormKeyDown = (e) => {
@@ -782,7 +796,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
     if (!stayAddr && !geoAddr) {
       setSubmitError('कृपया वर्तमान पता भरें या "📍 अभी की लोकेशन लें" बटन दबाएं। (Please fill your current address or use the auto-fill location button.)');
       setCurrentAddressError(true);
-      window.scrollTo({ top: 120, behavior: 'smooth' });
+      scrollToTop(120);
       return;
     }
     setSubmitError('');
@@ -811,7 +825,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
 
       localStorage.removeItem(DRAFT_STORAGE_KEY);
       setSubmissionResult(res);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTop(0);
     } catch (err) {
       const backendErrors = err.response?.data?.errors;
       if (backendErrors && typeof backendErrors === 'object' && Object.keys(backendErrors).length > 0) {
@@ -832,7 +846,7 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
         setCurrentStep(jumpToStep);
         const detailedMsg = err.response?.data?.message || 'कृपया फॉर्म में हाइलाइट की गई त्रुटियों को सुधारें।';
         setSubmitError(`${detailedMsg}: ${errMessages.join(', ')}`);
-        window.scrollTo({ top: 120, behavior: 'smooth' });
+        scrollToTop(120);
       } else {
         const errorMsg =
           err.response?.data?.message ||
@@ -938,6 +952,17 @@ export default function CandidateApplicationForm({ preselectedRole, trackingData
             setAadhaarBackFile(null);
           }}
         />
+        {isModal && onClose && (
+          <div className="mt-5 pt-4 border-t border-slate-100 flex justify-center">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+            >
+              {language === 'hi' ? 'फॉर्म बंद करें (Close)' : 'Close Window'}
+            </button>
+          </div>
+        )}
       </Card>
     );
   }
